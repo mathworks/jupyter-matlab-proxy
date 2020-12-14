@@ -1,0 +1,10 @@
+/* Copyright 2020 The MathWorks, Inc. */
+
+.help p[class*=icon-] {
+    background-repeat: no-repeat;
+    background-size: 32px;
+    background-position: left 4px;
+    padding-left: 40px;
+    min-height: 36px;
+    margin-bottom: 10px;
+}

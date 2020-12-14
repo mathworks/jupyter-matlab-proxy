@@ -1,0 +1,68 @@
+/* Copyright 2020 The MathWorks, Inc. */
+
+#controls {
+    display: flex;
+    justify-content: space-evenly;
+    overflow: auto;
+}
+
+#controls .btn {
+    display: flex;
+    align-items: center;
+    width: 120px;
+    min-width: 110px;
+    padding: 10px 5px;
+}
+
+#controls .btn.btn_color_blue {
+    border-width: 2px;
+}
+
+#controls.labels-on-top .btn {
+    flex-direction: column;
+}
+
+#controls .btn span[class*=icon-custom-] {
+    --size: 32px;
+    width: var(--size);
+    height: var(--size);
+    background-repeat: no-repeat;
+    margin-right: 4px;
+}
+
+#controls.labels-on-top .btn span[class*=icon-custom-] {
+    margin: 0 -2px 4px 0;
+    display: block;
+}
+
+#controls .btn-label {
+    font-size: 13px;
+}
+
+.icon-custom-restart {
+    background-image: url(restart.svg);
+}
+
+.icon-custom-start {
+    background-image: url(start.svg);
+}
+
+.icon-custom-stop {
+    background-image: url(stop.svg);
+}
+
+.icon-custom-sign-out {
+    background-image: url(sign-out.svg);
+}
+
+.icon-custom-terminate {
+    background-image: url(terminate.svg);
+}
+
+.icon-custom-feedback {
+    background-image: url(feedback.svg);
+}
+
+.icon-custom-help {
+    background-image: url(help.svg);
+}

@@ -1,0 +1,105 @@
+/* Copyright 2020 The MathWorks, Inc. */
+
+.card {
+    position: absolute;
+    border: none;
+    background: none;
+    right: 100%;
+}
+
+.card.react-draggable-dragging .card-body {
+    box-shadow: 0 0 10px 0 #666;
+}
+
+.card-body {
+    cursor: move;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    padding: 0 4px;
+    background: white;
+    border: 1px solid #bfbfbf;
+    transition: box-shadow 150ms linear;
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.15);
+}
+
+.card-body .trigger-btn {
+    border: 1px solid transparent;
+    background: none;
+    border-radius: 2px;
+    outline: none;
+    position: relative;
+    height: 20px;
+    margin: 2px 4px;
+    padding: 0 2px;
+}
+
+.card-body .trigger-btn:active, .card-body .trigger-btn:focus {
+    background: rgba(109, 109, 109, 0.35);
+    box-shadow: inset 0 1px 0 0 rgba(0, 0, 0, 0.15);
+}
+
+.card-body .trigger-btn:hover {
+    background: rgba(109, 109, 109, 0.20);
+}
+
+.drag-handle {
+    width: 10px;
+    height: 18px;
+    background:  url(gripper.svg) center no-repeat;
+    background-size: 9px;
+}
+
+.icon-custom-trigger {
+    width: 23px;
+    height: 19px;
+    background-repeat: no-repeat;
+}
+
+.trigger-tutorial-icon,
+.alert-success .icon-custom-trigger {
+    background-image: url(trigger-ok.svg);
+}
+
+.trigger-tutorial .icon {
+    margin-bottom: -4px;
+    display: inline-block;
+}
+
+.alert-danger .icon-custom-trigger {
+    background-image: url(trigger-error.svg);
+}
+
+.card-body:focus, .card-body:active, .card-body:hover {
+    opacity: 1;
+}
+
+:root {
+    --tutorial-width: 340px;
+    --tutorial-arrow-size: 8px;
+}
+
+.trigger-tutorial {
+    color: black;
+    position: absolute;
+    width: var(--tutorial-width);
+    padding: 15px;
+    user-select: none;
+    margin-top: var(--tutorial-arrow-size);
+    right: -143px;
+}
+
+.trigger-tutorial p:last-of-type {
+    margin-bottom: 5px;
+}
+
+.trigger-tutorial:before {
+    content: '';
+    display: block;
+    width: calc(2 * var(--tutorial-arrow-size));
+    height: calc(2 * var(--tutorial-arrow-size));
+    position: absolute;
+    background: url(arrow.svg) no-repeat;
+    left: calc(var(--tutorial-width) / 2 - var(--tutorial-arrow-size));
+    top: calc(-2 * var(--tutorial-arrow-size));
+}

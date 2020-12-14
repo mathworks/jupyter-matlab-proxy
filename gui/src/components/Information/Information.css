@@ -1,0 +1,110 @@
+/* Copyright 2020 The MathWorks, Inc. */
+
+#information .alert:not(.error-container) {
+    padding: 0;
+    margin-bottom: 0;
+    background: white;
+}
+
+#information .modal-header {
+    padding-left: 45px;
+}
+
+.modal-content, .alert {
+    border-radius: 10px;
+}
+
+#information .details {
+    margin: 0 30px;
+}
+
+#information .alert .alert_heading {
+    font-size: 18px;
+    margin-bottom: 0;
+}
+
+#information .error-msg {
+    white-space: pre;
+    font: 10pt monospace;
+}
+
+#information .error-container.alert {
+    border-radius: 0;
+    margin: 5px 20px;
+    padding: 10px;
+}
+
+#information .error-container.alert p {
+    margin: 0;
+}
+
+#information .error-container.alert .error-text {
+    margin-left: 30px;
+}
+
+#information .error-logs-container .error-container.alert {
+    padding: 0; /* if this is inside an expand-collapse, padding just gets in the way */
+}
+
+#information .error-msg {
+    padding: 10px;
+    max-height: 200px;
+    overflow: auto;
+}
+
+#information .error-logs-container .expand_trigger {
+    padding: 10px 5px 5px 40px;
+    font-size: 15px;
+}
+
+#information .expand_target {
+    transition: max-height 200ms ease-out, border-color 200ms ease-in;
+    overflow: hidden;
+    max-height: 200px;
+}
+
+#information .expand_target.collapsed {
+    max-height: 0;
+    border-color: white;
+}
+
+#spinner {
+    --spinner-size: 22px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #09f;
+    border-radius: 50%;
+    width: var(--spinner-size);
+    height: var(--spinner-size);
+    margin-right: 4px;
+    animation: spin 2s linear infinite;
+    float: left;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.alert table td {
+    padding: 4px;
+}
+
+.alert table td:first-child {
+    padding-right: 20px;
+    padding-left: 0;
+    white-space: nowrap;
+}
+
+.alert table td:nth-child(2) {
+    white-space: normal;
+}
+
+@media (min-width: 768px) {
+    .modal-dialog {
+        width: 700px;
+    }
+}

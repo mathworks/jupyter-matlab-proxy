@@ -1,0 +1,24 @@
+/* Copyright 2020 The MathWorks, Inc. */
+
+#error .alert {
+    padding: 0;
+    margin-bottom: 0;
+    border-radius: 10px;
+}
+
+#error .modal-body,
+#error .modal-header {
+    padding-left: 45px;
+}
+
+#error .alert .alert_heading {
+    font-size: 18px;
+    margin-bottom: 0;
+}
+
+#error .alert .error-msg {
+    color: #b7312c;
+    white-space: pre;
+    font: 10pt monospace;
+}
+

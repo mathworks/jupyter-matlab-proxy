@@ -1,0 +1,6 @@
+include README.md
+recursive-include jupyter_matlab_proxy/icons *
+recursive-include jupyter_matlab_proxy/matlab *
+recursive-include gui *
+recursive-exclude gui/node_modules *
+recursive-exclude gui/build *

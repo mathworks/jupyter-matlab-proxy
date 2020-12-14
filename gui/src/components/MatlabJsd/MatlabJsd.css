@@ -1,0 +1,11 @@
+/* Copyright 2020 The MathWorks, Inc. */
+
+div#MatlabJsd {
+    height: 100%;
+}
+
+#MatlabJsd iframe {
+    border: 0;
+    height: 100%;
+    width: 100%;
+}
