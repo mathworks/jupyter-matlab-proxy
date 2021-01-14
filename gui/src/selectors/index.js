@@ -6,6 +6,7 @@ export const selectTutorialHidden = state => state.tutorialHidden;
 export const selectServerStatus = state => state.serverStatus;
 export const selectMatlabStatus = state => state.serverStatus.matlabStatus;
 export const selectMatlabVersion = state => state.serverStatus.matlabVersion;
+export const selectWsEnv = state => state.serverStatus.wsEnv;
 export const selectSubmittingServerStatus = state => state.serverStatus.isSubmitting;
 export const selectHasFetchedServerStatus = state => state.serverStatus.hasFetched;
 export const selectLicensingInfo = state => state.serverStatus.licensingInfo;

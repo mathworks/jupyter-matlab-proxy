@@ -78,6 +78,7 @@ def create_status_response(app, loadUrl=None):
             "licensing": marshal_licensing_info(state.licensing),
             "loadUrl": loadUrl,
             "error": marshal_error(state.error),
+            "wsEnv": state.settings["ws_env"],
         }
     )
 
