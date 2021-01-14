@@ -100,6 +100,20 @@ async def fetch_access_token(mwa_api_endpoint, identity_token, source_id):
             }
 
 
+def range_matlab_connector_ports():
+    """ Generator of acceptable ports for MATLAB Connector.
+
+    Allowed ports conform to the regex: [3,6]1[5-9][1-9][1-9]
+    """
+
+    for p1 in (3, 6):
+        p2 = 1
+        for p3 in range(5, 10):
+            for p4 in range(1, 10):
+                for p5 in range(1, 10):
+                    yield int(f"{p1}{p2}{p3}{p4}{p5}")
+
+
 def parse_nlm_error(logs, conn_str):
     nlm_logs = []
     start = False
