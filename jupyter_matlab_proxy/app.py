@@ -7,6 +7,7 @@ import aiohttp
 import asyncio
 import logging
 import json
+import signal
 from . import settings
 from .app_state import AppState
 from .util.exceptions import LicensingError
@@ -398,4 +399,16 @@ def main():
         runner, host=app["settings"]["host_interface"], port=app["settings"]["app_port"]
     )
     loop.run_until_complete(site.start())
+    
+    loop.add_signal_handler(signal.SIGTERM, lambda: loop.stop())
     loop.run_forever()
+
+    async def shutdown():
+        logger.info("Shutting down MATLAB proxy-app")
+        await app.shutdown()
+        await app.cleanup()
+        # waiting here to allow matlab to finish exiting.
+        await asyncio.sleep(5)
+
+    loop.run_until_complete(shutdown())
+
