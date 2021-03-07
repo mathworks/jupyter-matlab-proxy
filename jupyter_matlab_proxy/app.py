@@ -22,7 +22,11 @@ mimetypes.add_type("application/json", ".map")
 mimetypes.add_type("image/png", ".ico")
 
 
-logging.basicConfig(level=logging.INFO)
+logLevel=logging.INFO
+if os.environ.get("LOG_LEVEL") is not None:
+    logLevel=getattr(logging, os.environ.get("LOG_LEVEL"), logging.INFO)
+
+logging.basicConfig(level=logLevel)
 logger = logging.getLogger("MATLABProxyApp")
 
 # TODO It is bad practice to have global state in aiohttp applications, instead this
