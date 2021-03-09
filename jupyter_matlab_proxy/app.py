@@ -30,9 +30,7 @@ if os.environ.get("DEV", "false").lower() != "true":
 
 logLevel=logging.INFO
 if os.environ.get("LOG_LEVEL") is not None:
-    lvl = getattr(logging, os.environ.get("LOG_LEVEL"), logging.INFO)
-    if lvl is not None:
-        logLevel=lvl
+    logLevel=getattr(logging, os.environ.get("LOG_LEVEL"), logging.INFO)
 
 logging.basicConfig(level=logLevel)
 logger = logging.getLogger("MATLABProxyApp")
