@@ -64,7 +64,12 @@ To install the `jupyter-matlab-proxy` package, follow these steps in your Jupyte
 python -m pip install https://github.com/mathworks/jupyter-matlab-proxy/archive/0.1.0.tar.gz
 ```
 
-If you want to use this integration with JupyterLab®, you must also install `jupyterlab-server-proxy` JupyterLab extension. To install the extension, use the following command:
+If you want to use this integration with JupyterLab®, ensure that you have JupyterLab installed on your machine by running the following command:
+```bash
+python -m pip install jupyterlab
+```
+
+You should then install `jupyterlab-server-proxy` JupyterLab extension. To install the extension, use the following command:
 
 ``` bash
 jupyter labextension install @jupyterlab/server-proxy

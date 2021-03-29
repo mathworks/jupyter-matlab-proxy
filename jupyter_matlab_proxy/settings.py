@@ -64,6 +64,7 @@ def get(dev=False):
             "matlab_config_file": Path(tempfile.gettempdir())
             / ".matlab"
             / "proxy_app_config.json",
+            "ws_env": ws_env,
             "mwa_api_endpoint": f"https://login{ws_env_suffix}.mathworks.com/authenticationws/service/v4",
             "mhlm_api_endpoint": f"https://licensing{ws_env_suffix}.mathworks.com/mls/service/v1/entitlement/list",
             "mwa_login": f"https://login{ws_env_suffix}.mathworks.com",
@@ -104,6 +105,7 @@ def get(dev=False):
             "matlab_display": ":1",
             "nlm_conn_str": os.environ.get("MLM_LICENSE_FILE"),
             "matlab_config_file": Path.home() / ".matlab" / "proxy_app_config.json",
+            "ws_env": ws_env,
             "mwa_api_endpoint": f"https://login{ws_env_suffix}.mathworks.com/authenticationws/service/v4",
             "mhlm_api_endpoint": f"https://licensing{ws_env_suffix}.mathworks.com/mls/service/v1/entitlement/list",
             "mwa_login": f"https://login{ws_env_suffix}.mathworks.com",

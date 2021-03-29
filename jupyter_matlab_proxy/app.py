@@ -78,6 +78,7 @@ def create_status_response(app, loadUrl=None):
             "licensing": marshal_licensing_info(state.licensing),
             "loadUrl": loadUrl,
             "error": marshal_error(state.error),
+            "wsEnv": state.settings["ws_env"],
         }
     )
 
@@ -390,7 +391,9 @@ def create_app():
 
 def main():
     logger.info("Starting MATLAB proxy-app")
+
     app = create_app()
+
     loop = asyncio.get_event_loop()
     runner = web.AppRunner(app)
     loop.run_until_complete(runner.setup())
