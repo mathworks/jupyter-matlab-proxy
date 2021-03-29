@@ -395,6 +395,8 @@ class AppState:
             matlab_env["MW_LOGIN_DISPLAY_NAME"] = self.licensing["display_name"]
             matlab_env["MW_LOGIN_USER_ID"] = self.licensing["user_id"]
             matlab_env["MW_LOGIN_PROFILE_ID"] = self.licensing["profile_id"]
+            if os.getenv("MHLM_CONTEXT") is None:
+                matlab_env["MHLM_CONTEXT"] = "MATLAB_JAVASCRIPT_DESKTOP"
 
         elif self.licensing["type"] == "nlm":
             matlab_env["MLM_LICENSE_FILE"] = self.licensing["conn_str"]

@@ -391,7 +391,9 @@ def create_app():
 
 def main():
     logger.info("Starting MATLAB proxy-app")
+
     app = create_app()
+
     loop = asyncio.get_event_loop()
     runner = web.AppRunner(app)
     loop.run_until_complete(runner.setup())
