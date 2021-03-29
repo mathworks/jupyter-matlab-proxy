@@ -1,4 +1,4 @@
-# Copyright 2020 The MathWorks, Inc.
+# Copyright 2021 The MathWorks, Inc.
 
 import json
 import os
@@ -47,7 +47,7 @@ tests_require = [
 
 setuptools.setup(
     name="jupyter-matlab-proxy",
-    version="0.1.0",
+    version="0.2.0",
     url="https://github.com/mathworks/jupyter-matlab-proxy",
     author="The MathWorks, Inc.",
     description="Jupyter extension to proxy MATLAB JavaScript Desktop",
@@ -55,7 +55,7 @@ setuptools.setup(
     keywords=["Jupyter"],
     classifiers=["Framework :: Jupyter"],
     python_requires="~=3.6",
-    install_requires=["jupyter-server-proxy", "aiohttp~=3.6.2"],
+    install_requires=["jupyter-server-proxy", "aiohttp>=3.7.4"],
     setup_requires=["pytest-runner"],
     tests_require=tests_require,
     extras_require={"dev": ["aiohttp-devtools"] + tests_require},
