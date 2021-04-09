@@ -90,6 +90,7 @@ MATLAB version: ${matlabVersion}%0D%0A`,
         <div id="controls" className="labels-on-top">
             <button
                 id="startMatlab"
+                data-testid='startMatlabBtn'
                 className={getBtnClass(matlabRunning ? 'restart' : 'start')}
                 onClick={() => callback(Confirmations.START)}
                 disabled={!licensed}
@@ -101,6 +102,7 @@ MATLAB version: ${matlabVersion}%0D%0A`,
             </button>
             <button
                 id="stopMatlab"
+                data-testid='stopMatlabBtn'
                 className={getBtnClass('stop')}
                 onClick={() => callback(Confirmations.STOP)}
                 disabled={!matlabRunning}
@@ -112,6 +114,7 @@ MATLAB version: ${matlabVersion}%0D%0A`,
             </button>
             <button
                 id="unsetLicensing"
+                data-testid='unsetLicensingBtn'
                 className={getBtnClass('sign-out')}
                 onClick={() => callback(Confirmations.SIGN_OUT)}
                 disabled={!canResetLicensing}
@@ -135,6 +138,7 @@ MATLAB version: ${matlabVersion}%0D%0A`,
             </button> */}
             <a
                 id="feedback"
+                data-testid='feedbackLink'
                 className="btn btn_color_mediumgray companion_btn"
                 href={ `mailto:jupyter-support@mathworks.com?subject=MATLAB Integration for Jupyter Feedback&body=${feedbackBody}` }
                 data-for="control-button-tooltip"
@@ -145,6 +149,7 @@ MATLAB version: ${matlabVersion}%0D%0A`,
             </a>
             <button
                 id="Help"
+                data-testid='helpBtn'
                 className="btn btn_color_mediumgray companion_btn"
                 onClick={() => callback(Confirmations.HELP)}
                 data-for="control-button-tooltip"

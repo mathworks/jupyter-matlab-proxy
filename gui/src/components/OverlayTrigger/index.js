@@ -1,5 +1,6 @@
 // Copyright 2020 The MathWorks, Inc.
 
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Draggable from 'react-draggable';
@@ -80,7 +81,7 @@ function OverlayTrigger() {
             <p>To control the MATLAB session (for example to restart or sign out), click the <span className="icon-custom-trigger icon trigger-tutorial-icon" title="tools icon"/> icon.</p>
             <p>The color of the badge shows the MATLAB status.</p>
             <p>To position this widget anywhere on screen, click and drag the <span className="drag-handle icon" title="grab handle icon"/> icon.</p>
-            <button className="btn btn_color_blue pull-right" onClick={handleCloseTutorial}>Close</button>
+            <button className="btn btn_color_blue pull-right" data-testid='tutorialCloseBtn' onClick={handleCloseTutorial}>Close</button>
         </div>
     );
 
@@ -106,6 +107,7 @@ function OverlayTrigger() {
                 <div
                     ref={triggerRef}
                     className={`card alert-${details.alert}`}
+                    data-testid='overlayTrigger'
                 >
                     <div className="card-body">
                         <span id="drag-handle" className="drag-handle"></span>
