@@ -52,7 +52,7 @@ function Help({
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button onClick={closeHandler} className="btn btn_color_blue">Back</button>
+                        <button onClick={closeHandler} data-testid='backBtn' className="btn btn_color_blue">Back</button>
                     </div>
                 </div>
             </div>

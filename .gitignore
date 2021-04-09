@@ -4,3 +4,7 @@ __pycache__/
 build/
 dist/
 .venv/
+.vscode/
+htmlcov/
+.coverage
+jupyter_matlab_proxy/gui/

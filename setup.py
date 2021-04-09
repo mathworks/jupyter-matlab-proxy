@@ -43,6 +43,10 @@ tests_require = [
     "pytest-cov",
     "pytest-mock",
     "pytest-dependency",
+    'pytest-aiohttp',
+    'requests',
+    'psutil',
+    'aioresponses',
 ]
 
 setuptools.setup(

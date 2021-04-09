@@ -11,22 +11,18 @@ from . import settings
 from .app_state import AppState
 from .util.exceptions import LicensingError
 
-if os.environ.get("DEV", "false").lower() != "true":
-    import mimetypes
+import pkgutil
+import mimetypes
 
-    mimetypes.add_type("font/woff", ".woff")
-    mimetypes.add_type("font/woff2", ".woff2")
-    mimetypes.add_type("font/eot", ".eot")
-    mimetypes.add_type("font/ttf", ".ttf")
-    mimetypes.add_type("application/json", ".map")
-    mimetypes.add_type("image/png", ".ico")
-    import pkgutil
-    from pkg_resources import resource_listdir, resource_isdir
-    from . import gui
-    from .gui import static
-    from .gui.static import css
-    from .gui.static import js
-    from .gui.static import media
+mimetypes.add_type("font/woff", ".woff")
+mimetypes.add_type("font/woff2", ".woff2")
+mimetypes.add_type("font/eot", ".eot")
+mimetypes.add_type("font/ttf", ".ttf")
+mimetypes.add_type("application/json", ".map")
+mimetypes.add_type("image/png", ".ico")
+
+    
+    
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("MATLABProxyApp")
@@ -175,6 +171,12 @@ async def static_get(req):
 
 
 def make_static_route_table(app):
+    from pkg_resources import resource_listdir, resource_isdir
+    from . import gui
+    from .gui import static
+    from .gui.static import css
+    from .gui.static import js
+    from .gui.static import media
 
     base_url = app["settings"]["base_url"]
 

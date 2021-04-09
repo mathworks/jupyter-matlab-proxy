@@ -20,8 +20,8 @@ function Confirmation({ confirm, cancel, children }) {
                         {children}
                     </div>
                     <div className="modal-footer">
-                        <button onClick={cancel} className="btn companion_btn btn_color_blue">Cancel</button>
-                        <button onClick={confirm} className="btn btn_color_blue">Confirm</button>
+                        <button onClick={cancel}  data-testid='cancelButton' className="btn companion_btn btn_color_blue">Cancel</button>
+                        <button onClick={confirm} data-testid='confirmButton' className="btn btn_color_blue">Confirm</button>
                     </div>
                 </div>
             </div>
