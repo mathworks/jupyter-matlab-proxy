@@ -18,8 +18,15 @@ async def fetch_entitlements(mhlm_api_endpoint, access_token, matlab_release):
     # Get entitlements for token
     async with aiohttp.ClientSession() as client_session:
         async with client_session.post(
-            f"{mhlm_api_endpoint}?token={access_token}&release={matlab_release}&coreProduct=ML&context=jupyter&excludeExpired=true",
+            mhlm_api_endpoint,
             headers={"content-type": "application/x-www-form-urlencoded"},
+            data=aiohttp.FormData({
+                "token": access_token,
+                "release": matlab_release,
+                "coreProduct": "ML",
+                "context": "jupyter",
+                "excludeExpired": "true",
+            }),
         ) as res:
 
             if res.reason != "OK":
@@ -51,12 +58,17 @@ async def fetch_expand_token(mwa_api_endpoint, identity_token, source_id):
 
     async with aiohttp.ClientSession() as client_session:
         async with client_session.post(
-            f"{mwa_api_endpoint}/tokens?tokenString={identity_token}&tokenPolicyName=R1&sourceId={source_id}",
+            f"{mwa_api_endpoint}/tokens",
             headers={
                 "content-type": "application/x-www-form-urlencoded",
                 "accept": "application/json",
                 "X_MW_WS_callerId": "desktop-jupyter",
             },
+            data=aiohttp.FormData({
+                "tokenString": identity_token,
+                "tokenPolicyName": "R1",
+                "sourceId": source_id,
+            }),
         ) as res:
 
             if res.reason != "OK":
@@ -80,12 +92,17 @@ async def fetch_access_token(mwa_api_endpoint, identity_token, source_id):
 
     async with aiohttp.ClientSession() as client_session:
         async with client_session.post(
-            f"{mwa_api_endpoint}/tokens/access?tokenString={identity_token}&type=MWAS&sourceId={source_id}",
+            f"{mwa_api_endpoint}/tokens/access",
             headers={
                 "content-type": "application/x-www-form-urlencoded",
                 "accept": "application/json",
                 "X_MW_WS_callerId": "desktop-jupyter",
             },
+            data=aiohttp.FormData({
+                "tokenString": identity_token,
+                "type": "MWAS",
+                "sourceId": source_id,
+            }),
         ) as res:
 
             if res.reason != "OK":
