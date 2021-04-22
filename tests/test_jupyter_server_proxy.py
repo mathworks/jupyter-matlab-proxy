@@ -1,4 +1,4 @@
-# Copyright 2020 The MathWorks, Inc.
+# Copyright 2020-2021 The MathWorks, Inc.
 
 import jupyter_matlab_proxy
 import os
@@ -14,8 +14,8 @@ def test_get_env():
 
 
 def test_setup_matlab():
-    """ Tests for a valid Server Process Configuration Dictionary
-    
+    """Tests for a valid Server Process Configuration Dictionary
+
     This test checks if the jupyter proxy returns the expected Server Process Configuration
     Dictionary for the Matlab process.
     """
@@ -23,8 +23,8 @@ def test_setup_matlab():
     port = 10000
     base_url = "/foo/"
     icon_path = str(
-        os.path.join(Path(os.getcwd()), 'jupyter_matlab_proxy', 'icons',
-                     'matlab.svg'))
+        os.path.join(Path(os.getcwd()), "jupyter_matlab_proxy", "icons", "matlab.svg")
+    )
 
     expected_matlab_setup = {
         "command": ["matlab-jupyter-app"],
@@ -40,6 +40,7 @@ def test_setup_matlab():
     actual_matlab_setup = jupyter_matlab_proxy.setup_matlab()
 
     actual_matlab_setup["environment"] = actual_matlab_setup["environment"](
-        port, base_url)
+        port, base_url
+    )
 
     assert expected_matlab_setup == actual_matlab_setup

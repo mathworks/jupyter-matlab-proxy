@@ -1,3 +1,5 @@
+// Copyright 2021 The MathWorks, Inc.
+
 import React from 'react';
 import LicenseGatherer from './index';
 import { render, fireEvent } from '../../test/utils/react-test';
@@ -26,7 +28,7 @@ describe('LicenseGatherer component', () => {
       },
       loadUrl: null,
       error: null,
-    };   
+    };
 
   });
 
@@ -37,16 +39,16 @@ describe('LicenseGatherer component', () => {
 
   it('should throw error', () => {
 
-    const errorMock = jest.spyOn(console, 'error').mockImplementation(() => {})    
+    const errorMock = jest.spyOn(console, 'error').mockImplementation(() => {})
 
     try{
       render(<LicenseGatherer />);
     }
     catch(error){
       expect(error).toBeInstanceOf(TypeError);
-      expect(errorMock).toHaveBeenCalledTimes(2);  
+      expect(errorMock).toHaveBeenCalledTimes(2);
     }
-    
+
   });
 
   it('should render without crashing', () => {
@@ -55,7 +57,7 @@ describe('LicenseGatherer component', () => {
 
 
   it('should render without crashing. Should have a subdomain for mhlmLoginHostName', () => {
-    
+
     initialState.serverStatus.wsEnv = 'mw-integ'
 
     const {container, debug} = render(<LicenseGatherer />, {initialState: initialState});
@@ -65,9 +67,9 @@ describe('LicenseGatherer component', () => {
     expect(mhlmTab).toBeInTheDocument();
 
     fireEvent.click(mhlmTab);
-    
-    const iFrame = container.getElementsByTagName('iframe').item(0)    
-  
+
+    const iFrame = container.getElementsByTagName('iframe').item(0)
+
     expect(iFrame.src).toContain(initialState.serverStatus.wsEnv);
   });
 

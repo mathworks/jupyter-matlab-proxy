@@ -1,4 +1,4 @@
-# Copyright 2020 The MathWorks, Inc.
+# Copyright 2020-2021 The MathWorks, Inc.
 
 # Development specific functions
 import asyncio, aiohttp
@@ -58,23 +58,25 @@ async def get_request_handler(request):
     return web.Response(text=await request.text())
 
 
-async def post_request_handler(request):    
-    return web.Response(text= await request.text())
+async def post_request_handler(request):
+    return web.Response(text=await request.text())
 
-async def put_request_handler(request):    
-    return web.Response(text= await request.text())
 
-async def delete_request_handler(request):    
-    return web.Response(text= await request.text())
+async def put_request_handler(request):
+    return web.Response(text=await request.text())
+
+
+async def delete_request_handler(request):
+    return web.Response(text=await request.text())
 
 
 async def web_socket_handler(request):
-    print('reaching websocket handler')
+    print("reaching websocket handler")
     ws = web.WebSocketResponse()
     await ws.prepare(request)
-    await ws.send_str('Hello world')
+    await ws.send_str("Hello world")
 
-    
+
 async def fake_matlab_started(app):
     """After the specified delay in seconds, create the ready_file unless it should
     error."""
@@ -116,19 +118,23 @@ def matlab(args):
     app = web.Application()
     app["ready_file"] = args.ready_file
     app["ready_delay"] = args.ready_delay
-    
+
     app.router.add_route("GET", "/index-jsd-cr.html", web_handler)
-    
+
     app.router.add_route("GET", "/http_get_request.html", get_request_handler)
-    
-    app.router.add_route("POST", "/http_post_request.html/{variable}/messageservice/json/secure", post_request_handler)    
-    
+
+    app.router.add_route(
+        "POST",
+        "/http_post_request.html/{variable}/messageservice/json/secure",
+        post_request_handler,
+    )
+
     app.router.add_route("PUT", "/http_put_request.html", put_request_handler)
-    
-    app.router.add_route("DELETE", "/http_delete_request.html", delete_request_handler)    
-    
+
+    app.router.add_route("DELETE", "/http_delete_request.html", delete_request_handler)
+
     app.router.add_route("GET", "/http_ws_request.html/", web_socket_handler)
-    
+
     app.on_startup.append(start_background_tasks)
     app.on_cleanup.append(cleanup_background_tasks)
     web.run_app(app, port=port)

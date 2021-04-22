@@ -1,4 +1,4 @@
-# Copyright 2020 The MathWorks, Inc.
+# Copyright 2020-2021 The MathWorks, Inc.
 
 import asyncio
 import xml.etree.ElementTree as ET
@@ -39,9 +39,7 @@ class AppState:
 
         # Start in an error state if MATLAB is not present
         if not self.is_matlab_present():
-            self.error = MatlabInstallError(
-                "'matlab' executable not found in PATH"
-            )
+            self.error = MatlabInstallError("'matlab' executable not found in PATH")
             logger.error("'matlab' executable not found in PATH")
             return
 
@@ -373,8 +371,8 @@ class AppState:
         # Configure the environment MATLAB needs to start
         matlab_env = os.environ.copy()
         matlab_env["MW_CRASH_MODE"] = "native"
-        matlab_env["MATLAB_WORKER_CONFIG_ENABLE_LOCAL_PARCLUSTER"] = "true";
-        matlab_env["PCT_ENABLED"] = "true";
+        matlab_env["MATLAB_WORKER_CONFIG_ENABLE_LOCAL_PARCLUSTER"] = "true"
+        matlab_env["PCT_ENABLED"] = "true"
         matlab_env["DISPLAY"] = self.settings["matlab_display"]
         matlab_env["HTTP_MATLAB_CLIENT_GATEWAY_PUBLIC_PORT"] = "1"
         matlab_env["MW_CONNECTOR_SECURE_PORT"] = str(self.matlab_port)

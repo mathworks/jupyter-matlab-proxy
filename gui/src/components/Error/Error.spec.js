@@ -1,3 +1,5 @@
+// Copyright 2021 The MathWorks, Inc.
+
 import React from 'react';
 import Error from './index';
 import { render } from '../../test/utils/react-test';

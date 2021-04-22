@@ -1,4 +1,4 @@
-# Copyright 2021 The MathWorks, Inc.
+# Copyright 2020-2021 The MathWorks, Inc.
 
 import json
 import os
@@ -43,10 +43,10 @@ tests_require = [
     "pytest-cov",
     "pytest-mock",
     "pytest-dependency",
-    'pytest-aiohttp',
-    'requests',
-    'psutil',
-    'aioresponses',
+    "pytest-aiohttp",
+    "requests",
+    "psutil",
+    "aioresponses",
 ]
 
 setuptools.setup(
@@ -64,12 +64,8 @@ setuptools.setup(
     tests_require=tests_require,
     extras_require={"dev": ["aiohttp-devtools"] + tests_require},
     entry_points={
-        "jupyter_serverproxy_servers": [
-            "matlab = jupyter_matlab_proxy:setup_matlab"
-        ],
-        "console_scripts": [
-            "matlab-jupyter-app = jupyter_matlab_proxy.app:main"
-        ],
+        "jupyter_serverproxy_servers": ["matlab = jupyter_matlab_proxy:setup_matlab"],
+        "console_scripts": ["matlab-jupyter-app = jupyter_matlab_proxy.app:main"],
     },
     include_package_data=True,
     zip_safe=False,

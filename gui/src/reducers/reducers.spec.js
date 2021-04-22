@@ -1,4 +1,4 @@
-// Copyright 2020 The MathWorks, Inc.
+// Copyright 2020-2021 The MathWorks, Inc.
 
 import * as reducers from './index';
 import * as actions from '../actions';
@@ -56,13 +56,13 @@ describe('reducers', () => {
     });
 
     it('should handle SET_OVERLAY_VISIBILITY', () => {
-      // Set visibility to true   
+      // Set visibility to true
       action = _.cloneDeep(genericAction);
       action.type = actions.SET_OVERLAY_VISIBILITY;
-      action.visibility = true;  
+      action.visibility = true;
       expect(reducers.overlayVisibility(undefined, action)).toBe(true);
 
-      // set visibility to false     
+      // set visibility to false
       action = _.cloneDeep(genericAction);
       action.type = actions.SET_OVERLAY_VISIBILITY;
       action.visibility = false;
@@ -70,7 +70,7 @@ describe('reducers', () => {
     });
 
     it('should handle RECEIVE_SERVER_STATUS', () => {
-      
+
       action = _.cloneDeep(genericAction);
       action.type = actions.RECEIVE_SERVER_STATUS;
 
@@ -78,7 +78,7 @@ describe('reducers', () => {
       expect(reducers.overlayVisibility(undefined, action)).toBe(false);
 
       //If previousMatlabPending is false, visibility should be false
-      
+
       action = _.cloneDeep(genericAction);
       action.previousMatlabPending = false;
       expect(reducers.overlayVisibility(undefined, action)).toBe(false);
@@ -94,7 +94,7 @@ describe('reducers', () => {
 
       action = _.cloneDeep(genericAction);
       action.type = actions.RECEIVE_SET_LICENSING;
-      
+
       expect(reducers.overlayVisibility(undefined, action)).toBe(false);
       expect(reducers.overlayVisibility(true, action)).toBe(true);
     });
@@ -112,7 +112,7 @@ describe('reducers', () => {
         y: action.y,
       });
 
-      // check default case 
+      // check default case
       action = _.cloneDeep(genericAction);
       expect(reducers.triggerPosition(undefined, action)).not.toBeUndefined();
     });
@@ -141,7 +141,7 @@ describe('reducers', () => {
   });
 
   describe('licensingInfo', () => {
-    
+
     it('should return licensing info for actions defined in receiveActions array', () => {
       for (let i = 0; i < receiveActions.length; i++) {
         action = _.cloneDeep(genericAction);
@@ -160,10 +160,10 @@ describe('reducers', () => {
   });
 
   describe('matlabStatus', () => {
-   
+
     it('should return matlab status for actions defined in receiveActions', () => {
       for (let i = 0; i < receiveActions.length; i++) {
-        
+
         action = _.cloneDeep(genericAction);
         action.type = receiveActions[i];
 
@@ -174,16 +174,16 @@ describe('reducers', () => {
     });
 
     it('should return matlab status down as default', () => {
-       action = _.cloneDeep(genericAction); 
+       action = _.cloneDeep(genericAction);
       expect(reducers.matlabStatus(undefined, action)).toEqual('down');
     });
   });
 
   describe('matlabVersion', () => {
 
-    
+
     it('should return matlab version for action type defined in receiveActions', () => {
-      for (let i = 0; i < receiveActions.length; i++) {        
+      for (let i = 0; i < receiveActions.length; i++) {
         action = _.cloneDeep(genericAction);
         action.type = receiveActions[i];
         expect(reducers.matlabVersion(undefined, action)).toBe(
@@ -199,7 +199,7 @@ describe('reducers', () => {
   });
 
   describe('wsEnv', () => {
-    
+
     it('should return wsEnv value for action type defined in receiveActions', () => {
       for (let i = 0; i < receiveActions.length; i++) {
         action = _.cloneDeep(genericAction);
@@ -208,8 +208,8 @@ describe('reducers', () => {
           action.status.wsEnv
         );
       }
-    });    
-    
+    });
+
     it('should return null by default', () => {
       action = _.cloneDeep(genericAction);
       action.type = actions.REQUEST_SERVER_STATUS;
@@ -220,7 +220,7 @@ describe('reducers', () => {
 
 
   describe('isFetching', () => {
-   
+
     it('should return True for actions in requestActions and False for receiveActions', () => {
       for (let i = 0; i < requestActions.length; i++) {
         action = _.cloneDeep(genericAction);
@@ -229,7 +229,7 @@ describe('reducers', () => {
 
 
         action = _.cloneDeep(genericAction);
-        action.type = receiveActions[i];        
+        action.type = receiveActions[i];
         expect(reducers.isFetching(undefined, action)).toBe(false);
       }
     });
@@ -248,15 +248,15 @@ describe('reducers', () => {
   });
 
   describe('hasFetched', () => {
-    
+
     it('should return true for actions defined in receiveActions', () => {
       for (let i = 0; i < receiveActions.length; i++) {
         action = _.cloneDeep(genericAction);
         action.type = receiveActions[i];
         expect(reducers.hasFetched(undefined, action)).toBe(true);
       }
-    });  
-    
+    });
+
     it('Check default case', () => {
       action = _.cloneDeep(genericAction);
       expect(reducers.hasFetched(undefined, action)).toBe(false);
@@ -266,10 +266,10 @@ describe('reducers', () => {
 
   describe('isSubmitting', () => {
 
-  
+
     it('should return true for action types in requestActions except REQUEST_SERVER_STATUS and false for action types in receiveActions', () => {
       for (let i = 0; i < requestActions.length; i++) {
-        
+
         action = _.cloneDeep(genericAction);
         action.type = requestActions[i];
 
@@ -293,10 +293,10 @@ describe('reducers', () => {
   });
 
   describe('fetchAbortController', () => {
-  
+
     it('should return a AbortController object defined within the action object', () => {
       for (let i = 0; i < requestActions.length; i++) {
-        action = _.cloneDeep(genericAction);        
+        action = _.cloneDeep(genericAction);
         action.type = requestActions[i];
         expect(reducers.fetchAbortController(undefined, action)).toStrictEqual(
           action.fetchAbortController
@@ -313,10 +313,10 @@ describe('reducers', () => {
   });
 
   describe('fetchFailCount', () => {
-    
+
     it('should maintain state value at 0 for action types in receiveActions', () => {
       for (let i = 0; i < receiveActions.length; i++) {
-        action = _.cloneDeep(genericAction);        
+        action = _.cloneDeep(genericAction);
         action.type = receiveActions[i];
         expect(reducers.fetchFailCount(0, action)).toEqual(0);
       }
@@ -324,7 +324,7 @@ describe('reducers', () => {
 
     // For action type : RECEIVE_ERROR increment failcount.
     it('should increment state value when action type : RECEIVE_ERROR', () => {
-      action = _.cloneDeep(genericAction);        
+      action = _.cloneDeep(genericAction);
       action.type = actions.RECEIVE_ERROR;
       let state = 0;
       expect(reducers.fetchFailCount(state, action)).toEqual(state + 1);
@@ -339,7 +339,7 @@ describe('reducers', () => {
   });
 
   describe('loadUrl', () => {
-    
+
     it('should by default return null', () => {
       action = _.cloneDeep(genericAction);
       expect(reducers.loadUrl(undefined, action)).toBeNull();
@@ -354,7 +354,7 @@ describe('reducers', () => {
 
   describe('error', () => {
     it('should return an object with message and logs as properties', () => {
-      action = _.cloneDeep(genericAction);        
+      action = _.cloneDeep(genericAction);
       action.type = actions.RECEIVE_ERROR
       expect(reducers.error(undefined, action)).toMatchObject({
         message: action.error,
@@ -370,12 +370,12 @@ describe('reducers', () => {
 
     it('should return an error object containing (message, logs and type of error) if there is an error else return null', () => {
       for (let i = 0; i < receiveActions.length; i++) {
-        action = _.cloneDeep(genericAction);        
-        action.type = receiveActions[i];     
+        action = _.cloneDeep(genericAction);
+        action.type = receiveActions[i];
         action.status.error = null;
         expect(reducers.error(undefined, action)).toBeNull();
 
-        action = _.cloneDeep(genericAction);     
+        action = _.cloneDeep(genericAction);
 
         action.type = receiveActions[i];
         action.status.error = statusError;
