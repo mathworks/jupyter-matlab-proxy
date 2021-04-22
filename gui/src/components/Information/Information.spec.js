@@ -1,3 +1,5 @@
+// Copyright 2021 The MathWorks, Inc.
+
 import React from 'react';
 import Information from './index';
 import App from '../App';
@@ -8,7 +10,7 @@ describe('Information Component', () => {
   beforeEach(() => {
     children = (
       <div data-testid="child">
-        Child1       
+        Child1
       </div>
     );
     closeHandler = jest.fn().mockImplementation(() => {});
@@ -61,7 +63,7 @@ describe('Information Component', () => {
       <Information closeHandler={closeHandler} children={children} />
     );
 
-    expect(getByTestId('child')).toBeInTheDocument();    
+    expect(getByTestId('child')).toBeInTheDocument();
   });
 
   it('should render Online Licensing info with licensing type MHLM', () => {
@@ -122,21 +124,21 @@ describe('Information Component', () => {
 
   //   const closeBtn = container.getElementsByClassName('close').item(0);
 
-  //   fireEvent.click(closeBtn);    
+  //   fireEvent.click(closeBtn);
   // });
 
 
   it('should close the Information Component and display the overlayTrigger when close button is clicked', () => {
-    
-    // Hide the tutorial and make the overlay visible.     
+
+    // Hide the tutorial and make the overlay visible.
     initialState.tutorialHidden = true;
     initialState.overlayVisibility = true;
-    
+
     //Rendering the App component with the above changes to the initial
     // state should render the Information Component.
     const { getByTestId, debug, container } = render(<App />, {
       initialState: initialState,
-    });  
+    });
 
     const informationComponent = container.querySelector('#information');
 

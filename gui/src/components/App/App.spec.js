@@ -1,4 +1,4 @@
-// Copyright 2020 The MathWorks, Inc.
+// Copyright 2020-2021 The MathWorks, Inc.
 
 import React from 'react';
 import { render, fireEvent, within } from '../../test/utils/react-test';
@@ -62,7 +62,7 @@ describe('App Component', () => {
   });
 
   it('should render LicensingGatherer component within the App component when no licensing is provided', () => {
-    
+
     //Set lincensingInfo to empty object.
     initialState.serverStatus.licensingInfo = {};
     initialState.overlayVisibility = true;
@@ -70,7 +70,7 @@ describe('App Component', () => {
     const { getByRole } = render(<App />, {
       initialState: initialState,
     });
-    
+
     const licensingGathererComponent = getByRole(
       'document'
     );
@@ -78,16 +78,16 @@ describe('App Component', () => {
   });
 
   it('should render Information Component within App Component after licensing is provided', () => {
-    
-    // Hide the tutorial and make the overlay visible.     
+
+    // Hide the tutorial and make the overlay visible.
     initialState.tutorialHidden = true;
     initialState.overlayVisibility = true;
-    
+
     //Rendering the App component with the above changes to the initial
     // state should render the Information Component.
     const { getByRole } = render(<App />, {
       initialState: initialState,
-    });    
+    });
 
     const informationComponent = getByRole('document');
     expect(informationComponent).toBeInTheDocument();
@@ -105,11 +105,11 @@ describe('App Component', () => {
     const { container } = render(<App />, {
       initialState: initialState,
     });
-    
+
 
     const paragraphElements = [...container.getElementsByTagName('p')];
 
-    
+
     expect(
       paragraphElements.some((p) =>
         p.textContent.includes('integration terminated')
@@ -172,14 +172,14 @@ describe('App Component', () => {
     const {  getByTestId, container, getByRole } = render(<App />, {
       initialState: initialState,
     });
-  
+
 
     // Grab the help button and click it.
     const helpBtn = getByTestId('helpBtn');
     fireEvent.click(helpBtn);
 
     const helpElement = container.querySelector('#confirmation-dialog-title');
-    
+
     expect(helpElement.textContent).toMatch('Help');
   });
 
@@ -187,7 +187,7 @@ describe('App Component', () => {
     initialState.loadUrl = 'http://localhost.com:5555';
     const hrefMock = jest.fn();
     delete window.location;
-    
+
     window.location = {href : hrefMock}
     const { debug } = render(<App />, { initialState: initialState });
 

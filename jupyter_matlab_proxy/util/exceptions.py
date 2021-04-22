@@ -1,4 +1,5 @@
-# Copyright 2020 The MathWorks, Inc.
+# Copyright 2020-2021 The MathWorks, Inc.
+
 
 class AppError(Exception):
     def __init__(self, message, logs=None, stacktrace=None):

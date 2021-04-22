@@ -1,4 +1,4 @@
-// Copyright 2020 The MathWorks, Inc.
+// Copyright 2020-2021 The MathWorks, Inc.
 
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
@@ -14,17 +14,17 @@ const mockStore = configureMockStore(middlewares);
 describe.each([
   [actionCreators.setTutorialHidden, [true], {type:actions.SET_TUTORIAL_HIDDEN, hidden:true}],
   [actionCreators.setTutorialHidden, [false],  {type:actions.SET_TUTORIAL_HIDDEN, hidden:false}],
-  [actionCreators.setOverlayVisibility, [true],  {type:actions.SET_OVERLAY_VISIBILITY, visibility:true}],  
+  [actionCreators.setOverlayVisibility, [true],  {type:actions.SET_OVERLAY_VISIBILITY, visibility:true}],
   [actionCreators.setOverlayVisibility, [false],  {type:actions.SET_OVERLAY_VISIBILITY, visibility:false}],
   [actionCreators.setTriggerPosition, [12,12],  {type:actions.SET_TRIGGER_POSITION, x:12, y:12}],
   [actionCreators.setTriggerPosition, [52,112],  {type:actions.SET_TRIGGER_POSITION, x:52, y:112}],
   ])('Test Set actionCreators', (method, input, expectedAction) => {
     test(`check if an action of type  ${expectedAction.type} is returned when method actionCreator.${method.name}() is called`, () => {
-        expect(method(...input)).toEqual(expectedAction);        
+        expect(method(...input)).toEqual(expectedAction);
     });
-  }); 
+  });
 
-  
+
   describe.each([
   [actionCreators.requestServerStatus, {type:actions.REQUEST_SERVER_STATUS, fetchAbortController:new AbortController()}],
   [actionCreators.requestSetLicensing, {type:actions.REQUEST_SET_LICENSING, fetchAbortController:new AbortController()}],
@@ -40,24 +40,24 @@ describe.each([
 
     test(`check if an action of type  ${expectedAction.type} is returned with an AbortController when method actionCreator.${method.name}() is called`, () => {
         expect(method(abortController)).toEqual(expectedAction);
-        
-    });
-  });  
 
-  
+    });
+  });
+
+
   describe.each([
   [actionCreators.receiveSetLicensing, {type: 'MHLM'}, {type:actions.RECEIVE_SET_LICENSING, status:{type:'MHLM'}}],
   [actionCreators.receiveStopMatlab,{matlabStatus:'down'}, {type:actions.RECEIVE_STOP_MATLAB, status:{matlabStatus:'down'}}],
   [actionCreators.receiveStartMatlab,{matlabStatus:'up'}, {type:actions.RECEIVE_START_MATLAB, status:{matlabStatus:'up'}}],
-  [actionCreators.receiveError, {message:'ERROR: License Manager Error -9', logs: null}, {type:actions.RECEIVE_ERROR, error: {message:'ERROR: License Manager Error -9', logs: null}}],  
+  [actionCreators.receiveError, {message:'ERROR: License Manager Error -9', logs: null}, {type:actions.RECEIVE_ERROR, error: {message:'ERROR: License Manager Error -9', logs: null}}],
   [actionCreators.receiveTerminateIntegration,{licensing:{}}, {type:actions.RECEIVE_TERMINATE_INTEGRATION, status:{licensing:{}}, loadUrl:'../'}],
   ])('Test Receive actionCreators', (method, input, expectedAction) => {
 
     test(`check if an action of type  ${expectedAction.type} is returned when method actionCreator.${method.name}() is called`, () => {
         expect(method(input)).toEqual(expectedAction);
-        
+
     });
-  });  
+  });
 
 
 

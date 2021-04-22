@@ -1,4 +1,4 @@
-% Copyright 2020 The MathWorks, Inc.
+% Copyright 2020-2021 The MathWorks, Inc.
 
 % Configure logged in user if possible
 first_name = getenv('MW_LOGIN_FIRST_NAME');

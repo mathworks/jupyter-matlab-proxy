@@ -1,4 +1,4 @@
-# Copyright 2020 The MathWorks, Inc.
+# Copyright 2020-2021 The MathWorks, Inc.
 
 import xml.etree.ElementTree as ET
 import aiohttp
@@ -20,13 +20,15 @@ async def fetch_entitlements(mhlm_api_endpoint, access_token, matlab_release):
         async with client_session.post(
             mhlm_api_endpoint,
             headers={"content-type": "application/x-www-form-urlencoded"},
-            data=aiohttp.FormData({
-                "token": access_token,
-                "release": matlab_release,
-                "coreProduct": "ML",
-                "context": "jupyter",
-                "excludeExpired": "true",
-            }),
+            data=aiohttp.FormData(
+                {
+                    "token": access_token,
+                    "release": matlab_release,
+                    "coreProduct": "ML",
+                    "context": "jupyter",
+                    "excludeExpired": "true",
+                }
+            ),
         ) as res:
 
             if res.reason != "OK":
@@ -64,11 +66,13 @@ async def fetch_expand_token(mwa_api_endpoint, identity_token, source_id):
                 "accept": "application/json",
                 "X_MW_WS_callerId": "desktop-jupyter",
             },
-            data=aiohttp.FormData({
-                "tokenString": identity_token,
-                "tokenPolicyName": "R1",
-                "sourceId": source_id,
-            }),
+            data=aiohttp.FormData(
+                {
+                    "tokenString": identity_token,
+                    "tokenPolicyName": "R1",
+                    "sourceId": source_id,
+                }
+            ),
         ) as res:
 
             if res.reason != "OK":
@@ -98,11 +102,13 @@ async def fetch_access_token(mwa_api_endpoint, identity_token, source_id):
                 "accept": "application/json",
                 "X_MW_WS_callerId": "desktop-jupyter",
             },
-            data=aiohttp.FormData({
-                "tokenString": identity_token,
-                "type": "MWAS",
-                "sourceId": source_id,
-            }),
+            data=aiohttp.FormData(
+                {
+                    "tokenString": identity_token,
+                    "type": "MWAS",
+                    "sourceId": source_id,
+                }
+            ),
         ) as res:
 
             if res.reason != "OK":
@@ -118,7 +124,7 @@ async def fetch_access_token(mwa_api_endpoint, identity_token, source_id):
 
 
 def range_matlab_connector_ports():
-    """ Generator of acceptable ports for MATLAB Connector.
+    """Generator of acceptable ports for MATLAB Connector.
 
     Allowed ports conform to the regex: [3,6]1[5-9][1-9][1-9]
     """
@@ -171,5 +177,5 @@ def parse_mhlm_error(logs):
 def parse_other_error(logs):
     return MatlabError(
         "MATLAB returned an unexpected error. For more details, see the log below.",
-        logs=logs
+        logs=logs,
     )

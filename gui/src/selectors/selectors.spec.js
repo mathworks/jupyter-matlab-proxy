@@ -1,4 +1,4 @@
-// Copyright 2020 The MathWorks, Inc.
+// Copyright 2020-2021 The MathWorks, Inc.
 
 import * as selectors from './index';
 const _ = require('lodash');
@@ -29,21 +29,21 @@ describe('selectors', () => {
     };
 
     const { tutorialHidden,
-            serverStatus, 
-            loadUrl, 
-            error 
+            serverStatus,
+            loadUrl,
+            error
           } = state;
 
-    const { matlabVersion, 
-            isSubmitting, 
-            hasFetched, 
-            licensingInfo, 
+    const { matlabVersion,
+            isSubmitting,
+            hasFetched,
+            licensingInfo,
             fetchFailCount,
             matlabStatus,
             fetchAbortController,
           } = state.serverStatus;
 
- 
+
   const {
     selectTutorialHidden,
     selectServerStatus,
@@ -76,7 +76,7 @@ describe('selectors', () => {
   //   // modifiedState = JSON.parse(JSON.stringify(state));
   //   // modifiedState.triggerPosition = null;
   // });
- 
+
 
   describe.each([
    [selectTutorialHidden, tutorialHidden],
@@ -90,7 +90,7 @@ describe('selectors', () => {
    [selectLicensingInfo, licensingInfo],
    [selectServerStatusFetchFailCount, fetchFailCount],
    [getFetchAbortController, fetchAbortController]
-  ]) 
+  ])
     ('Test simple selectors',
       (selector, expected) => {
         test(`Check if ${selector.name} selects piece of state`, () => {
@@ -101,12 +101,12 @@ describe('selectors', () => {
 
 
 
-    
+
 describe('Test derived selectors', () => {
 
   test('selectTriggerPosition return position for valid trigger position', () => {
-    expect(selectTriggerPosition(state)).toEqual(state.triggerPosition); 
-    
+    expect(selectTriggerPosition(state)).toEqual(state.triggerPosition);
+
     modifiedState = _.cloneDeep(state);
     modifiedState.triggerPosition = null;
 
@@ -121,14 +121,14 @@ describe('Test derived selectors', () => {
   });
 
   test('selectIsError should return false when no error', () => {
-    expect(selectIsError(state)).toBe(false);    
+    expect(selectIsError(state)).toBe(false);
   });
 
   test('selectIsError should return true when  error', () => {
     modifiedState = _.cloneDeep(state);
     modifiedState.error = { };
 
-    expect(selectIsError(modifiedState)).toBe(true);    
+    expect(selectIsError(modifiedState)).toBe(true);
   });
 
   test('selectIsConnectionError should return false when fetch fail count is < 5', () => {
@@ -136,7 +136,7 @@ describe('Test derived selectors', () => {
   })
 
   test('selectIsConnectionError should return true when fetch fail count is >= 5', () => {
-      
+
     modifiedState = _.cloneDeep(state);
     modifiedState.serverStatus.fetchFailCount = 10;
     expect(selectIsConnectionError(modifiedState)).toBe(true);
@@ -147,7 +147,7 @@ describe('Test derived selectors', () => {
   });
 
   test('selectMatlabUp should false when Matlab status is not up', () => {
-      
+
     modifiedState = _.cloneDeep(state);
     modifiedState.serverStatus.matlabStatus = 'down';
     expect(selectMatlabUp(modifiedState)).toBe(false);
@@ -162,12 +162,12 @@ describe('Test derived selectors', () => {
   });
 
   test('selectMatlabRunning should false when Matlab status is not up or starting', () => {
-      
+
     modifiedState = _.cloneDeep(state);
     modifiedState.serverStatus.matlabStatus = 'down';
     expect(selectMatlabRunning(modifiedState)).toBe(false);
   });
-  
+
   test('selectOverlayHidable should return true when matlab is up and there is no error ', () => {
     expect(selectOverlayHidable(state)).toBe(true);
   });
@@ -200,12 +200,12 @@ describe('Test derived selectors', () => {
     modifiedState.error = {};
     expect(selectOverlayVisibility(modifiedState)).toBe(true);
   });
- 
+
   test('selectOverlayVisibility should return false when matlab is up and visibility is false and there is no error ', () => {
-    //Should return false matlab is up and overlayVisibility is false and there is an error 
+    //Should return false matlab is up and overlayVisibility is false and there is an error
     modifiedState = _.cloneDeep(state);
     modifiedState.overlayVisibility = false;
-    expect(selectOverlayVisibility(modifiedState)).toBe(false);    
+    expect(selectOverlayVisibility(modifiedState)).toBe(false);
   });
 
   test('selectFetchStatusPeriod should return null if submitting to server', () => {
@@ -229,7 +229,7 @@ describe('Test derived selectors', () => {
       modifiedState.serverStatus.isSubmitting = false;
       modifiedState.serverStatus.matlabStatus = input;
 
-      expect(selectFetchStatusPeriod(modifiedState)).toBe(5000);      
+      expect(selectFetchStatusPeriod(modifiedState)).toBe(5000);
     }
   );
 
@@ -245,13 +245,13 @@ describe('Test derived selectors', () => {
   test('selectLicensingIsMhlm should return true is licensing is of type MHLM', () => {
      expect(selectLicensingIsMhlm(state)).toBe(true);
   });
-  
+
 
   test('selectLicensingIsMhlm should return false is licensing is not of type MHLM', () => {
     modifiedState = _.cloneDeep(state);
-    delete modifiedState.serverStatus.licensingInfo.type; 
+    delete modifiedState.serverStatus.licensingInfo.type;
     expect(selectLicensingIsMhlm(modifiedState)).toBe(false);
-    
+
     modifiedState = _.cloneDeep(state);
     modifiedState.serverStatus.licensingInfo.type = "NLM";
     expect(selectLicensingIsMhlm(modifiedState)).toBe(false);
@@ -261,7 +261,7 @@ describe('Test derived selectors', () => {
   test('selectLicensingMhlmUsername should return the email address if licensing is of type MHLM', () => {
     expect(selectLicensingMhlmUsername(state)).toBe(state.serverStatus.licensingInfo.emailAddress)
   });
-  
+
 
   test('selectLicensingMhlmUsername should return empty string if licensing is not of type MHLM', () => {
     modifiedState = _.cloneDeep(state);
@@ -278,13 +278,13 @@ describe('Test derived selectors', () => {
   });
 
   test('selectOverlayVisible should return true if selectOverlayVisibility is true or if there is any error', () => {
-    // When overlay is visible and no error  
+    // When overlay is visible and no error
     expect(selectOverlayVisible(state)).toBe(true);
 
-      modifiedState = _.cloneDeep(state);      
+      modifiedState = _.cloneDeep(state);
       modifiedState.overlayVisibility = false;
       modifiedState.error = {}
-      
+
       // when overlay is not visible and error is not null
       expect(selectOverlayVisibility(modifiedState)).toBe(true);
 
@@ -301,7 +301,7 @@ describe('Test derived selectors', () => {
   });
 
   test('For any other MatlabStatus  selectInformationDetails should throw an error', () => {
-    modifiedState = _.cloneDeep(state);    
+    modifiedState = _.cloneDeep(state);
     modifiedState.serverStatus.matlabStatus = 'defaultCase';
 
     expect(() => selectInformationDetails(modifiedState)).toThrow(Error);
@@ -312,7 +312,7 @@ describe('Test derived selectors', () => {
     modifiedState.error = {};
     modifiedState.serverStatus.matlabStatus = 'down';
 
-    expect(selectInformationDetails(modifiedState).icon.toLowerCase()).toContain('error');    
+    expect(selectInformationDetails(modifiedState).icon.toLowerCase()).toContain('error');
   })
 
   describe.each([

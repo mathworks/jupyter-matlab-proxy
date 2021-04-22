@@ -1,4 +1,4 @@
-# Copyright 2020 The MathWorks, Inc.
+# Copyright 2020-2021 The MathWorks, Inc.
 
 import os
 import sys
@@ -21,8 +21,6 @@ mimetypes.add_type("font/ttf", ".ttf")
 mimetypes.add_type("application/json", ".map")
 mimetypes.add_type("image/png", ".ico")
 
-    
-    
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("MATLABProxyApp")

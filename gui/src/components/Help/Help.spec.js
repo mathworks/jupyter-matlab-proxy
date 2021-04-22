@@ -1,3 +1,5 @@
+// Copyright 2021 The MathWorks, Inc.
+
 import React from 'react';
 import App from '../App'
 import Help from './index';
@@ -50,19 +52,19 @@ describe('Help Component', () => {
 
     expect(closeHandler).toHaveBeenCalledTimes(1);
   });
-  
+
 
   it('should close the Help Modal and display Information component when Back button is clicked', () => {
-    
-    // Hide the tutorial and make the overlay visible.     
+
+    // Hide the tutorial and make the overlay visible.
     initialState.tutorialHidden = true;
     initialState.overlayVisibility = true;
-    
+
     //Rendering the App component with the above changes to the initial
     // state should render the Information Component.
     const { getByTestId, container } = render(<App />, {
       initialState: initialState,
-    });  
+    });
 
 
     // Grab and click on the Help Button
@@ -73,7 +75,7 @@ describe('Help Component', () => {
 
     // Check if Help dialog is rendered.
     expect(helpComponent).toBeInTheDocument();
-    
+
     // Grab and click on the Back button in the help Component.
     const backButton =  getByTestId('backBtn');
     fireEvent.click(backButton);

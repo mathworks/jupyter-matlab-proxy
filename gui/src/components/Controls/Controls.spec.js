@@ -1,3 +1,5 @@
+// Copyright 2021 The MathWorks, Inc.
+
 import React from 'react';
 import Controls from './index';
 import App from '../App'
@@ -94,13 +96,13 @@ describe('Controls Component', () => {
 
   it('should restart matlab upon clicking the Start/Restart Matlab button', () => {
 
-    //Hide the tutorial and make the overlay visible.     
+    //Hide the tutorial and make the overlay visible.
     initialState.tutorialHidden = true;
     initialState.overlayVisibility = true;
 
     const { getByTestId, container } = render(<App />, {
       initialState: initialState,
-    }); 
+    });
 
     const startMatlabButton = getByTestId('startMatlabBtn');
     fireEvent.click(startMatlabButton);
@@ -110,8 +112,8 @@ describe('Controls Component', () => {
     const confirmButton = getByTestId('confirmButton');
     fireEvent.click(confirmButton);
 
-    let tableData = container.querySelector('.details');    
-    expect(tableData.innerHTML).toMatch('Running');    
+    let tableData = container.querySelector('.details');
+    expect(tableData.innerHTML).toMatch('Running');
   });
 
 });

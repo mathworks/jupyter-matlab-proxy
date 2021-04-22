@@ -1,3 +1,5 @@
+// Copyright 2021 The MathWorks, Inc.
+
 import React from 'react';
 import Confirmation from './index';
 import App from '../App'
@@ -8,7 +10,7 @@ describe('Confirmation Component', () => {
   beforeAll(() => {
     children = (
       <div data-testid="wrapperNode">
-        <div data-testid="childNode"></div>        
+        <div data-testid="childNode"></div>
       </div>
     );
     confirmMock = jest.fn().mockImplementation(() => {});
@@ -88,27 +90,27 @@ describe('Confirmation Component', () => {
     'Test to check if confirmation component disappears when %s is clicked',
     (input) => {
 
-  // Hide the tutorial and make the overlay visible.     
+  // Hide the tutorial and make the overlay visible.
     initialState.tutorialHidden = true;
     initialState.overlayVisibility = true;
 
     const { debug, getByTestId, container } = render(<App />, {
       initialState: initialState,
-    }); 
-    
+    });
+
     let startMatlabButton = getByTestId('startMatlabBtn');
     fireEvent.click(startMatlabButton);
 
     // Upon clicking on start/restart MATLAB, should display the confirmation component.
-    expect(container.querySelector('#confirmation')).toBeInTheDocument();  
+    expect(container.querySelector('#confirmation')).toBeInTheDocument();
 
     const btn = getByTestId(input);
     fireEvent.click(btn);
 
     // Upon clicking the input button, should return to rendering the Information Component
     // and close the confirmation component
-    expect(container.querySelector('#confirmation')).not.toBeInTheDocument();        
-    }    
+    expect(container.querySelector('#confirmation')).not.toBeInTheDocument();
+    }
   );
 
 });
