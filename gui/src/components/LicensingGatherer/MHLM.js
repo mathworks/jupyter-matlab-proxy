@@ -80,10 +80,10 @@ function MHLM() {
     );
 
     // Create random sourceId string
-    const sourceId = (
+    const sourceId = useState(
         Math.random().toString(36).substring(2, 15)
         + Math.random().toString(36).substring(2, 15)
-    );
+    )[0];
 
     useEffect(() => {
 
