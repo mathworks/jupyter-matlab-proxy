@@ -1,6 +1,6 @@
 # Copyright 2021 The MathWorks, Inc.
 
-import pytest, asyncio, secrets, datetime, random, json
+import pytest, asyncio, secrets, datetime, random, json, re
 from unittest.mock import patch
 from jupyter_matlab_proxy import app
 from jupyter_matlab_proxy.util import mw
@@ -22,13 +22,14 @@ def mwa_api_data_fixture():
     The namedtuple contains values required for MW authentication
 
     Returns:
-        namedtuple: A named tuple containing mwa, mhlm end-point URLs, source_id, identity_token, access_token and matlab_release.
+        namedtuple: A named tuple containing mwa, mhlm end-point URLs (with regex patterns), source_id, identity_token, access_token and matlab_release.
     """
 
     mwa_api_endpoint = "https://login.mathworks.com/authenticationws/service/v4"
-    mhlm_api_endpoint = (
-        "https://licensing.mathworks.com/mls/service/v1/entitlement/list",
-    )
+    mwa_api_endpoint_pattern = re.compile("^" + mwa_api_endpoint)
+    mhlm_api_endpoint = "https://licensing.mathworks.com/mls/service/v1/entitlement/list"
+    mhlm_api_endpoint_pattern = re.compile("^" + mhlm_api_endpoint)
+
     identity_token = secrets.token_urlsafe(324)
     source_id = secrets.token_urlsafe(21)
     access_token = secrets.token_urlsafe(22)
@@ -38,7 +39,9 @@ def mwa_api_data_fixture():
         "mwa_api_variables",
         [
             "mwa_api_endpoint",
+            "mwa_api_endpoint_pattern",
             "mhlm_api_endpoint",
+            "mhlm_api_endpoint_pattern",
             "identity_token",
             "source_id",
             "access_token",
@@ -48,7 +51,9 @@ def mwa_api_data_fixture():
 
     variables = mwa_api_variables(
         mwa_api_endpoint,
+        mwa_api_endpoint_pattern,
         mhlm_api_endpoint,
+        mhlm_api_endpoint_pattern,
         identity_token,
         source_id,
         access_token,
@@ -118,9 +123,7 @@ def mock_aiohttp_client_session():
         yield m
 
 
-async def test_fetch_access_token(
-    mwa_api_data, fetch_access_token_valid_json, mock_response
-):
+async def test_fetch_access_token(mwa_api_data, fetch_access_token_valid_json, mock_response):
     """Test to check mw.fetch_access_token method returns valid json response.
 
     The mock_response fixture mocks the aiohttp.ClientSession().post() method to return a custom HTTP response.
@@ -131,11 +134,10 @@ async def test_fetch_access_token(
         mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
     """
     json_data = fetch_access_token_valid_json
-
-    url = f"{mwa_api_data.mwa_api_endpoint}/tokens/access?tokenString={mwa_api_data.identity_token}&type=MWAS&sourceId={mwa_api_data.source_id}"
     payload = dict(accessTokenString=json_data["accessTokenString"])
 
-    mock_response.post(url, payload=payload)
+    url_pattern = mwa_api_data.mwa_api_endpoint_pattern
+    mock_response.post(url_pattern, payload=payload)
 
     resp = await mw.fetch_access_token(
         mwa_api_data.mwa_api_endpoint,
@@ -155,10 +157,10 @@ async def test_fetch_access_token_licensing_error(mwa_api_data, mock_response):
         mwa_api_data (namedtuple): A pytest fixture which returns a namedtuple containing values for MW authentication
     """
 
-    url = f"{mwa_api_data.mwa_api_endpoint}/tokens/access?tokenString={mwa_api_data.identity_token}&type=MWAS&sourceId={mwa_api_data.source_id}"
+    url_pattern = mwa_api_data.mwa_api_endpoint_pattern
 
     mock_response.post(
-        url, exception=exceptions.OnlineLicensingError("Communication failed")
+        url_pattern, exception=exceptions.OnlineLicensingError("Communication failed")
     )
 
     with pytest.raises(exceptions.OnlineLicensingError):
@@ -176,11 +178,13 @@ async def test_fetch_expand_token_licensing_error(mock_response, mwa_api_data):
         mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
         mwa_api_data (namedtuple): A pytest fixture which returns a namedtuple containing values for MW authentication
     """
-    url = f"{mwa_api_data.mwa_api_endpoint}/tokens?tokenString={mwa_api_data.identity_token}&tokenPolicyName=R1&sourceId={mwa_api_data.source_id}"
+
+    url_pattern = mwa_api_data.mwa_api_endpoint_pattern
 
     mock_response.post(
-        url, exception=exceptions.OnlineLicensingError("Communication failed")
+        url_pattern, exception=exceptions.OnlineLicensingError("Communication failed")
     )
+
     with pytest.raises(exceptions.OnlineLicensingError):
         resp = await mw.fetch_expand_token(
             mwa_api_data.mwa_api_endpoint,
@@ -220,9 +224,7 @@ def fetch_expand_token_valid_json_fixture():
     return json_data
 
 
-async def test_fetch_expand_token(
-    mock_response, fetch_expand_token_valid_json, mwa_api_data
-):
+async def test_fetch_expand_token(mock_response, fetch_expand_token_valid_json, mwa_api_data):
     """Test to check if mw.fetch_expand_token returns a correct json response
 
     mock_response is used to mock ClientSession.post method to return a HTTP Response containing a valid json response.
@@ -232,7 +234,8 @@ async def test_fetch_expand_token(
         mwa_api_data (namedtuple): A namedtuple which contains info related to mwa.
     """
     json_data = fetch_expand_token_valid_json
-    url = f"{mwa_api_data.mwa_api_endpoint}/tokens?tokenString={mwa_api_data.identity_token}&tokenPolicyName=R1&sourceId={mwa_api_data.source_id}"
+
+    url_pattern = mwa_api_data.mwa_api_endpoint_pattern
 
     referenceDetail = dict(
         firstName=json_data["referenceDetail"]["firstName"],
@@ -242,11 +245,9 @@ async def test_fetch_expand_token(
         referenceId=json_data["referenceDetail"]["referenceId"],
     )
 
-    payload = dict(
-        expirationDate=json_data["expirationDate"], referenceDetail=referenceDetail
-    )
+    payload = dict(expirationDate=json_data["expirationDate"], referenceDetail=referenceDetail)
 
-    mock_response.post(url, payload=payload)
+    mock_response.post(url_pattern, payload=payload)
 
     resp = await mw.fetch_expand_token(
         mwa_api_data.mwa_api_endpoint,
@@ -266,10 +267,10 @@ async def test_fetch_entitlements_licensing_error(mock_response, mwa_api_data):
         mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
         mwa_api_data (namedtuple): A namedtuple which contains info related to mwa.
     """
-    url = f"{mwa_api_data.mhlm_api_endpoint}?token={mwa_api_data.access_token}&release={mwa_api_data.matlab_release}&coreProduct=ML&context=jupyter&excludeExpired=true"
+    url_pattern = mwa_api_data.mhlm_api_endpoint_pattern
 
     mock_response.post(
-        url, exception=exceptions.OnlineLicensingError("Communication Error")
+        url_pattern, exception=exceptions.OnlineLicensingError("Communication Error")
     )
 
     with pytest.raises(exceptions.OnlineLicensingError):
@@ -325,9 +326,9 @@ async def test_fetch_entitlements_entitlement_error(
         mwa_api_data (namedtuple): A namedtuple which contains info related to mwa.
         invalid_entitlements (String): String containing invalid entitlements
     """
-    url = f"{mwa_api_data.mhlm_api_endpoint}?token={mwa_api_data.access_token}&release={mwa_api_data.matlab_release}&coreProduct=ML&context=jupyter&excludeExpired=true"
+    url_pattern = mwa_api_data.mhlm_api_endpoint_pattern
 
-    mock_response.post(url, body=invalid_entitlements)
+    mock_response.post(url_pattern, body=invalid_entitlements)
 
     with pytest.raises(exceptions.EntitlementError):
         resp = await mw.fetch_entitlements(
@@ -371,9 +372,9 @@ async def test_fetch_entitlements(mock_response, mwa_api_data, valid_entitlement
         valid_entitlements (String): String containing valid entitlements as a response.
     """
 
-    url = f"{mwa_api_data.mhlm_api_endpoint}?token={mwa_api_data.access_token}&release={mwa_api_data.matlab_release}&coreProduct=ML&context=jupyter&excludeExpired=true"
+    url_pattern = mwa_api_data.mhlm_api_endpoint_pattern
 
-    mock_response.post(url, body=valid_entitlements)
+    mock_response.post(url_pattern, body=valid_entitlements)
 
     resp = await mw.fetch_entitlements(
         mwa_api_data.mhlm_api_endpoint,
@@ -447,3 +448,14 @@ def test_parse_other_error():
     actual_output = mw.parse_other_error(logs)
 
     assert isinstance(actual_output, expected_output)
+
+
+def test_range_matlab_connector_ports():
+    """This test checks if the generator mw.range _matlab_connector_ports()
+    yields consecutive port numbers.
+    """
+    port_range = mw.range_matlab_connector_ports()
+    first_port = next(port_range)
+    second_port = next(port_range)
+
+    assert first_port + 1 == second_port
