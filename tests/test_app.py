@@ -137,34 +137,6 @@ def test_marshal_error(actual_error, expected_error):
     assert app.marshal_error(actual_error) == expected_error
 
 
-class MockServerPort:
-    """A class used for Mocking reserve_port methods
-
-    This class is used for mocking jupnter_matlab_proxy.app_state.AppState.reserve_matlab_port()
-    In dev mode, reserve_matlab_port() will always reserve port 31515, which can cause issues when executing
-    multiple tests together.
-
-    Attributes:
-        matlab_port : A integer indicating the port that is reserved for matlab.
-    """
-
-    def __init__(self):
-        """Initializes MockServerPort class with matlab_port as None"""
-        self.matlab_port = None
-
-    def mock_reserve_port(self):
-        """Reserves a random port made available by the OS and uses it as the matlab port.
-
-        This method mocks the AppState.reserve_matlab_port() method. Acquires a random port made available
-        by the OS and uses it as the matlab port. This will modify the matlab_port attribute defined in AppState.
-        """
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(("", 0))
-        matlab_port = s.getsockname()[1]
-        self.matlab_port = matlab_port
-        s.close()
-
-
 class FakeServer:
     """Context Manager class which returns a web server wrapped by aiohttp_client
     for sending HTTP requests during testing.
@@ -184,12 +156,12 @@ class FakeServer:
 
         self.pretest_dev_processes = set(self.gather_running_dev_processes())
 
-        self.patcher = patch(
-            "jupyter_matlab_proxy.app_state.AppState.reserve_matlab_port",
-            new=MockServerPort.mock_reserve_port,
-        )
+        # self.patcher = patch(
+        #     "jupyter_matlab_proxy.app_state.AppState.reserve_matlab_port",
+        #     new=MockServerPort.mock_reserve_port,
+        # )
 
-        self.patcher.start()
+        # self.patcher.start()
 
         self.server = app.create_app()
         self.runner = web.AppRunner(self.server)
@@ -210,7 +182,7 @@ class FakeServer:
         self.loop.run_until_complete(self.runner.shutdown())
         self.loop.run_until_complete(self.runner.cleanup())
 
-        self.patcher.stop()
+        # self.patcher.stop()
 
         self.posttest_dev_processes = set(self.gather_running_dev_processes())
         self.zombie_dev_processes = (
@@ -239,7 +211,6 @@ class FakeServer:
 def test_server_fixture(
     loop,
     aiohttp_client,
-    mock_settings_get_custom_ready_delay,
 ):
     """A pytest fixture which yields a test server to be used by tests.
 
@@ -265,6 +236,81 @@ async def test_get_status_route(test_server):
 
     resp = await test_server.get("/get_status")
     assert resp.status == 200
+
+
+async def test_start_matlab_route(test_server):
+    """Test to check endpoint : "/start_matlab"
+
+    Test waits for matlab status to be "up" before sending the GET request to start matlab
+    Checks whether matlab restarts.
+
+    Args:
+        test_server (aiohttp_client): A aiohttp_client server to send GET request to.
+    """
+    # Waiting for the matlab process to start up.
+    max_tries = 5
+    count = 0
+    while True:
+        resp = await test_server.get("/get_status")
+        assert resp.status == 200
+
+        resp_json = json.loads(await resp.text())
+        # print(test_server.app["state"].settings)
+        # print(resp)
+        # print(resp_json)
+        # break
+
+        if resp_json["matlab"]["status"] == "up":
+            break
+        else:
+            count += 1
+            await asyncio.sleep(0.5)
+            if count > max_tries:
+                raise ConnectionError
+
+    # Send get request to end point
+    await test_server.put("/start_matlab")
+    resp = await test_server.get("/get_status")
+    assert resp.status == 200
+    resp_json = json.loads(await resp.text())
+
+    # Check if Matlab restarted successfully
+    while True:
+        resp = await test_server.get("/get_status")
+        assert resp.status == 200
+        if resp_json["matlab"]["status"] != "down":
+            break
+        else:
+            await asyncio.sleep(2)
+
+
+async def test_stop_matlab_route(test_server):
+    """Test to check endpoint : "/stop_matlab"
+
+    Sends HTTP DELETE request to stop matlab and checks if matlab status is down.
+    Args:
+        test_server (aiohttp_client): A aiohttp_client server to send HTTP DELETE request.
+    """
+    resp = await test_server.delete("/stop_matlab")
+    assert resp.status == 200
+
+    resp_json = json.loads(await resp.text())
+    assert resp_json["matlab"]["status"] == "down"
+
+
+async def test_root_redirect(test_server):
+    """Test to check endpoint : "/"
+
+    Should throw a 404 error. This will look for index.html in root directory of the project
+    (In non-dev mode, root directory is the package)
+    This file will not be available in the expected location in dev mode.
+
+    Args:
+        test_server (aiohttp_client):  A aiohttp_client server to send HTTP GET request.
+
+    """
+    resp = await test_server.get("/")
+    assert resp.status == 404
 
 
 @pytest.fixture(name="proxy_payload")
@@ -295,6 +341,140 @@ async def test_matlab_proxy_404(proxy_payload, test_server):
         "./1234.html", data=json.dumps(proxy_payload), headers=headers
     )
     assert resp.status == 404
+
+
+async def test_matlab_proxy_http_get_request(proxy_payload, test_server):
+    """Test to check if test_server proxies a HTTP request to fake matlab server and returns
+    the response back
+
+    Args:
+        proxy_payload (Dict): Pytest fixture which returns a Dict representing payload for the HTTP request
+        test_server (aiohttp_client): Test server to send HTTP requests.
+
+    Raises:
+        ConnectionError: If fake matlab server is not reachable from the test server, raises ConnectionError
+    """
+
+    max_tries = 5
+    count = 0
+
+    while True:
+        resp = await test_server.get(
+            "/http_get_request.html", data=json.dumps(proxy_payload)
+        )
+
+        if resp.status == 404:
+            time.sleep(1)
+            count += 1
+
+        else:
+            resp_body = await resp.text()
+            assert json.dumps(proxy_payload) == resp_body
+            break
+
+        if count > max_tries:
+            raise ConnectionError
+
+
+async def test_matlab_proxy_http_put_request(proxy_payload, test_server):
+    """Test to check if test_server proxies a HTTP request to fake matlab server and returns
+    the response back
+
+    Args:
+        proxy_payload (Dict): Pytest fixture which returns a Dict representing payload for the HTTP request
+        test_server (aiohttp_client): Test server to send HTTP requests.
+
+    Raises:
+        ConnectionError: If fake matlab server is not reachable from the test server, raises ConnectionError
+    """
+
+    max_tries = 5
+    count = 0
+
+    while True:
+        resp = await test_server.put(
+            "/http_put_request.html", data=json.dumps(proxy_payload)
+        )
+
+        if resp.status == 404:
+            time.sleep(1)
+            count += 1
+
+        else:
+            resp_body = await resp.text()
+            assert json.dumps(proxy_payload) == resp_body
+            break
+
+        if count > max_tries:
+            raise ConnectionError
+
+
+async def test_matlab_proxy_http_delete_request(proxy_payload, test_server):
+    """Test to check if test_server proxies a HTTP request to fake matlab server and returns
+    the response back
+
+    Args:
+        proxy_payload (Dict): Pytest fixture which returns a Dict representing payload for the HTTP request
+        test_server (aiohttp_client): Test server to send HTTP requests.
+
+    Raises:
+        ConnectionError: If fake matlab server is not reachable from the test server, raises ConnectionError
+    """
+
+    max_tries = 5
+    count = 0
+
+    while True:
+        resp = await test_server.delete(
+            "/http_delete_request.html", data=json.dumps(proxy_payload)
+        )
+
+        if resp.status == 404:
+            time.sleep(1)
+            count += 1
+
+        else:
+            resp_body = await resp.text()
+            assert json.dumps(proxy_payload) == resp_body
+            break
+
+        if count > max_tries:
+            raise ConnectionError
+
+
+async def test_matlab_proxy_http_post_request(proxy_payload, test_server):
+    """Test to check if test_server proxies http post request to fake matlab server.
+    Checks if payload is being modified before proxying.
+    Args:
+        proxy_payload (Dict): Pytest fixture which returns a Dict representing payload for the HTTP Request
+        test_server (aiohttp_client): Test server to send HTTP requests
+
+    Raises:
+        ConnectionError: If unable to proxy to fake matlab server raise Connection error
+    """
+    max_tries = 5
+    count = 0
+
+    while True:
+        resp = await test_server.post(
+            "/http_post_request.html/asdfjkl;/messageservice/json/secure",
+            data=json.dumps(proxy_payload),
+        )
+
+        if resp.status == 404:
+            time.sleep(1)
+            count += 1
+
+        else:
+            resp_body = await resp.text()
+            proxy_payload["messages"]["ClientType"][0]["properties"][
+                "TYPE"
+            ] = "jsd_rmt_tmw"
+            assert json.dumps(proxy_payload) == resp_body
+            break
+
+        if count > max_tries:
+            raise ConnectionError
 
 
 async def test_matlab_proxy_web_socket(test_server):

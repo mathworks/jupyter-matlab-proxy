@@ -294,7 +294,7 @@ class AppState:
         # FIXME Because of https://github.com/http-party/node-http-proxy/issues/1342 the
         # node application in development mode always uses port 31515 to bypass the
         # reverse proxy. Once this is addressed, remove this special case.
-        if os.getenv("DEV") == "true":
+        if os.getenv("DEV") == "true" and os.getenv("TEST", "false").lower() != "true":
             self.matlab_port = 31515
         else:
 

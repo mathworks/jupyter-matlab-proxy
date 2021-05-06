@@ -7,6 +7,7 @@ from jupyter_matlab_proxy import app
 from distutils.dir_util import copy_tree
 from pathlib import Path
 from jupyter_matlab_proxy import settings
+import jupyter_matlab_proxy
 from tests.test_app import FakeServer
 
 """
@@ -17,20 +18,12 @@ test web server's static route table in non-dev mode.
 
 @pytest.fixture(name="matlab_port_setup")
 def matlab_port_fixture(monkeypatch):
-    """A pytest fixture which monkeypatches few environment variables.
+    """A pytest fixture which monkeypatches an environment variable.
 
-    APP_PORT, MLM_LICENSE_FILE and DEV environment variables are monkeypatched here to be
-    utilized by tests.
+    Pytest by default sets DEV to true.
     Args:
         monkeypatch : A built-in pytest fixture
     """
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("", 0))
-    matlab_port = s.getsockname()[1]
-    s.close()
-    monkeypatch.setenv("APP_PORT", str(matlab_port))
-    monkeypatch.setenv("MLM_LICENSE_FILE", "abc@nlm")
     monkeypatch.setenv("DEV", "false")
 
 
@@ -103,13 +96,27 @@ def build_frontend_fixture():
         shutil.rmtree(static_files_dir)
 
 
+@pytest.fixture(name="mock_settings_get")
+def mock_settings_get_fixture(mocker):
+    """Pytest fixture which mocks settings.get() method to return
+    dev settings.
+
+    Args:
+        mocker : Built in pytest fixture
+    """
+    mocker.patch(
+        "jupyter_matlab_proxy.settings.get",
+        return_value=jupyter_matlab_proxy.settings.get(dev=True),
+    )
+
+
 @pytest.fixture(name="test_server")
 def test_server_fixture(
     loop,
     aiohttp_client,
     build_frontend,
     matlab_port_setup,
-    mock_settings_get_custom_ready_delay,
+    mock_settings_get,
 ):
     """A pytest fixture which yields a test server.
 
@@ -121,9 +128,9 @@ def test_server_fixture(
     Args:
         loop : Event Loop
         aiohttp_client : A built-in pytest fixture
-        mock_settings_get : A pytest fixture which mocks settings.get() method
-        non_dev_env : A pytest fixture which monkeypatches DEV env variable to false
-        matlab_port_setup : A pytest fixture which monkeypatches matlab port
+        build_frontend: Pytest fixture which generates the directory structure of static files with some placeholder content
+        matlab_port_setup: Pytest fixture which monkeypatches 'DEV' env to False. This is required for the test_server to add static content
+        mock_settings_get: Pytest fixture which mocks settings.get() to return dev settings when env 'DEV' is set to False.
 
     Yields:
         [aiohttp_client]: A aiohttp_client to send HTTP requests.
