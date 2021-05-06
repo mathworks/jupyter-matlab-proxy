@@ -24,7 +24,7 @@ desktop_html = b"""
 
 
 def wait_for_port(port):
-    """ Waits for the given port to become available """
+    """Waits for the given port to become available"""
 
     while True:
         print(f"Waiting for port {port} to be available")

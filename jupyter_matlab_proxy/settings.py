@@ -16,7 +16,7 @@ def get_matlab_path():
 
 
 def get_matlab_version(matlab_path):
-    """ Get the MATLAB Release version in this image"""
+    """Get the MATLAB Release version in this image"""
 
     if matlab_path is None:
         return None

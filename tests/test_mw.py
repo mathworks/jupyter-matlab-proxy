@@ -27,7 +27,9 @@ def mwa_api_data_fixture():
 
     mwa_api_endpoint = "https://login.mathworks.com/authenticationws/service/v4"
     mwa_api_endpoint_pattern = re.compile("^" + mwa_api_endpoint)
-    mhlm_api_endpoint = "https://licensing.mathworks.com/mls/service/v1/entitlement/list"
+    mhlm_api_endpoint = (
+        "https://licensing.mathworks.com/mls/service/v1/entitlement/list"
+    )
     mhlm_api_endpoint_pattern = re.compile("^" + mhlm_api_endpoint)
 
     identity_token = secrets.token_urlsafe(324)
@@ -123,7 +125,9 @@ def mock_aiohttp_client_session():
         yield m
 
 
-async def test_fetch_access_token(mwa_api_data, fetch_access_token_valid_json, mock_response):
+async def test_fetch_access_token(
+    mwa_api_data, fetch_access_token_valid_json, mock_response
+):
     """Test to check mw.fetch_access_token method returns valid json response.
 
     The mock_response fixture mocks the aiohttp.ClientSession().post() method to return a custom HTTP response.
@@ -224,7 +228,9 @@ def fetch_expand_token_valid_json_fixture():
     return json_data
 
 
-async def test_fetch_expand_token(mock_response, fetch_expand_token_valid_json, mwa_api_data):
+async def test_fetch_expand_token(
+    mock_response, fetch_expand_token_valid_json, mwa_api_data
+):
     """Test to check if mw.fetch_expand_token returns a correct json response
 
     mock_response is used to mock ClientSession.post method to return a HTTP Response containing a valid json response.
@@ -245,7 +251,9 @@ async def test_fetch_expand_token(mock_response, fetch_expand_token_valid_json, 
         referenceId=json_data["referenceDetail"]["referenceId"],
     )
 
-    payload = dict(expirationDate=json_data["expirationDate"], referenceDetail=referenceDetail)
+    payload = dict(
+        expirationDate=json_data["expirationDate"], referenceDetail=referenceDetail
+    )
 
     mock_response.post(url_pattern, payload=payload)
 
