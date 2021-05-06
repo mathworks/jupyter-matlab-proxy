@@ -44,7 +44,7 @@ class AppState:
             return
 
     async def init_licensing(self):
-        """ Initialise licensing from persisted details or environment variable. """
+        """Initialise licensing from persisted details or environment variable."""
 
         # Persisted licensing details present
         if self.settings["matlab_config_file"].exists():
@@ -105,7 +105,7 @@ class AppState:
             }
 
     def get_matlab_state(self):
-        """ Determine the state of MATLAB to be down/starting/up. """
+        """Determine the state of MATLAB to be down/starting/up."""
 
         matlab = self.processes["matlab"]
         xvfb = self.processes["xvfb"]
@@ -129,7 +129,7 @@ class AppState:
         return "starting"
 
     async def set_licensing_nlm(self, conn_str):
-        """ Set the licensing type to NLM and the connection string. """
+        """Set the licensing type to NLM and the connection string."""
 
         # TODO Validate connection string
         self.licensing = {"type": "nlm", "conn_str": conn_str}
@@ -143,7 +143,7 @@ class AppState:
         entitlements=[],
         entitlement_id=None,
     ):
-        """ Set the licensing type to MHLM and the details. """
+        """Set the licensing type to MHLM and the details."""
 
         try:
 
@@ -178,7 +178,7 @@ class AppState:
             log_error(logger, e)
 
     def unset_licensing(self):
-        """ Unset the licensing. """
+        """Unset the licensing."""
 
         self.licensing = None
 
@@ -187,7 +187,7 @@ class AppState:
             self.error = None
 
     def is_licensed(self):
-        """ Is MATLAB licensing configured? """
+        """Is MATLAB licensing configured?"""
 
         if self.licensing is not None:
             if self.licensing["type"] == "nlm":
@@ -204,7 +204,7 @@ class AppState:
         return False
 
     def is_matlab_present(self):
-        """ Is MATLAB install accessible? """
+        """Is MATLAB install accessible?"""
 
         return self.settings["matlab_path"] is not None
 
@@ -289,7 +289,7 @@ class AppState:
             f.write(json.dumps(config))
 
     def reserve_matlab_port(self):
-        """ Reserve a free port for MATLAB Embedded Connector in the allowed range. """
+        """Reserve a free port for MATLAB Embedded Connector in the allowed range."""
 
         # FIXME Because of https://github.com/http-party/node-http-proxy/issues/1342 the
         # node application in development mode always uses port 31515 to bypass the
@@ -316,7 +316,7 @@ class AppState:
                         raise e
 
     async def start_matlab(self, restart=False):
-        """ Start MATLAB. """
+        """Start MATLAB."""
 
         # FIXME
         if self.get_matlab_state() != "down" and restart is False:
@@ -445,7 +445,7 @@ class AppState:
         loop.create_task(reader())
 
     async def stop_matlab(self):
-        """ Terminate MATLAB. """
+        """Terminate MATLAB."""
 
         matlab = self.processes["matlab"]
         xvfb = self.processes["xvfb"]

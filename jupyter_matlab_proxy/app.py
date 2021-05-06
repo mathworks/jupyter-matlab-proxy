@@ -286,7 +286,7 @@ async def matlab_view(req):
 
 
 async def transform_body(req):
-    """ Transform some requests as required by the MATLAB JavaScript Desktop. """
+    """Transform some requests as required by the MATLAB JavaScript Desktop."""
 
     body = await req.read()
 
@@ -319,7 +319,7 @@ async def license_init(app):
 
 
 async def matlab_starter(app):
-    """ Upon app startup, start MATLAB if able to do so. """
+    """Upon app startup, start MATLAB if able to do so."""
 
     state = app["state"]
 
