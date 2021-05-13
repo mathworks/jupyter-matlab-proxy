@@ -19,4 +19,11 @@ if (strlength(getenv('BASE_URL')) > 0)
     connector.internal.setConfig('contextRoot', getenv('BASE_URL'))
 end
 connector.internal.Worker.start
+
+% Add-on explorer is not supported in this environment.
+% The following settings instructs it to display appropriate error messages when used.
+matlab_settings = settings;
+matlab_settings.matlab.addons.explorer.addSetting('isExplorerSupported');
+matlab_settings.matlab.addons.explorer.isExplorerSupported.PersonalValue = false;
+
 clear
