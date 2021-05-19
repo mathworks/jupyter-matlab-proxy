@@ -51,7 +51,7 @@ tests_require = [
 
 setuptools.setup(
     name="jupyter-matlab-proxy",
-    version="0.1.1",
+    version="0.2.0",
     url="https://github.com/mathworks/jupyter-matlab-proxy",
     author="The MathWorks, Inc.",
     description="Jupyter extension to proxy MATLAB JavaScript Desktop",
