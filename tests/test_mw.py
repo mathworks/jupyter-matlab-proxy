@@ -1,15 +1,14 @@
 # Copyright 2021 The MathWorks, Inc.
 
-import pytest, asyncio, secrets, datetime, random, json, re
-from unittest.mock import patch
-from jupyter_matlab_proxy import app
+import pytest, secrets, datetime, random, re
+from jupyter_matlab_proxy import settings
 from jupyter_matlab_proxy.util import mw
 from datetime import timezone
 from jupyter_matlab_proxy.util import exceptions
 from datetime import timedelta
 from collections import namedtuple
 from aioresponses import aioresponses
-from aiohttp.http_exceptions import HttpProcessingError
+
 
 """This file tests methods present in jupyter_matlab_proxy/util/mw.py
 """
@@ -467,3 +466,32 @@ def test_range_matlab_connector_ports():
     second_port = next(port_range)
 
     assert first_port + 1 == second_port
+
+
+async def test_create_xvfb_process(loop):
+    """Test to check if more than 1 xvfb process can be created with -displayfd flag
+
+    Creates 2 xvfb processes with '-displayfd' flag and  checks if the processes are
+    running on unique display ports
+    """
+    # Get command to launch xvfb with -displayfd flag.
+    settings_1 = settings.get(dev=True)
+    settings_2 = settings.get(dev=True)
+
+    xvfb_cmd_1, pipe_1 = settings.create_xvfb_cmd()
+    xvfb_cmd_2, pipe_2 = settings.create_xvfb_cmd()
+
+    # Create Xvfb processes
+    xvfb_1, display_port_1 = await mw.create_xvfb_process(xvfb_cmd_1, pipe_1, {})
+    xvfb_2, display_port_2 = await mw.create_xvfb_process(xvfb_cmd_2, pipe_2, {})
+
+    # Verify
+    assert xvfb_1 is not None and xvfb_2 is not None
+    assert display_port_1 != display_port_2
+
+    # Clean up
+    xvfb_1.terminate()
+    await xvfb_1.wait()
+
+    xvfb_2.terminate()
+    await xvfb_2.wait()

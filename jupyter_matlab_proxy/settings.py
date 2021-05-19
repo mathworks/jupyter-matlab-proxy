@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import tempfile
 import xml.etree.ElementTree as ET
-import uuid
+import uuid, socket
 import shutil
 
 
@@ -49,14 +49,7 @@ def get_dev_settings():
             "--ready-file",
             str(matlab_ready_file),
         ],
-        "xvfb_cmd": [
-            "python",
-            "-u",
-            str(devel_file),
-            "xvfb",
-            "--ready-file",
-            str(Path(tempfile.gettempdir()) / ".X11-unix" / "X1"),
-        ],
+        "create_xvfb_cmd": create_xvfb_cmd,
         "matlab_ready_file": matlab_ready_file,
         "base_url": os.environ.get("BASE_URL", ""),
         "app_port": os.environ.get("APP_PORT", 8000),
@@ -99,6 +92,12 @@ def get(dev=False):
             matlab_cmd[4:4] = ready_delay
             settings["matlab_cmd"] = matlab_cmd
 
+            # Randomly picks an available port and updates the value of settings['app_port'] .
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(("", 0))
+            settings["app_port"] = s.getsockname()[1]
+            s.close()
+
             # Set NLM Connection string. Server will start using this connection string for licensing
             settings["nlm_conn_str"] = "abc@nlm"
 
@@ -122,28 +121,13 @@ def get(dev=False):
                 "-r",
                 f"try; run('{matlab_startup_file}'); catch; end;",
             ],
-            "xvfb_cmd": [
-                "Xvfb",
-                ":1",
-                "-screen",
-                "0",
-                "1600x1200x24",
-                "-dpi",
-                "100",
-                # "-ac",
-                "-extension",
-                "RANDR",
-                # "+render",
-                # "-noreset",
-            ],
+            "create_xvfb_cmd": create_xvfb_cmd,
             "matlab_ready_file": Path(tempfile.gettempdir()) / "connector.securePort",
             "base_url": os.environ["BASE_URL"],
             "app_port": os.environ["APP_PORT"],
             "host_interface": os.environ.get("APP_HOST"),
             "mwapikey": str(uuid.uuid4()),
             "matlab_protocol": "https",
-            # TODO: Uncomment this ?
-            # "matlab_display": ":1",
             "nlm_conn_str": os.environ.get("MLM_LICENSE_FILE"),
             "matlab_config_file": Path.home() / ".matlab" / "proxy_app_config.json",
             "ws_env": ws_env,
@@ -151,3 +135,35 @@ def get(dev=False):
             "mhlm_api_endpoint": f"https://licensing{ws_env_suffix}.mathworks.com/mls/service/v1/entitlement/list",
             "mwa_login": f"https://login{ws_env_suffix}.mathworks.com",
         }
+
+
+def create_xvfb_cmd():
+    """Creates the Xvfb command with a write descriptor.
+
+    Returns:
+        List: Containing 2 lists.
+
+    The second List contains a read and a write descriptor.
+    The first List is the command to launch Xvfb process with the same write descriptor(from the first list) embedded in the command.
+    """
+    dpipe = os.pipe()
+    os.set_inheritable(dpipe[1], True)
+
+    xvfb_cmd = [
+        "Xvfb",
+        "-displayfd",
+        # Write descriptor
+        str(dpipe[1]),
+        "-screen",
+        "0",
+        "1600x1200x24",
+        "-dpi",
+        "100",
+        # "-ac",
+        "-extension",
+        "RANDR",
+        # "+render",
+        # "-noreset",
+    ]
+
+    return xvfb_cmd, dpipe

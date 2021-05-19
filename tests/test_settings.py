@@ -118,7 +118,6 @@ def test_get_dev_true():
     dev_mode_settings = settings.get(dev=True)
 
     assert dev_mode_settings["matlab_cmd"][0] != "matlab"
-    assert dev_mode_settings["xvfb_cmd"][0] != "Xvfb"
     assert dev_mode_settings["matlab_protocol"] == "http"
 
 
@@ -140,13 +139,12 @@ def test_get_dev_false(patch_env_variables, mock_shutil_which):
     """Test settings.get() method in Non Dev mode.
 
     In Non dev mode, settings.get() expects APP_PORT, BASE_URL, APP_HOST AND MLM_LICENSE_FILE env variables
-    to be present. patch_env_variables monkey patches them.
+    to be present. patch_env_variables monkeypatches them.
 
     Args:
         patch_env_variables : Pytest fixture which monkeypatches some env variables.
     """
     _settings = settings.get(dev=False)
     assert _settings["matlab_cmd"][0] == "matlab"
-    assert _settings["xvfb_cmd"][0] == "Xvfb"
     assert os.path.isdir(_settings["matlab_path"])
     assert _settings["matlab_protocol"] == "https"

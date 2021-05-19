@@ -1,7 +1,7 @@
 # Copyright 2020-2021 The MathWorks, Inc.
 
 import xml.etree.ElementTree as ET
-import aiohttp
+import aiohttp, os, asyncio, select, logging
 from .exceptions import (
     OnlineLicensingError,
     EntitlementError,
@@ -11,6 +11,7 @@ from .exceptions import (
 
 
 LICENSING_URL = "https://github.com/mathworks/jupyter-matlab-proxy/blob/main/MATLAB_Licensing_Info.md"
+logger = logging.getLogger("MATLABProxyApp")
 
 
 async def fetch_entitlements(mhlm_api_endpoint, access_token, matlab_release):
@@ -179,3 +180,63 @@ def parse_other_error(logs):
         "MATLAB returned an unexpected error. For more details, see the log below.",
         logs=logs,
     )
+
+
+async def create_xvfb_process(xvfb_cmd, pipe, matlab_env={}):
+    """Creates the Xvfb process.
+
+    The Xvfb process is run with '-displayfd' flag set. This makes Xvfb choose an available
+    display number and write it into the provided write descriptor. ie: pipe[1]
+
+    We read this display number from the read descriptor.
+    For this, we have 2 things to consider:
+        1. How many bytes to read from the read descriptor. This is handled by the variable number_of_bytes.
+
+        2. For how long to read from the read descriptor. We wait for atmost 10 seconds for Xvfb to write
+           the display number using the 'select' package.
+
+
+    Args:
+        xvfb_cmd (List): A list containing the command to run the Xvfb process
+        pipe (List): A list containing a pair of file descriptor.
+        matlab_env (Dict): A Dict containing environment variables within which the Xvfb process is created.
+
+    Returns:
+        [List]: Containing the Xvfb process object, and display number on which Xvfb process has started.
+    """
+
+    # Creates subprocess asynchronously with environment variables defined in matlab_env
+    # Pipe errors, if any, to the process object instead of stdout.
+    xvfb = await asyncio.create_subprocess_exec(
+        *xvfb_cmd, close_fds=False, env=matlab_env, stderr=asyncio.subprocess.PIPE
+    )
+
+    read_descriptor, write_descriptor = pipe
+    number_of_bytes = 200
+
+    logger.debug("Waiting for XVFB process to initialize and provide Display Number")
+    # Waits upto 10 seconds for the read_descriptor to be ready.
+    ready_descriptors, _, _ = select.select([read_descriptor], [], [], 10)
+
+    # If read_descriptor is in ready_descriptors, read from it.
+    if read_descriptor in ready_descriptors:
+        logger.debug("Reading display number from the read descriptor.")
+        line = os.read(read_descriptor, number_of_bytes).decode("utf-8")
+        # Xvfb process writes the display number and adds a new line character ('\n') at the end. Removing it with .strip()
+        display_port = line.strip()
+
+    else:
+        # Check for errors and raise exception.
+        error = ""
+        while not xvfb.stderr.at_eof():
+            line = await xvfb.stderr.readline()
+            error += line.decode("utf-8")
+
+        await xvfb.wait()
+        raise Exception(f"Unable to start the Xvfb process: \n {error}")
+
+    # Close the read and write descriptors.
+    os.close(read_descriptor)
+    os.close(write_descriptor)
+
+    return xvfb, display_port

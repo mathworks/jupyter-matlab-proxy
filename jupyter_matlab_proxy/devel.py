@@ -3,10 +3,7 @@
 # Development specific functions
 import asyncio, aiohttp
 from aiohttp import web
-import socket
-import time
-import os
-import sys
+import socket, time, os, sys
 
 desktop_html = b"""
 <h1>Fake MATLAB Web Desktop</h1>
@@ -37,17 +34,6 @@ def wait_for_port(port):
         # Once successful, close the port and stop waiting
         s.close()
         break
-
-
-def xvfb(args):
-    "Writes ready file after 1 second then sleeps forever in a loose loop"
-    time.sleep(1)
-    print(f"Creating {str(args.ready_file)}")
-    args.ready_file.parent.mkdir(parents=True, exist_ok=True)
-    args.ready_file.touch()
-
-    while True:
-        time.sleep(60)
 
 
 async def web_handler(request):
@@ -147,9 +133,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="cmd", required=True)
-    xvfb_parser = subparsers.add_parser("xvfb")
-    xvfb_parser.add_argument("--ready-file", type=Path)
-    xvfb_parser.set_defaults(func=xvfb)
     matlab_parser = subparsers.add_parser("matlab")
     matlab_parser.add_argument(
         "--ready-file",

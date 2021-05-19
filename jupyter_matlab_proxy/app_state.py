@@ -303,7 +303,6 @@ class AppState:
             # try-except.
             # s.bind(("", 0))
             # self.matlab_port = s.getsockname()[1]
-
             for port in mw.range_matlab_connector_ports():
                 try:
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -358,22 +357,11 @@ class AppState:
         except FileNotFoundError:
             pass
 
-        # The presence of xvfb_ready_file indicates if Xvfb is ready to receive
-        # connections, but this could be leftover from a terminated Xvfb, so ensure it
-        # is cleaned up before starting Xvfb
-        display_num = self.settings["matlab_display"].replace(":", "")
-        xvfb_ready_file = Path(tempfile.gettempdir()) / ".X11-unix" / f"X{display_num}"
-        try:
-            xvfb_ready_file.unlink()
-        except FileNotFoundError:
-            pass
-
         # Configure the environment MATLAB needs to start
         matlab_env = os.environ.copy()
         matlab_env["MW_CRASH_MODE"] = "native"
         matlab_env["MATLAB_WORKER_CONFIG_ENABLE_LOCAL_PARCLUSTER"] = "true"
         matlab_env["PCT_ENABLED"] = "true"
-        matlab_env["DISPLAY"] = self.settings["matlab_display"]
         matlab_env["HTTP_MATLAB_CLIENT_GATEWAY_PUBLIC_PORT"] = "1"
         matlab_env["MW_CONNECTOR_SECURE_PORT"] = str(self.matlab_port)
         matlab_env["MW_DOCROOT"] = str(
@@ -410,18 +398,21 @@ class AppState:
         # matlab_env["CONNECTOR_CONFIGURABLE_WARMUP_TASKS"] = "warmup_hgweb"
         # matlab_env["CONNECTOR_WARMUP"] = "true"
 
-        logger.debug(f"Starting Xvfb on display {self.settings['matlab_display']}")
-        xvfb = await asyncio.create_subprocess_exec(
-            *self.settings["xvfb_cmd"], env=matlab_env
-        )
+        # Start Xvfb process
+        create_xvfb_cmd = self.settings["create_xvfb_cmd"]
+        xvfb_cmd, dpipe = create_xvfb_cmd()
+
+        xvfb, display_port = await mw.create_xvfb_process(xvfb_cmd, dpipe, matlab_env)
+
+        # Update settings and matlab_env dict
+        self.settings["matlab_display"] = ":" + str(display_port)
         self.processes["xvfb"] = xvfb
-        logger.debug(f"Started Xvfb (PID={xvfb.pid})")
 
-        # Wait for Xvfb to be ready
-        while not xvfb_ready_file.exists():
-            logger.debug(f"Waiting for XVFB")
-            await asyncio.sleep(0.1)
+        matlab_env["DISPLAY"] = self.settings["matlab_display"]
 
+        logger.debug(f"Started Xvfb with PID={xvfb.pid} on DISPLAY={display_port}")
+
+        # Start MATLAB Process
         logger.info(f"Starting MATLAB on port {self.matlab_port}")
         master, slave = pty.openpty()
         matlab = await asyncio.create_subprocess_exec(

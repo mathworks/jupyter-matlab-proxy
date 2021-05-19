@@ -1,6 +1,5 @@
 # Copyright 2021 The MathWorks, Inc.
 
-from jupyter_matlab_proxy.devel import xvfb
 import pytest, asyncio, aiohttp, os, json, psutil, socket, subprocess, time, requests
 from unittest.mock import patch
 from aiohttp import web
@@ -138,34 +137,17 @@ def test_marshal_error(actual_error, expected_error):
 
 
 class FakeServer:
-    """Context Manager class which returns a web server wrapped by aiohttp_client
-    for sending HTTP requests during testing.
-
-    executes the remove_zombie_matlab_process() method before starting the server
-    and after shutting it down so as to clear out any
+    """Context Manager class which returns a web server wrapped in aiohttp_client pytest fixture
+    for testing.
     """
 
     def __init__(self, loop, aiohttp_client):
         self.loop = loop
         self.aiohttp_client = aiohttp_client
-        self.pretest_dev_processes = None
-        self.posttest_dev_processes = None
-        self.zombie_dev_processes = None
 
     def __enter__(self):
-
-        self.pretest_dev_processes = set(self.gather_running_dev_processes())
-
-        # self.patcher = patch(
-        #     "jupyter_matlab_proxy.app_state.AppState.reserve_matlab_port",
-        #     new=MockServerPort.mock_reserve_port,
-        # )
-
-        # self.patcher.start()
-
         self.server = app.create_app()
         self.runner = web.AppRunner(self.server)
-
         self.loop.run_until_complete(self.runner.setup())
 
         self.site = web.TCPSite(
@@ -173,38 +155,13 @@ class FakeServer:
             host=self.server["settings"]["host_interface"],
             port=self.server["settings"]["app_port"],
         )
-
         self.loop.run_until_complete(self.site.start())
+
         return self.loop.run_until_complete(self.aiohttp_client(self.server))
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-
         self.loop.run_until_complete(self.runner.shutdown())
         self.loop.run_until_complete(self.runner.cleanup())
-
-        # self.patcher.stop()
-
-        self.posttest_dev_processes = set(self.gather_running_dev_processes())
-        self.zombie_dev_processes = (
-            self.posttest_dev_processes - self.pretest_dev_processes
-        )
-
-        for process in self.zombie_dev_processes:
-            process.terminate()
-
-        gone, alive = psutil.wait_procs(self.zombie_dev_processes)
-
-        for process in alive:
-            process.kill()
-
-    def gather_running_dev_processes(self):
-        running_dev_processes = []
-        for process in psutil.process_iter(["pid", "name"]):
-            cmd = process.cmdline()
-            if len(cmd) > 3 and "devel.py" in cmd[2]:
-                running_dev_processes.append(process)
-
-        return running_dev_processes
 
 
 @pytest.fixture(name="test_server")
@@ -255,11 +212,6 @@ async def test_start_matlab_route(test_server):
         assert resp.status == 200
 
         resp_json = json.loads(await resp.text())
-        # print(test_server.app["state"].settings)
-        # print(resp)
-        # print(resp_json)
-        # break
-
         if resp_json["matlab"]["status"] == "up":
             break
         else:
@@ -336,7 +288,8 @@ async def test_matlab_proxy_404(proxy_payload, test_server):
 
     headers = {"content-type": "application/json"}
 
-    # Request a non-existing html file. Request gets proxied to app.matlab_view() which should raise HTTPNotFound() exception ie. return HTTP status code 404
+    # Request a non-existing html file.
+    # Request gets proxied to app.matlab_view() which should raise HTTPNotFound() exception ie. return HTTP status code 404
     resp = await test_server.post(
         "./1234.html", data=json.dumps(proxy_payload), headers=headers
     )
