@@ -8,10 +8,18 @@ from .exceptions import (
     NetworkLicensingError,
     MatlabError,
 )
+from . import mw_logger
+
+logger = mw_logger.get()
 
 
-LICENSING_URL = "https://github.com/mathworks/jupyter-matlab-proxy/blob/main/MATLAB_Licensing_Info.md"
-logger = logging.getLogger("MATLABProxyApp")
+def __get_licensing_url():
+    """Private function to query for the licensing URL
+
+    Returns:
+        String: Licensing URL
+    """
+    return "https://github.com/mathworks/jupyter-matlab-proxy/blob/main/MATLAB_Licensing_Info.md"
 
 
 async def fetch_entitlements(mhlm_api_endpoint, access_token, matlab_release):
@@ -34,7 +42,7 @@ async def fetch_entitlements(mhlm_api_endpoint, access_token, matlab_release):
 
             if res.reason != "OK":
                 raise OnlineLicensingError(
-                    f"Communication with {mhlm_api_endpoint} failed ({res.status}). For more details, see {LICENSING_URL}."
+                    f"Communication with {mhlm_api_endpoint} failed ({res.status}). For more details, see {__get_licensing_url()}."
                 )
 
             root = ET.fromstring(await res.text())
@@ -78,7 +86,7 @@ async def fetch_expand_token(mwa_api_endpoint, identity_token, source_id):
 
             if res.reason != "OK":
                 raise OnlineLicensingError(
-                    f"Communication with {mwa_api_endpoint} failed ({res.status}). For more details, see {LICENSING_URL}."
+                    f"Communication with {mwa_api_endpoint} failed ({res.status}). For more details, see {__get_licensing_url()}."
                 )
 
             data = await res.json()
@@ -114,7 +122,7 @@ async def fetch_access_token(mwa_api_endpoint, identity_token, source_id):
 
             if res.reason != "OK":
                 raise OnlineLicensingError(
-                    f"Communication with {mwa_api_endpoint} failed ({res.status}). For more details, see {LICENSING_URL}."
+                    f"Communication with {mwa_api_endpoint} failed ({res.status}). For more details, see {__get_licensing_url()}."
                 )
 
             data = await res.json()
@@ -149,7 +157,7 @@ def parse_nlm_error(logs, conn_str):
         else:
             if "Diagnostic Information" in log:
                 return NetworkLicensingError(
-                    f"License checkout from {conn_str} failed. For more details, see {LICENSING_URL}.",
+                    f"License checkout from {conn_str} failed. For more details, see {__get_licensing_url()}.",
                     logs=nlm_logs,
                 )
             nlm_logs.append(log)
@@ -169,7 +177,7 @@ def parse_mhlm_error(logs):
 
     if mhlm_logs is not None:
         return OnlineLicensingError(
-            f"Usage of MathWorks Online Licensing failed. For more details, see {LICENSING_URL}.",
+            f"Usage of MathWorks Online Licensing failed. For more details, see {__get_licensing_url()}.",
             logs=mhlm_logs,
         )
     return None

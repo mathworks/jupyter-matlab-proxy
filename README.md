@@ -77,6 +77,16 @@ jupyter labextension install @jupyterlab/server-proxy
 
 For more information see [GUI Launchers](https://jupyter-server-proxy.readthedocs.io/en/latest/launchers.html#jupyterlab-launcher-extension).
 
+### Environment Variables
+The following environment variables can *optionally* be set to control the behavior of the integration. 
+These values are preset for you when you access the integration from the Jupyter console.
+| Name | Value | Description |
+|------|-------|-------------|
+| **MLM_LICENSE_FILE** | [string]  <br/>`Ex: 1234@111.22.333.444`|  *port@hostname* to a running MathWorks Network License Manager <br /> OR <br /> Full path to a MATLAB license file.|
+| **LOG_LEVEL** | [string] <br/> `Ex: "CRITICAL"` | There are six log levels in Python; each level indicates the log severity: `NOTSET`, `DEBUG`, `INFO`, `WARN`, `ERROR`, and `CRITICAL`. See [documentation](https://docs.python.org/3/library/logging.html#logging-levels) for more information on python logging.<br />Default value is `INFO`.|
+| **LOG_FILE** | [string] <br/> `Ex: "/tmp/logs.txt"` | Full path to file where logs will be directed | 
+| **BASE_URL** | [string] <br/>`Ex: "/matlab"` | Set to control the base url of the app. BASE_URL should be started with `/` or be `empty`|
+| **APP_PORT** | [integer] <br/>`Ex: 8080` | PORT for HTTP server to listen on.  |
 
 ### Limitations
 

@@ -12,7 +12,7 @@ import tempfile
 import socket
 import errno
 from collections import deque
-from .util import mw
+from .util import mw, mw_logger
 from .util.exceptions import (
     LicensingError,
     InternalError,
@@ -22,8 +22,7 @@ from .util.exceptions import (
     log_error,
 )
 
-
-logger = logging.getLogger("MATLABProxyApp")
+logger = mw_logger.get()
 
 
 class AppState:

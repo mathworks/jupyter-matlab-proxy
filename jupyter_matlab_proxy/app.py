@@ -5,10 +5,10 @@ import sys
 from aiohttp import web
 import aiohttp
 import asyncio
-import logging
 import json
 from . import settings
 from .app_state import AppState
+from .util import mw_logger
 from .util.exceptions import LicensingError
 
 import pkgutil
@@ -21,13 +21,6 @@ mimetypes.add_type("font/ttf", ".ttf")
 mimetypes.add_type("application/json", ".map")
 mimetypes.add_type("image/png", ".ico")
 
-
-logLevel=logging.INFO
-if os.environ.get("LOG_LEVEL") is not None:
-    logLevel=getattr(logging, os.environ.get("LOG_LEVEL"), logging.INFO)
-
-logging.basicConfig(level=logLevel)
-logger = logging.getLogger("MATLABProxyApp")
 
 # TODO It is bad practice to have global state in aiohttp applications, instead this
 # mount point should be read in the application start up function, then if it is not
@@ -394,6 +387,9 @@ def create_app():
 
 
 def main():
+
+    logger = mw_logger.get(init=True)
+
     logger.info("Starting MATLAB proxy-app")
 
     app = create_app()
