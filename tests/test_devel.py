@@ -75,7 +75,12 @@ def matlab_process_setup_fixture():
     )
     devel_file = Path(os.path.join(os.getcwd(), "jupyter_matlab_proxy", "devel.py"))
 
-    matlab_ready_file = Path(tempfile.mkstemp()[1])
+    matlab_temp_dir = Path(tempfile.gettempdir()) / ".matlab"
+    matlab_temp_dir.mkdir(parents=True, exist_ok=True)
+    # Place all temporary ready files into a common directory for easy cleanup
+    matlab_ready_file = Path(
+        tempfile.mkstemp(prefix="mrf_", dir=str(matlab_temp_dir))[1]
+    )
     master, slave = pty.openpty()
     python_executable = sys.executable
 

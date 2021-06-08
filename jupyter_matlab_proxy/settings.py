@@ -35,7 +35,12 @@ def get_ws_env_settings():
 
 def get_dev_settings():
     devel_file = Path(__file__).resolve().parent / "./devel.py"
-    matlab_ready_file = Path(tempfile.mkstemp()[1])
+    matlab_temp_dir = Path(tempfile.gettempdir()) / ".matlab"
+    matlab_temp_dir.mkdir(parents=True, exist_ok=True)
+    # Place all temporary ready files into a common directory for easy cleanup
+    matlab_ready_file = Path(
+        tempfile.mkstemp(prefix="mrf_", dir=str(matlab_temp_dir))[1]
+    )
     ws_env, ws_env_suffix = get_ws_env_settings()
 
     return {
@@ -58,9 +63,7 @@ def get_dev_settings():
         "matlab_protocol": "http",
         "matlab_display": ":1",
         "nlm_conn_str": os.environ.get("MLM_LICENSE_FILE"),
-        "matlab_config_file": Path(tempfile.gettempdir())
-        / ".matlab"
-        / "proxy_app_config.json",
+        "matlab_config_file": matlab_temp_dir / "proxy_app_config.json",
         "ws_env": ws_env,
         "mwa_api_endpoint": f"https://login{ws_env_suffix}.mathworks.com/authenticationws/service/v4",
         "mhlm_api_endpoint": f"https://licensing{ws_env_suffix}.mathworks.com/mls/service/v1/entitlement/list",
