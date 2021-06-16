@@ -77,16 +77,6 @@ jupyter labextension install @jupyterlab/server-proxy
 
 For more information see [GUI Launchers](https://jupyter-server-proxy.readthedocs.io/en/latest/launchers.html#jupyterlab-launcher-extension).
 
-### Environment Variables
-The following environment variables can *optionally* be set to control the behavior of the integration. 
-These values are preset for you when you access the integration from the Jupyter console.
-| Name | Value | Description |
-|------|-------|-------------|
-| **MLM_LICENSE_FILE** | [string]  <br/>`Ex: 1234@111.22.333.444`|  *port@hostname* to a running MathWorks Network License Manager <br /> OR <br /> Full path to a MATLAB license file.|
-| **LOG_LEVEL** | [string] <br/> `Ex: "CRITICAL"` | There are six log levels in Python; each level indicates the log severity: `NOTSET`, `DEBUG`, `INFO`, `WARN`, `ERROR`, and `CRITICAL`. See [documentation](https://docs.python.org/3/library/logging.html#logging-levels) for more information on python logging.<br />Default value is `INFO`.|
-| **LOG_FILE** | [string] <br/> `Ex: "/tmp/logs.txt"` | Full path to file where logs will be directed | 
-| **BASE_URL** | [string] <br/>`Ex: "/matlab"` | Set to control the base url of the app. BASE_URL should be started with `/` or be `empty`|
-| **APP_PORT** | [integer] <br/>`Ex: 8080` | PORT for HTTP server to listen on.  |
 
 ### Limitations
 
@@ -96,6 +86,24 @@ This package supports the same subset of MATLAB features and commands as MATLAB 
 
 If you want to use this integration with JupyterHub®, then you must install the `jupyter-matlab-proxy` Python package in the Jupyter environment launched by your JupyterHub platform. For example, if your JupyterHub platform launches Docker containers, then install this package in the Docker image used to launch them. You can find a reference architecture that installs the `jupyter-matlab-proxy` Python package in a Docker image in the repository [Use MATLAB Integration for Jupyter in a Docker Container](https://github.com/mathworks-ref-arch/matlab-integration-for-jupyter/tree/main/matlab).
 
+## Advanced 
+
+### Environment Variables
+
+To control the behavior of the MATLAB integration for Jupyter, you can optionally specify the environment variables described in this section. You must specify these variables before starting your Jupyter environment. For example, specify the variable `APP_PORT` to be equal to 8888 when you start the Jupyter notebook using the command below:
+
+```bash
+env APP_PORT=8888 jupyter notebook
+```
+
+These values are preset for you when you access the integration from the Jupyter console.
+| Name | Type | Example Value | Description |
+|------|------|-------|-------------|
+| **MLM_LICENSE_FILE** | string |  <br/>`"1234@111.22.333.444"`| When you want to use either a license file or a network license manager to license MATLAB, specify this variable. For example, specify the location of the network license manager to be `123@hostname`.|
+| **LOG_LEVEL** | string | <br/> `"CRITICAL"` | Specify the Python log level to be one of the following `NOTSET`, `DEBUG`, `INFO`, `WARN`, `ERROR`, or `CRITICAL`. For more information on Python log levels, see [Logging Levels](https://docs.python.org/3/library/logging.html#logging-levels) .<br />The default value is `INFO`.|
+| **LOG_FILE** | string | <br/> `"/tmp/logs.txt"` | Specify the full path to the file where you want the logs to be written. | 
+| **BASE_URL** | string | <br/>`"/matlab"` | Set to control the base URL of the app. BASE_URL should start with `/` or be `empty`.|
+| **APP_PORT** | integer | <br/>`8080` | Specify the port for the HTTP server to listen on.  |
 
 ## Feedback
 
