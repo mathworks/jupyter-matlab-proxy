@@ -98,7 +98,7 @@ function OverlayTrigger() {
         <>
             {blankOverlay}
             <Draggable
-                position={triggerPosition}
+                defaultPosition={triggerPosition}
                 onDrag={onDrag}
                 onStop={onStop}
                 handle=".card-body"
@@ -109,7 +109,7 @@ function OverlayTrigger() {
                     className={`card alert-${details.alert}`}
                     data-testid='overlayTrigger'
                 >
-                    <div className="card-body">
+                    <div className="card-body" data-testid='cardBody'>
                         <span id="drag-handle" className="drag-handle"></span>
                         <button
                             type="button"

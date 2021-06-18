@@ -44,7 +44,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.11.0",
     "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.5.0",
+    "@testing-library/react": "^11.2.6",
     "@testing-library/react-hooks": "^3.4.1",
     "@testing-library/user-event": "^7.2.1",
     "fetch-mock": "^9.10.7",
