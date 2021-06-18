@@ -1,0 +1,56 @@
+name: MATLAB Jupyter Integration
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  node_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js 13.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 13.x
+
+      - name: Install Node dependencies
+        run: npm --prefix gui install gui
+
+      - name: Build Project
+        run: npm --prefix gui build --if-present
+
+      - name: Run Node tests
+        run: npm --prefix gui test
+
+  python_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black pytest
+
+      - name: Lint with black
+        run: |
+          black --check .
+
+      - name: Test with pytest
+        run: |
+          python setup.py test

@@ -1,0 +1,92 @@
+# Copyright 2020-2021 The MathWorks, Inc
+name: Release to PyPI
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  node_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{github.sha}}
+
+      - name: Use Node.js 13.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 13.x
+
+      - name: Install Node dependencies
+        run: npm --prefix gui install gui
+
+      - name: Build Project
+        run: npm --prefix gui build --if-present
+
+      - name: Run Node tests
+        run: npm --prefix gui test
+
+  python_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{github.sha}}
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade black
+
+      - name: Lint with black
+        run: black --check .
+
+      - name: Run Python Tests
+        run: python setup.py test
+
+  build_and_publish:
+    needs: [python_tests, node_tests]
+    if: success()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{github.sha}}
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Use Node.js 13.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 13.x
+
+      - name: Install Python build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+
+      - name: Build Source and Binary wheel distributions
+        run: python setup.py bdist_wheel sdist
+
+      - name: Publish to PyPI.
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          verbose: true
+          password: ${{ secrets.PYPI_TOKEN }}
+          repository_url: https://upload.pypi.org/legacy/

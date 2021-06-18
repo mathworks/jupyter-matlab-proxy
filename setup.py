@@ -58,7 +58,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["devel", "tests"]),
     keywords=["Jupyter"],
     classifiers=["Framework :: Jupyter"],
-    python_requires="~=3.6",
+    python_requires="~=3.7",
     install_requires=["jupyter-server-proxy", "aiohttp>=3.7.4"],
     setup_requires=["pytest-runner"],
     tests_require=tests_require,
