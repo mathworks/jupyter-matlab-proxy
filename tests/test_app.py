@@ -447,7 +447,7 @@ async def test_matlab_proxy_web_socket(test_server):
     assert text.type == aiohttp.WSMsgType.CLOSED
 
 
-async def test_set_licensing_info_put(test_server):
+async def test_set_licensing_info_put_nlm(test_server):
     """Test to check endpoint : "/set_licensing_info"
 
     Test which sends HTTP PUT request with NLM licensing information.
@@ -465,6 +465,44 @@ async def test_set_licensing_info_put(test_server):
     assert resp.status == 200
 
 
+async def test_set_licensing_info_put_invalid_license(test_server):
+    """Test to check endpoint : "/set_licensing_info"
+
+    Test which sends HTTP PUT request with INVALID licensing information type.
+    Args:
+        test_server (aiohttp_client): A aiohttp_client server to send HTTP GET request.
+    """
+
+    data = {
+        "type": "INVALID_TYPE",
+        "status": "starting",
+        "version": "R2020b",
+        "connectionString": "abc@nlm",
+    }
+    resp = await test_server.put("/set_licensing_info", data=json.dumps(data))
+    assert resp.status == 400
+
+
+async def test_set_licensing_info_put_mhlm(test_server):
+    """Test to check endpoint : "/set_licensing_info"
+
+    Test which sends HTTP PUT request with MHLM licensing information.
+    Args:
+        test_server (aiohttp_client): A aiohttp_client server to send HTTP GET request.
+    """
+
+    data = {
+        "type": "MHLM",
+        "status": "starting",
+        "version": "R2020b",
+        "token": "abc@nlm",
+        "emailaddress": "abc@nlm",
+        "sourceId": "abc@nlm",
+    }
+    resp = await test_server.put("/set_licensing_info", data=json.dumps(data))
+    assert resp.status == 200
+
+
 async def test_set_licensing_info_delete(test_server):
     """Test to check endpoint : "/set_licensing_info"
 
@@ -477,3 +515,17 @@ async def test_set_licensing_info_delete(test_server):
     resp = await test_server.delete("/set_licensing_info")
     resp_json = json.loads(await resp.text())
     assert resp.status == 200 and resp_json["licensing"] is None
+
+
+async def test_set_termination_integration_delete(test_server):
+    """Test to check endpoint : "/terminate_integration"
+
+    Test which sends HTTP DELETE request to terminate integration. Checks if integration is terminated
+    successfully.
+    Args:
+        test_server (aiohttp_client):  A aiohttp_client server to send HTTP GET request.
+    """
+
+    resp = await test_server.delete("/terminate_integration")
+    resp_json = json.loads(await resp.text())
+    assert resp.status == 200 and resp_json["loadUrl"] == "../"
