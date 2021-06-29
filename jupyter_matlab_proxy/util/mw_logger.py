@@ -52,6 +52,7 @@ def __set_logging_configuration():
     # log_level is either set by environment or is the default value.
     logger.info(f"Initializing logger with log_level: {log_level}")
     logger.setLevel(log_level)
+    logging.basicConfig(level=log_level)
 
     return logger
 
