@@ -452,6 +452,17 @@ class AppState:
             xvfb.terminate()
             waiters.append(xvfb.wait())
 
+        # Clean up matlab_ready_file
+        try:
+            with open(self.settings["matlab_ready_file"], "r") as mrf:
+                port_in_matlab_ready_file = mrf.read()
+                if str(self.matlab_port) == port_in_matlab_ready_file:
+                    logger.info("Cleaning up matlab_ready_file...")
+                    self.settings["matlab_ready_file"].unlink()
+        except FileNotFoundError:
+            # Some other process deleted this file
+            pass
+
         # Wait for termination
         for waiter in waiters:
             await waiter

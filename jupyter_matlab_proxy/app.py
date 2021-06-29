@@ -393,6 +393,10 @@ def create_app():
     return app
 
 
+def get_supported_termination_signals():
+    return [signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM]
+
+
 def main():
 
     logger = mw_logger.get(init=True)
@@ -408,8 +412,12 @@ def main():
         runner, host=app["settings"]["host_interface"], port=app["settings"]["app_port"]
     )
     loop.run_until_complete(site.start())
-    
-    loop.add_signal_handler(signal.SIGTERM, lambda: loop.stop())
+
+    # Register handlers to trap termination signals 
+    for signal in get_supported_termination_signals():
+        logger.info(f"Installing handler for signal: {signal} ")
+        loop.add_signal_handler(signal, lambda: loop.stop())
+
     loop.run_forever()
 
     async def shutdown():
@@ -420,4 +428,3 @@ def main():
         await asyncio.sleep(5)
 
     loop.run_until_complete(shutdown())
-
