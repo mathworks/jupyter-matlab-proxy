@@ -132,7 +132,7 @@ def patch_env_variables_fixture(monkeypatch):
     monkeypatch.setenv("BASE_URL", "localhost")
     monkeypatch.setenv("APP_PORT", "8900")
     monkeypatch.setenv("APP_HOST", "localhost")
-    monkeypatch.setenv("MLM_LICENSE_FILE", "abc@nlm")
+    monkeypatch.setenv("MLM_LICENSE_FILE", "123@nlm")
 
 
 def test_get_dev_false(patch_env_variables, mock_shutil_which):

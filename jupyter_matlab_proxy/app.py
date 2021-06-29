@@ -409,14 +409,17 @@ def main():
     app = create_app()
 
     loop = asyncio.get_event_loop()
-    runner = web.AppRunner(app)
+
+    # Override default loggers
+    runner = web.AppRunner(app, logger=logger, access_log=logger)
+
     loop.run_until_complete(runner.setup())
     site = web.TCPSite(
         runner, host=app["settings"]["host_interface"], port=app["settings"]["app_port"]
     )
     loop.run_until_complete(site.start())
 
-    # Register handlers to trap termination signals 
+    # Register handlers to trap termination signals
     for signal in get_supported_termination_signals():
         logger.info(f"Installing handler for signal: {signal} ")
         loop.add_signal_handler(signal, lambda: loop.stop())

@@ -37,6 +37,9 @@ def cleanup(request):
         # Delete matlab_config_file & its owning directory
         matlab_config_file = __get_matlab_config_file()
         matlab_config_dir = os.path.dirname(matlab_config_file)
-        shutil.rmtree(matlab_config_dir)
+        try:
+            shutil.rmtree(matlab_config_dir)
+        except FileNotFoundError:
+            pass
 
     request.addfinalizer(delete_matlab_test_dir)

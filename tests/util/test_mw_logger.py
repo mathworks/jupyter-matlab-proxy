@@ -2,7 +2,7 @@
 """This file tests methods present in jupyter_matlab_proxy/util/mw_logger.py
 """
 
-import pytest, os, functools
+import os
 import logging
 from jupyter_matlab_proxy.util import mw_logger
 

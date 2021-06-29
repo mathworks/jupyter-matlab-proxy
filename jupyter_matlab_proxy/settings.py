@@ -4,9 +4,10 @@ import os
 from pathlib import Path
 import tempfile
 import xml.etree.ElementTree as ET
-import uuid, socket
+import uuid
+import socket
 import shutil
-from .util import custom_http_headers
+from .util import custom_http_headers, validators
 
 
 def get_matlab_path():
@@ -131,7 +132,9 @@ def get(dev=False):
             "host_interface": os.environ.get("APP_HOST"),
             "mwapikey": str(uuid.uuid4()),
             "matlab_protocol": "https",
-            "nlm_conn_str": os.environ.get("MLM_LICENSE_FILE"),
+            "nlm_conn_str": validators.validate_mlm_license_file(
+                os.environ.get("MLM_LICENSE_FILE")
+            ),
             "matlab_config_file": Path.home() / ".matlab" / "proxy_app_config.json",
             "ws_env": ws_env,
             "mwa_api_endpoint": f"https://login{ws_env_suffix}.mathworks.com/authenticationws/service/v4",
