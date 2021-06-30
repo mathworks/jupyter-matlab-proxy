@@ -1,6 +1,6 @@
 // Copyright 2020 The MathWorks, Inc.
+
 import { fireEvent, render } from "../../test/utils/react-test";
-import { waitFor } from "@testing-library/react";
 import React from "react";
 import OverlayTrigger from "./index";
 import configureMockStore from "redux-mock-store";
@@ -77,29 +77,5 @@ describe("OverlayTrigger Component", () => {
 
     // Check if the action dispatched from mockstore is same as expected action
     expect(actionsFromStore).toEqual([expectedPayload]);
-  });
-
-  it("moves Overlay trigger component", async () => {
-    const { getByTestId } = render(<OverlayTrigger />, {
-      initialState: initialState,
-    });
-
-    // overlayTrigger is the parent component
-    // draggableElement is the child component which we drag and the changes are reflected in the overlayTrigger parent component
-    const overlayTrigger = getByTestId("overlayTrigger");
-    const draggableElement = getByTestId("cardBody");
-
-    // grab the child component and translate it
-    fireEvent.mouseDown(draggableElement);
-    fireEvent.mouseMove(draggableElement, {
-      clientX: 10,
-      clientY: 10,
-    });
-    fireEvent.mouseUp(draggableElement);
-
-    // check if the parent component has moved to the new position
-    await waitFor(() =>
-      expect(overlayTrigger).toHaveStyle("transform: translate(22px,22px)")
-    );
   });
 });

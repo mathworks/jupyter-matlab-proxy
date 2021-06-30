@@ -98,7 +98,7 @@ function OverlayTrigger() {
         <>
             {blankOverlay}
             <Draggable
-                defaultPosition={triggerPosition}
+                position={triggerPosition}
                 onDrag={onDrag}
                 onStop={onStop}
                 handle=".card-body"
