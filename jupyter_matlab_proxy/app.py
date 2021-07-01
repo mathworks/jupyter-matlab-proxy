@@ -11,7 +11,6 @@ from . import settings
 from .app_state import AppState
 from .util import mw_logger
 from .util.exceptions import LicensingError
-
 import pkgutil
 import mimetypes
 
@@ -202,6 +201,7 @@ def make_static_route_table(app):
                         content_type = mimetypes.guess_type(name)[0]
 
                     headers = {"content-type": content_type}
+                    headers.update(app["settings"]["custom_http_headers"])
 
                     table[f"{base_url}{parent}/{name}"] = {
                         "mod": mod,
@@ -282,8 +282,11 @@ async def matlab_view(req):
                     allow_redirects=False,
                     data=req_body,
                 ) as res:
+
                     headers = res.headers.copy()
                     body = await res.read()
+                    headers.update(req.app["settings"]["custom_http_headers"])
+
                     return web.Response(headers=headers, status=res.status, body=body)
             except Exception:
                 raise web.HTTPNotFound()

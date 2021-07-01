@@ -6,6 +6,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 import uuid, socket
 import shutil
+from .util import custom_http_headers
 
 
 def get_matlab_path():
@@ -42,7 +43,6 @@ def get_dev_settings():
         tempfile.mkstemp(prefix="mrf_", dir=str(matlab_temp_dir))[1]
     )
     ws_env, ws_env_suffix = get_ws_env_settings()
-
     return {
         "matlab_path": Path(),
         "matlab_version": "R2020b",
@@ -68,6 +68,7 @@ def get_dev_settings():
         "mwa_api_endpoint": f"https://login{ws_env_suffix}.mathworks.com/authenticationws/service/v4",
         "mhlm_api_endpoint": f"https://licensing{ws_env_suffix}.mathworks.com/mls/service/v1/entitlement/list",
         "mwa_login": f"https://login{ws_env_suffix}.mathworks.com",
+        "custom_http_headers": custom_http_headers.get(),
     }
 
 
@@ -112,7 +113,6 @@ def get(dev=False):
         )
         matlab_path = get_matlab_path()
         ws_env, ws_env_suffix = get_ws_env_settings()
-
         return {
             "matlab_path": matlab_path,
             "matlab_version": get_matlab_version(matlab_path),
@@ -137,6 +137,7 @@ def get(dev=False):
             "mwa_api_endpoint": f"https://login{ws_env_suffix}.mathworks.com/authenticationws/service/v4",
             "mhlm_api_endpoint": f"https://licensing{ws_env_suffix}.mathworks.com/mls/service/v1/entitlement/list",
             "mwa_login": f"https://login{ws_env_suffix}.mathworks.com",
+            "custom_http_headers": custom_http_headers.get(),
         }
 
 
