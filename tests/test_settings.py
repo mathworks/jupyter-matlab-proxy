@@ -1,6 +1,7 @@
 # Copyright 2021 The MathWorks, Inc.
 
 import jupyter_matlab_proxy.settings as settings
+from jupyter_matlab_proxy import mw_environment_variables as mw_env
 import pytest
 from pathlib import Path
 import os
@@ -132,7 +133,7 @@ def patch_env_variables_fixture(monkeypatch):
     monkeypatch.setenv("BASE_URL", "localhost")
     monkeypatch.setenv("APP_PORT", "8900")
     monkeypatch.setenv("APP_HOST", "localhost")
-    monkeypatch.setenv("MLM_LICENSE_FILE", "123@nlm")
+    monkeypatch.setenv(mw_env.get_env_name_network_license_manager(), "123@nlm")
 
 
 def test_get_dev_false(patch_env_variables, mock_shutil_which):

@@ -1,14 +1,15 @@
 # Copyright 2020-2021 The MathWorks, Inc.
 
 import os
+from jupyter_matlab_proxy import mw_environment_variables as mw_env
 
 
 def _get_env(port, base_url):
     return {
-        "APP_PORT": str(port),
-        "BASE_URL": f"{base_url}matlab",
-        "APP_HOST": "127.0.0.1",
-        "MHLM_CONTEXT": "MATLAB_JUPYTER",
+        mw_env.get_env_name_app_port(): str(port),
+        mw_env.get_env_name_base_url(): f"{base_url}matlab",
+        mw_env.get_env_name_app_host(): "127.0.0.1",
+        mw_env.get_env_name_mhlm_context(): "MATLAB_JUPYTER",
     }
 
 

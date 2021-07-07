@@ -4,6 +4,7 @@
 
 import logging
 import os
+from jupyter_matlab_proxy import mw_environment_variables as mw_env
 
 
 def get(init=False):
@@ -67,8 +68,8 @@ def get_environment_variable_names():
         {tuple}: name of environment variable to control log level,
                 name of environment variable to control logging to file
     """
-    __log_file_environment_variable_name = "LOG_FILE"
-    __log_level_environment_variable_name = "LOG_LEVEL"
+    __log_file_environment_variable_name = mw_env.get_env_name_log_file()
+    __log_level_environment_variable_name = mw_env.get_env_name_logging_level()
     return __log_level_environment_variable_name, __log_file_environment_variable_name
 
 

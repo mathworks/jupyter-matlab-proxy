@@ -1,13 +1,11 @@
 # Copyright 2021 The MathWorks, Inc.
 
-import pytest, os, socket, subprocess, tempfile, uuid, shutil
+import pytest, os, shutil
 from unittest.mock import patch
-from aiohttp import web
-from jupyter_matlab_proxy import app
 from distutils.dir_util import copy_tree
 from pathlib import Path
-from jupyter_matlab_proxy import settings
 import jupyter_matlab_proxy
+from jupyter_matlab_proxy import mw_environment_variables as mw_env
 from tests.test_app import FakeServer
 
 """
@@ -24,7 +22,7 @@ def matlab_port_fixture(monkeypatch):
     Args:
         monkeypatch : A built-in pytest fixture
     """
-    monkeypatch.setenv("DEV", "false")
+    monkeypatch.setenv(mw_env.get_env_name_development(), "false")
 
 
 @pytest.fixture(name="build_frontend")

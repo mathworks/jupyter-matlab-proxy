@@ -3,6 +3,7 @@
 import os, json, sys
 from json.decoder import JSONDecodeError
 from . import mw_logger
+from jupyter_matlab_proxy import mw_environment_variables as mw_env
 
 logger = mw_logger.get()
 
@@ -180,7 +181,7 @@ def __get_custom_header_env_var():
     Returns:
         String: Environment variable containing path to the file containing custom headers.
     """
-    return "CUSTOM_HTTP_HEADERS"
+    return mw_env.get_env_name_custom_http_headers()
 
 
 def __get_exception_statement():

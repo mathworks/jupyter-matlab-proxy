@@ -11,6 +11,7 @@ from . import settings
 from .app_state import AppState
 from .util import mw_logger
 from .util.exceptions import LicensingError
+from jupyter_matlab_proxy import mw_environment_variables as mw_env
 import pkgutil
 import mimetypes
 
@@ -154,7 +155,7 @@ async def termination_integration_delete(req):
     'with pytest.raises()', there by causing the test : test_termination_integration_delete() 
     to fail. Inorder to avoid this, adding the below if condition to check to skip sys.exit(0) when testing
     """
-    if os.environ.get("TEST", "False").lower() != "true":
+    if not mw_env.is_testing_mode_enabled():
         sys.exit(0)
 
 
@@ -360,9 +361,7 @@ def create_app():
     app = web.Application()
 
     # Get application settings
-    app["settings"] = settings.get(
-        dev=(os.environ.get("DEV", "false").lower() == "true")
-    )
+    app["settings"] = settings.get(dev=(mw_env.is_development_mode_enabled()))
 
     # TODO Validate any settings
 
@@ -371,7 +370,7 @@ def create_app():
 
     # In development mode, the node development server proxies requests to this
     # development server instead of serving the static files directly
-    if os.environ.get("DEV", "false").lower() != "true":
+    if not mw_env.is_development_mode_enabled():
         app["static_route_table"] = make_static_route_table(app)
         for key in app["static_route_table"].keys():
             app.router.add_route("GET", key, static_get)

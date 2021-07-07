@@ -39,4 +39,3 @@ def test_get_with_environment_variables(monkeypatch):
         assert conn_str == str(path)
     finally:
         os.remove(path)
-        

@@ -1,6 +1,8 @@
 # Copyright 2021 The MathWorks, Inc.
 """This file lists and exposes the environment variables which are used by the integration."""
 
+import os
+
 
 def get_env_name_network_license_manager():
     """Specifies the path to valid license file or address of a network license server"""
@@ -47,9 +49,29 @@ def get_env_name_app_host():
     return "APP_HOST"
 
 
+def get_env_name_mhlm_context():
+    """Specifies the context from which MHLM was initiated. Used by DDUX in MATLAB."""
+    return "MHLM_CONTEXT"
+
+
 def get_env_name_testing():
+    """Set to true when we are running tests in development mode."""
     return "TEST"
 
 
 def get_env_name_development():
+    """Set to true when we are in development mode."""
     return "DEV"
+
+
+def is_development_mode_enabled():
+    """Returns true if the app is in development mode."""
+    return os.getenv(get_env_name_development()).lower() == "true"
+
+
+def is_testing_mode_enabled():
+    """Returns true if the app is in testing mode."""
+    return (
+        is_development_mode_enabled()
+        and os.getenv(get_env_name_testing()).lower() == "true"
+    )

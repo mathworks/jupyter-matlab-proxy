@@ -2,6 +2,7 @@
 
 import pytest, asyncio, socket, os, tempfile, requests, pty, time, subprocess, sys
 from pathlib import Path
+from jupyter_matlab_proxy import mw_environment_variables as mw_env
 from collections import namedtuple
 
 """
@@ -37,7 +38,7 @@ def valid_nlm_fixture(monkeypatch):
         monkeypatch : A built-in pytest fixture
     """
 
-    monkeypatch.setenv("MLM_LICENSE_FILE", "abc@nlm")
+    monkeypatch.setenv(mw_env.get_env_name_network_license_manager(), "abc@nlm")
 
 
 @pytest.fixture(name="invalid_nlm")
@@ -51,7 +52,7 @@ def invalid_nlm_fixture(monkeypatch):
         monkeypatch : A built-in pytest fixture
     """
 
-    monkeypatch.setenv("MLM_LICENSE_FILE", "123@brokenhost")
+    monkeypatch.setenv(mw_env.get_env_name_network_license_manager(), "123@brokenhost")
 
 
 @pytest.fixture(name="matlab_process_setup")
