@@ -2,11 +2,11 @@
 
 import os, pytest, shutil
 from jupyter_matlab_proxy import settings
-from jupyter_matlab_proxy import mw_environment_variables as mw_env
+from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
 
 
 def pytest_generate_tests(metafunc):
-    os.environ[mw_env.get_env_name_development()] = "true"
+    os.environ[mwi_env.get_env_name_development()] = "true"
 
 
 def __get_matlab_config_file():

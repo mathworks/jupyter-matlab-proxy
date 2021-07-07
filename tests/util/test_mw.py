@@ -4,7 +4,7 @@ import pytest, secrets, datetime, random, re
 from jupyter_matlab_proxy import settings
 from jupyter_matlab_proxy.util import mw
 from datetime import timezone
-from jupyter_matlab_proxy.util import exceptions
+from jupyter_matlab_proxy.util import mwi_exceptions
 from datetime import timedelta
 from collections import namedtuple
 from aioresponses import aioresponses
@@ -152,9 +152,9 @@ async def test_fetch_access_token(
 
 
 async def test_fetch_access_token_licensing_error(mwa_api_data, mock_response):
-    """Test to check mw.fetch_access_token() method raises a exceptions.OnlineLicensingError.
+    """Test to check mw.fetch_access_token() method raises a mwi_exceptions.OnlineLicensingError.
 
-    When an invalid response is received from the server, this test checks if exceptions.OnlineLicensingError is raised.
+    When an invalid response is received from the server, this test checks if mwi_exceptions.OnlineLicensingError is raised.
     Args:
         mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
         mwa_api_data (namedtuple): A pytest fixture which returns a namedtuple containing values for MW authentication
@@ -163,10 +163,11 @@ async def test_fetch_access_token_licensing_error(mwa_api_data, mock_response):
     url_pattern = mwa_api_data.mwa_api_endpoint_pattern
 
     mock_response.post(
-        url_pattern, exception=exceptions.OnlineLicensingError("Communication failed")
+        url_pattern,
+        exception=mwi_exceptions.OnlineLicensingError("Communication failed"),
     )
 
-    with pytest.raises(exceptions.OnlineLicensingError):
+    with pytest.raises(mwi_exceptions.OnlineLicensingError):
         resp = await mw.fetch_access_token(
             mwa_api_data.mwa_api_endpoint,
             mwa_api_data.identity_token,
@@ -175,7 +176,7 @@ async def test_fetch_access_token_licensing_error(mwa_api_data, mock_response):
 
 
 async def test_fetch_expand_token_licensing_error(mock_response, mwa_api_data):
-    """Test to check fetch_expand_token raises exceptions.OnlineLicensing error.
+    """Test to check fetch_expand_token raises mwi_exceptions.OnlineLicensing error.
 
     Args:
         mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
@@ -185,10 +186,11 @@ async def test_fetch_expand_token_licensing_error(mock_response, mwa_api_data):
     url_pattern = mwa_api_data.mwa_api_endpoint_pattern
 
     mock_response.post(
-        url_pattern, exception=exceptions.OnlineLicensingError("Communication failed")
+        url_pattern,
+        exception=mwi_exceptions.OnlineLicensingError("Communication failed"),
     )
 
-    with pytest.raises(exceptions.OnlineLicensingError):
+    with pytest.raises(mwi_exceptions.OnlineLicensingError):
         resp = await mw.fetch_expand_token(
             mwa_api_data.mwa_api_endpoint,
             mwa_api_data.identity_token,
@@ -266,9 +268,9 @@ async def test_fetch_expand_token(
 
 
 async def test_fetch_entitlements_licensing_error(mock_response, mwa_api_data):
-    """Test to check if fetch_entitlements raises exceptions.OnlineLicensingError.
+    """Test to check if fetch_entitlements raises mwi_exceptions.OnlineLicensingError.
 
-    When an invalid response is received, this test checks if exceptions.OnlineLicenseError is raised.
+    When an invalid response is received, this test checks if mwi_exceptions.OnlineLicenseError is raised.
 
     Args:
         mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
@@ -277,10 +279,11 @@ async def test_fetch_entitlements_licensing_error(mock_response, mwa_api_data):
     url_pattern = mwa_api_data.mhlm_api_endpoint_pattern
 
     mock_response.post(
-        url_pattern, exception=exceptions.OnlineLicensingError("Communication Error")
+        url_pattern,
+        exception=mwi_exceptions.OnlineLicensingError("Communication Error"),
     )
 
-    with pytest.raises(exceptions.OnlineLicensingError):
+    with pytest.raises(mwi_exceptions.OnlineLicensingError):
         resp = await mw.fetch_entitlements(
             mwa_api_data.mhlm_api_endpoint,
             mwa_api_data.access_token,
@@ -321,11 +324,11 @@ def invalid_entitlements_fixture(request):
 async def test_fetch_entitlements_entitlement_error(
     mock_response, mwa_api_data, invalid_entitlements
 ):
-    """Test to check fetch_entitlements raises exceptions.EntitlementError.
+    """Test to check fetch_entitlements raises mwi_exceptions.EntitlementError.
 
 
     When invalid entitlements are received as a response, this test checks if mw.fetch_entitlements raises an
-    exceptions.EntitlementError. mock_response mocks aiohttp.ClientSession.post method to send invalid entitlements as a HTTP response.
+    mwi_exceptions.EntitlementError. mock_response mocks aiohttp.ClientSession.post method to send invalid entitlements as a HTTP response.
 
     Args:
 
@@ -337,7 +340,7 @@ async def test_fetch_entitlements_entitlement_error(
 
     mock_response.post(url_pattern, body=invalid_entitlements)
 
-    with pytest.raises(exceptions.EntitlementError):
+    with pytest.raises(mwi_exceptions.EntitlementError):
         resp = await mw.fetch_entitlements(
             mwa_api_data.mhlm_api_endpoint,
             mwa_api_data.access_token,
@@ -405,13 +408,13 @@ def test_parse_mhlm_no_error():
 
 
 def test_parse_mhlm_error():
-    """Test to check mw.parse_mhlm_error() returns an exceptions.OnlineLiceningError.
+    """Test to check mw.parse_mhlm_error() returns an mwi_exceptions.OnlineLiceningError.
 
-    When logs contain mhlm specific error information, this test checks if exceptions.OnlineLicensingError is raised.
+    When logs contain mhlm specific error information, this test checks if mwi_exceptions.OnlineLicensingError is raised.
     """
     logs = ["License Manager Error", "MHLM Licensing Failed"]
     actual_output = mw.parse_mhlm_error(logs)
-    expected_output = exceptions.OnlineLicensingError
+    expected_output = mwi_exceptions.OnlineLicensingError
 
     assert isinstance(actual_output, expected_output)
 
@@ -428,7 +431,7 @@ def test_parse_nlm_no_error():
 def test_parse_nlm_error():
     """Test to check parse_nlm_error() method returns an exception when logs contain an error.
 
-    When logs contain nlm specific errors, this test checks if parse_nlm_error() raises exceptions.NetworkLicensingError.
+    When logs contain nlm specific errors, this test checks if parse_nlm_error() raises mwi_exceptions.NetworkLicensingError.
     """
     logs = [
         "Starting MATLAB proxy-app",
@@ -440,7 +443,7 @@ def test_parse_nlm_error():
     conn_str = "abc@nlm"
 
     actual_output = mw.parse_nlm_error(logs, conn_str)
-    expected_output = exceptions.NetworkLicensingError
+    expected_output = mwi_exceptions.NetworkLicensingError
 
     assert isinstance(actual_output, expected_output)
 
@@ -451,7 +454,7 @@ def test_parse_other_error():
     """
     logs = ["Starting MATLAB proxy-app", "Error parsing config, resetting."]
 
-    expected_output = exceptions.MatlabError
+    expected_output = mwi_exceptions.MatlabError
     actual_output = mw.parse_other_error(logs)
 
     assert isinstance(actual_output, expected_output)

@@ -1,7 +1,7 @@
 # Copyright 2020-2021 The MathWorks, Inc.
 
 import asyncio
-from jupyter_matlab_proxy import mw_environment_variables as mw_env
+from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
 import xml.etree.ElementTree as ET
 import os
 import json
@@ -13,8 +13,8 @@ import tempfile
 import socket
 import errno
 from collections import deque
-from .util import mw, mw_logger, validators
-from .util.exceptions import (
+from .util import mw, mwi_logger, mwi_validators
+from .util.mwi_exceptions import (
     LicensingError,
     InternalError,
     OnlineLicensingError,
@@ -25,7 +25,7 @@ from .util.exceptions import (
 )
 
 
-logger = mw_logger.get()
+logger = mwi_logger.get()
 
 
 class AppState:
@@ -313,8 +313,8 @@ class AppState:
         # node application in development mode always uses port 31515 to bypass the
         # reverse proxy. Once this is addressed, remove this special case.
         if (
-            mw_env.is_development_mode_enabled()
-            and not mw_env.is_testing_mode_enabled()
+            mwi_env.is_development_mode_enabled()
+            and not mwi_env.is_testing_mode_enabled()
         ):
             self.matlab_port = 31515
         else:
@@ -402,7 +402,7 @@ class AppState:
             matlab_env["MW_LOGIN_DISPLAY_NAME"] = self.licensing["display_name"]
             matlab_env["MW_LOGIN_USER_ID"] = self.licensing["user_id"]
             matlab_env["MW_LOGIN_PROFILE_ID"] = self.licensing["profile_id"]
-            if os.getenv(mw_env.get_env_name_mhlm_context()) is None:
+            if os.getenv(mwi_env.get_env_name_mhlm_context()) is None:
                 matlab_env["MHLM_CONTEXT"] = "MATLAB_JAVASCRIPT_DESKTOP"
 
         elif self.licensing["type"] == "nlm":

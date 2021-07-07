@@ -2,15 +2,15 @@
 
 import xml.etree.ElementTree as ET
 import aiohttp, os, asyncio, select, logging
-from .exceptions import (
+from .mwi_exceptions import (
     OnlineLicensingError,
     EntitlementError,
     NetworkLicensingError,
     MatlabError,
 )
-from . import mw_logger
+from . import mwi_logger
 
-logger = mw_logger.get()
+logger = mwi_logger.get()
 
 
 def __get_licensing_url():

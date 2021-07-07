@@ -7,8 +7,8 @@ import xml.etree.ElementTree as ET
 import uuid
 import socket
 import shutil
-from .util import custom_http_headers, validators
-from jupyter_matlab_proxy import mw_environment_variables as mw_env
+from .util import mwi_custom_http_headers, mwi_validators
+from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
 
 
 def get_matlab_path():
@@ -58,19 +58,19 @@ def get_dev_settings():
         ],
         "create_xvfb_cmd": create_xvfb_cmd,
         "matlab_ready_file": matlab_ready_file,
-        "base_url": os.environ.get(mw_env.get_env_name_base_url(), ""),
-        "app_port": os.environ.get(mw_env.get_env_name_app_port(), 8000),
-        "host_interface": os.environ.get(mw_env.get_env_name_app_host(), "127.0.0.1"),
+        "base_url": os.environ.get(mwi_env.get_env_name_base_url(), ""),
+        "app_port": os.environ.get(mwi_env.get_env_name_app_port(), 8000),
+        "host_interface": os.environ.get(mwi_env.get_env_name_app_host(), "127.0.0.1"),
         "mwapikey": str(uuid.uuid4()),
         "matlab_protocol": "http",
         "matlab_display": ":1",
-        "nlm_conn_str": os.environ.get(mw_env.get_env_name_network_license_manager()),
+        "nlm_conn_str": os.environ.get(mwi_env.get_env_name_network_license_manager()),
         "matlab_config_file": matlab_temp_dir / "proxy_app_config.json",
         "ws_env": ws_env,
         "mwa_api_endpoint": f"https://login{ws_env_suffix}.mathworks.com/authenticationws/service/v4",
         "mhlm_api_endpoint": f"https://licensing{ws_env_suffix}.mathworks.com/mls/service/v1/entitlement/list",
         "mwa_login": f"https://login{ws_env_suffix}.mathworks.com",
-        "custom_http_headers": custom_http_headers.get(),
+        "mwi_custom_http_headers": mwi_custom_http_headers.get(),
     }
 
 
@@ -90,7 +90,7 @@ def get(dev=False):
 
         # If running tests using Pytest, it will set environment variable TEST to true before running tests.
         # Will make test env specific changes before returning the settings.
-        if mw_env.is_testing_mode_enabled():
+        if mwi_env.is_testing_mode_enabled():
 
             # Set ready_delay value to 0 for faster fake MATLAB startup.
             ready_delay = ["--ready-delay", "0"]
@@ -128,20 +128,20 @@ def get(dev=False):
             ],
             "create_xvfb_cmd": create_xvfb_cmd,
             "matlab_ready_file": Path(tempfile.gettempdir()) / "connector.securePort",
-            "base_url": os.environ[mw_env.get_env_name_base_url()],
-            "app_port": os.environ[mw_env.get_env_name_app_port()],
-            "host_interface": os.environ.get(mw_env.get_env_name_app_host()),
+            "base_url": os.environ[mwi_env.get_env_name_base_url()],
+            "app_port": os.environ[mwi_env.get_env_name_app_port()],
+            "host_interface": os.environ.get(mwi_env.get_env_name_app_host()),
             "mwapikey": str(uuid.uuid4()),
             "matlab_protocol": "https",
-            "nlm_conn_str": validators.validate_mlm_license_file(
-                os.environ.get(mw_env.get_env_name_network_license_manager())
+            "nlm_conn_str": mwi_validators.validate_mlm_license_file(
+                os.environ.get(mwi_env.get_env_name_network_license_manager())
             ),
             "matlab_config_file": Path.home() / ".matlab" / "proxy_app_config.json",
             "ws_env": ws_env,
             "mwa_api_endpoint": f"https://login{ws_env_suffix}.mathworks.com/authenticationws/service/v4",
             "mhlm_api_endpoint": f"https://licensing{ws_env_suffix}.mathworks.com/mls/service/v1/entitlement/list",
             "mwa_login": f"https://login{ws_env_suffix}.mathworks.com",
-            "custom_http_headers": custom_http_headers.get(),
+            "mwi_custom_http_headers": mwi_custom_http_headers.get(),
         }
 
 

@@ -2,8 +2,8 @@
 
 from json.decoder import JSONDecodeError
 import pytest, os, time, json, stat
-from jupyter_matlab_proxy.util import custom_http_headers
-from jupyter_matlab_proxy import mw_environment_variables as mw_env
+from jupyter_matlab_proxy.util import mwi_custom_http_headers
+from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
 from pathlib import Path
 from contextlib import nullcontext as does_not_raise
 
@@ -11,14 +11,14 @@ from contextlib import nullcontext as does_not_raise
 def test_get_custom_header_env_var():
     """Test to check if the __get_custom_header_env_var() method returns the expected environment variable name"""
     assert (
-        mw_env.get_env_name_custom_http_headers()
-        == custom_http_headers.__get_custom_header_env_var()
+        mwi_env.get_env_name_custom_http_headers()
+        == mwi_custom_http_headers.__get_custom_header_env_var()
     )
 
 
 def test_get_exception_statement():
     """Test to check if __get_exception_statement() contains 'JSON data' in the generic exception statement returned by __get_exception_statement()"""
-    assert "JSON data" in custom_http_headers.__get_exception_statement()
+    assert "JSON data" in mwi_custom_http_headers.__get_exception_statement()
 
 
 @pytest.fixture(name="non_existent_temp_json_file")
@@ -48,7 +48,7 @@ def monkeypatch_env_var_with_json_file_fixture(
                                         to non-existent file in a temporary directory.
     """
     monkeypatch.setenv(
-        mw_env.get_env_name_custom_http_headers(),
+        mwi_env.get_env_name_custom_http_headers(),
         str(non_existent_temp_json_file),
     )
 
@@ -91,7 +91,7 @@ def test_get_file_contents_with_valid_json(json_file_with_valid_json):
     with open(json_file_with_valid_json, "r") as f:
         file_content = json.load(f)
 
-    assert file_content == custom_http_headers.__get_file_contents(
+    assert file_content == mwi_custom_http_headers.__get_file_contents(
         json_file_with_valid_json
     )
 
@@ -133,7 +133,7 @@ def test_get_file_contents_with_invalid_json(json_file_with_invalid_json, capsys
         json_file_with_invalid_json : Pytest fixture which returns a non-existent random json file.
     """
     with pytest.raises(SystemExit):
-        custom_http_headers.__get_file_contents(json_file_with_invalid_json)
+        mwi_custom_http_headers.__get_file_contents(json_file_with_invalid_json)
         out, err = capsys.readouterr()
         assert JSONDecodeError.__name__ in out
 
@@ -148,7 +148,7 @@ def test_check_file_validity_no_read_access(non_existent_temp_json_file, capsys)
     temp_json_file_no_read_access.touch(mode=stat.S_IWUSR)
 
     with pytest.raises(SystemExit):
-        custom_http_headers.__check_file_validity(temp_json_file_no_read_access)
+        mwi_custom_http_headers.__check_file_validity(temp_json_file_no_read_access)
         out, err = capsys.readouterr()
         assert OSError.__name__ in out
 
@@ -167,7 +167,7 @@ def test_check_file_validity_no_error(non_existent_temp_json_file, valid_json_co
 
     with does_not_raise():
         assert (
-            custom_http_headers.__check_file_validity(
+            mwi_custom_http_headers.__check_file_validity(
                 random_json_file_with_valid_content
             )
             is True
@@ -175,8 +175,8 @@ def test_check_file_validity_no_error(non_existent_temp_json_file, valid_json_co
 
 
 def test_get_no_env_var():
-    """Test to check if get() returns an empty dict, when custom_http_headers env variable is not present."""
-    assert custom_http_headers.get() == dict()
+    """Test to check if get() returns an empty dict, when mwi_custom_http_headers env variable is not present."""
+    assert mwi_custom_http_headers.get() == dict()
 
 
 def test_get_with_json_file_no_error(
@@ -190,12 +190,12 @@ def test_get_with_json_file_no_error(
                               have a non-existent temporary json file.
         valid_json_content : Pytest fixture which returns valid json data as a string.
     """
-    tmp_file_path = os.getenv(mw_env.get_env_name_custom_http_headers())
+    tmp_file_path = os.getenv(mwi_env.get_env_name_custom_http_headers())
 
     with open(tmp_file_path, "w") as f:
         f.write(valid_json_content)
 
-    assert custom_http_headers.get() == json.loads(valid_json_content)
+    assert mwi_custom_http_headers.get() == json.loads(valid_json_content)
 
 
 def test_get_with_json_file_raise_exception(
@@ -209,13 +209,13 @@ def test_get_with_json_file_raise_exception(
                               have a non-existent temporary json file.
         invalid_json_content : Pytest fixture which returns invalid json data as a string.
     """
-    tmp_file_path = os.getenv(mw_env.get_env_name_custom_http_headers())
+    tmp_file_path = os.getenv(mwi_env.get_env_name_custom_http_headers())
 
     with open(tmp_file_path, "w") as f:
         f.write(invalid_json_content)
 
     with pytest.raises(SystemExit):
-        custom_http_headers.get()
+        mwi_custom_http_headers.get()
         out, err = capsys.readouterr()
         assert JSONDecodeError.__name__ in out
 
@@ -232,7 +232,7 @@ def monkeypatch_env_var_with_invalid_json_string_fixture(
         non_existent_temp_json_file: Pytest fixture which returns a string containing path
                                         to non-existent file in a temporary directory.
     """
-    monkeypatch.setenv(mw_env.get_env_name_custom_http_headers(), invalid_json_content)
+    monkeypatch.setenv(mwi_env.get_env_name_custom_http_headers(), invalid_json_content)
 
 
 def test_get_with_invalid_json_string(
@@ -246,7 +246,7 @@ def test_get_with_invalid_json_string(
                                                      contain invalid JSON data as a string.
     """
     with pytest.raises(SystemExit):
-        headers = custom_http_headers.get()
+        headers = mwi_custom_http_headers.get()
         out, err = capsys.readouterr()
         assert JSONDecodeError.__name__ in out
 
@@ -261,7 +261,7 @@ def monkeypatch_env_var_with_valid_json_string_fixture(monkeypatch, valid_json_c
         non_existent_temp_json_file: Pytest fixture which returns a string containing path
                                         to non-existent file in a temporary directory.
     """
-    monkeypatch.setenv(mw_env.get_env_name_custom_http_headers(), valid_json_content)
+    monkeypatch.setenv(mwi_env.get_env_name_custom_http_headers(), valid_json_content)
 
 
 def test_get_with_valid_json_string(monkeypatch_env_var_with_valid_json_string):
@@ -272,5 +272,5 @@ def test_get_with_valid_json_string(monkeypatch_env_var_with_valid_json_string):
         monkeypatch_env_var_with_valid_json_string : Pytest fixture which monkeypatches the env variable returned by __get_custom_header_env_var() to
                                                      contain valid JSON data as a string.
     """
-    headers = json.loads(os.getenv(mw_env.get_env_name_custom_http_headers()))
-    assert headers == custom_http_headers.get()
+    headers = json.loads(os.getenv(mwi_env.get_env_name_custom_http_headers()))
+    assert headers == mwi_custom_http_headers.get()

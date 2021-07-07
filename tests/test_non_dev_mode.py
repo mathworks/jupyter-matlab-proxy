@@ -5,7 +5,7 @@ from unittest.mock import patch
 from distutils.dir_util import copy_tree
 from pathlib import Path
 import jupyter_matlab_proxy
-from jupyter_matlab_proxy import mw_environment_variables as mw_env
+from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
 from tests.test_app import FakeServer
 
 """
@@ -22,7 +22,7 @@ def matlab_port_fixture(monkeypatch):
     Args:
         monkeypatch : A built-in pytest fixture
     """
-    monkeypatch.setenv(mw_env.get_env_name_development(), "false")
+    monkeypatch.setenv(mwi_env.get_env_name_development(), "false")
 
 
 @pytest.fixture(name="build_frontend")

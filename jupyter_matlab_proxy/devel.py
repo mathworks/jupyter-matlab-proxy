@@ -4,7 +4,7 @@
 import asyncio, aiohttp
 from aiohttp import web
 import socket, time, os, sys
-from jupyter_matlab_proxy import mw_environment_variables as mw_env
+from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
 
 desktop_html = b"""
 <h1>Fake MATLAB Web Desktop</h1>
@@ -70,7 +70,7 @@ async def fake_matlab_started(app):
 
     # If "123@brokenhost" is specified as the MLM_LICENSE_FILE, exit to simulate an
     # error
-    nlm = os.environ.get(mw_env.get_env_name_network_license_manager())
+    nlm = os.environ.get(mwi_env.get_env_name_network_license_manager())
     if nlm == "123@brokenhost":
         # TODO This should output the exact same text as MATLAB would in the same error
         # state

@@ -4,7 +4,7 @@ import pytest, asyncio, aiohttp, os, json, psutil, socket, subprocess, time, req
 from unittest.mock import patch
 from aiohttp import web
 from jupyter_matlab_proxy import app, settings
-from jupyter_matlab_proxy.util.exceptions import MatlabInstallError
+from jupyter_matlab_proxy.util.mwi_exceptions import MatlabInstallError
 from subprocess import Popen, PIPE
 from jupyter_matlab_proxy.app_state import AppState
 from distutils.dir_util import copy_tree

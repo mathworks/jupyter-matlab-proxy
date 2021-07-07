@@ -9,9 +9,9 @@ import json
 import signal
 from . import settings
 from .app_state import AppState
-from .util import mw_logger
-from .util.exceptions import LicensingError
-from jupyter_matlab_proxy import mw_environment_variables as mw_env
+from .util import mwi_logger
+from .util.mwi_exceptions import LicensingError
+from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
 import pkgutil
 import mimetypes
 
@@ -155,7 +155,7 @@ async def termination_integration_delete(req):
     'with pytest.raises()', there by causing the test : test_termination_integration_delete() 
     to fail. Inorder to avoid this, adding the below if condition to check to skip sys.exit(0) when testing
     """
-    if not mw_env.is_testing_mode_enabled():
+    if not mwi_env.is_testing_mode_enabled():
         sys.exit(0)
 
 
@@ -202,7 +202,7 @@ def make_static_route_table(app):
                         content_type = mimetypes.guess_type(name)[0]
 
                     headers = {"content-type": content_type}
-                    headers.update(app["settings"]["custom_http_headers"])
+                    headers.update(app["settings"]["mwi_custom_http_headers"])
 
                     table[f"{base_url}{parent}/{name}"] = {
                         "mod": mod,
@@ -286,7 +286,7 @@ async def matlab_view(req):
 
                     headers = res.headers.copy()
                     body = await res.read()
-                    headers.update(req.app["settings"]["custom_http_headers"])
+                    headers.update(req.app["settings"]["mwi_custom_http_headers"])
 
                     return web.Response(headers=headers, status=res.status, body=body)
             except Exception:
@@ -361,7 +361,7 @@ def create_app():
     app = web.Application()
 
     # Get application settings
-    app["settings"] = settings.get(dev=(mw_env.is_development_mode_enabled()))
+    app["settings"] = settings.get(dev=(mwi_env.is_development_mode_enabled()))
 
     # TODO Validate any settings
 
@@ -370,7 +370,7 @@ def create_app():
 
     # In development mode, the node development server proxies requests to this
     # development server instead of serving the static files directly
-    if not mw_env.is_development_mode_enabled():
+    if not mwi_env.is_development_mode_enabled():
         app["static_route_table"] = make_static_route_table(app)
         for key in app["static_route_table"].keys():
             app.router.add_route("GET", key, static_get)
@@ -401,7 +401,7 @@ def get_supported_termination_signals():
 
 def main():
 
-    logger = mw_logger.get(init=True)
+    logger = mwi_logger.get(init=True)
 
     logger.info("Starting MATLAB proxy-app")
 

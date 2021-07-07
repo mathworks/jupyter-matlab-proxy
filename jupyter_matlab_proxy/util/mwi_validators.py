@@ -20,10 +20,10 @@ def validate_mlm_license_file(nlm_conn_str):
     """
     import re
     import os
-    from . import mw_logger
-    from .exceptions import NetworkLicensingError
+    from . import mwi_logger
+    from .mwi_exceptions import NetworkLicensingError
 
-    logger = mw_logger.get()
+    logger = mwi_logger.get()
 
     if nlm_conn_str is None:
         return None
