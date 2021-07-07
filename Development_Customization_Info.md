@@ -26,7 +26,7 @@ source .venv/bin/activate
 # Install the Python package (and dependencies) in development mode (skip this if already done)
 pip install -e .[dev]
 # Start the development server
-DEV=true adev runserver jupyter_matlab_proxy/app.py
+MWI_DEV=true adev runserver jupyter_matlab_proxy/app.py
 ```
 
 If you make any changes to either the JavaScript code or the Python code, then these apps will reload immediately showing the results. Bear in mind that this kind of live-reloading can have an impact on application state (on the serverside particularly). This occurs independently for the JavaScript and Python applications. So if you are working only on the frontend, the backend state will never be affected by changes to the frontend and vice-versa.

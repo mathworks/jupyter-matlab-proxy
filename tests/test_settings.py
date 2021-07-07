@@ -130,9 +130,9 @@ def patch_env_variables_fixture(monkeypatch):
     Args:
         monkeypatch : Built-in pytest fixture
     """
-    monkeypatch.setenv("BASE_URL", "localhost")
-    monkeypatch.setenv("APP_PORT", "8900")
-    monkeypatch.setenv("APP_HOST", "localhost")
+    monkeypatch.setenv(mw_env.get_env_name_base_url(), "localhost")
+    monkeypatch.setenv(mw_env.get_env_name_app_port(), "8900")
+    monkeypatch.setenv(mw_env.get_env_name_app_host(), "localhost")
     monkeypatch.setenv(mw_env.get_env_name_network_license_manager(), "123@nlm")
 
 

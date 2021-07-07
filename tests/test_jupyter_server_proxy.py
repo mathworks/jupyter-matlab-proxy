@@ -3,14 +3,15 @@
 import jupyter_matlab_proxy
 import os
 from pathlib import Path
+from jupyter_matlab_proxy import mw_environment_variables as mw_env
 
 
 def test_get_env():
     port = 10000
     base_url = "/foo/"
     r = jupyter_matlab_proxy._get_env(port, base_url)
-    assert r["APP_PORT"] == str(port)
-    assert r["BASE_URL"] == f"{base_url}matlab"
+    assert r[mw_env.get_env_name_app_port()] == str(port)
+    assert r[mw_env.get_env_name_base_url()] == f"{base_url}matlab"
 
 
 def test_setup_matlab():

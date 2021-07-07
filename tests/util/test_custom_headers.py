@@ -10,7 +10,10 @@ from contextlib import nullcontext as does_not_raise
 
 def test_get_custom_header_env_var():
     """Test to check if the __get_custom_header_env_var() method returns the expected environment variable name"""
-    assert "CUSTOM_HTTP_HEADERS" == custom_http_headers.__get_custom_header_env_var()
+    assert (
+        mw_env.get_env_name_custom_http_headers()
+        == custom_http_headers.__get_custom_header_env_var()
+    )
 
 
 def test_get_exception_statement():

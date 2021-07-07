@@ -18,7 +18,7 @@ test web server's static route table in non-dev mode.
 def matlab_port_fixture(monkeypatch):
     """A pytest fixture which monkeypatches an environment variable.
 
-    Pytest by default sets DEV to true.
+    Pytest by default sets MWI_DEV to true.
     Args:
         monkeypatch : A built-in pytest fixture
     """
@@ -127,8 +127,8 @@ def test_server_fixture(
         loop : Event Loop
         aiohttp_client : A built-in pytest fixture
         build_frontend: Pytest fixture which generates the directory structure of static files with some placeholder content
-        matlab_port_setup: Pytest fixture which monkeypatches 'DEV' env to False. This is required for the test_server to add static content
-        mock_settings_get: Pytest fixture which mocks settings.get() to return dev settings when env 'DEV' is set to False.
+        matlab_port_setup: Pytest fixture which monkeypatches 'MWI_DEV' env to False. This is required for the test_server to add static content
+        mock_settings_get: Pytest fixture which mocks settings.get() to return dev settings when env 'MWI_DEV' is set to False.
 
     Yields:
         [aiohttp_client]: A aiohttp_client to send HTTP requests.
