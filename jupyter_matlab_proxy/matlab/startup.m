@@ -20,8 +20,8 @@ if ~isempty(getenv('MW_LOGIN_USER_ID'))
     clear user_id first_name last_name email_address profile_id display_name token remember_me
 end
 
-if (strlength(getenv('BASE_URL')) > 0)
-    connector.internal.setConfig('contextRoot', getenv('BASE_URL'))
+if (strlength(getenv('MWI_BASE_URL')) > 0)
+    connector.internal.setConfig('contextRoot', getenv('MWI_BASE_URL'))
 end
 connector.internal.Worker.start
 

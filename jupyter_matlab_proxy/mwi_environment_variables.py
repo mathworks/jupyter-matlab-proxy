@@ -30,6 +30,9 @@ def get_env_name_base_url():
 
     Note: The website runs on a URL of the form:
         www.<SERVER ADDRESS>:<PORT NUMBER>/<BASE_URL>/index.html
+
+    Note: If you are updating this value, remember to update the startup.m file
+            that is used to notify the connector of the base url.
     """
     return "MWI_BASE_URL"
 
