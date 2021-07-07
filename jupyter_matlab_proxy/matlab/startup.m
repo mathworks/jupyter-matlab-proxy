@@ -17,7 +17,7 @@ if ~isempty(getenv('MW_LOGIN_USER_ID'))
         last_name, email_address, user_id, token, profile_id, login_level, ...
         remember_me, email_address, display_name);
     % Clear all local variables from users workspace.
-    clear user_id first_name last_name email_address profile_id display_name token remember_me
+    clear li login_level user_id first_name last_name email_address profile_id display_name token remember_me
 end
 
 if (strlength(getenv('MWI_BASE_URL')) > 0)

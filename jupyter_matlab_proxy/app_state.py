@@ -391,7 +391,7 @@ class AppState:
         matlab_env["MWAPIKEY"] = self.settings["mwapikey"]
         # TODO Make this configurable (impacts the matlab ready file)
         matlab_env["MATLAB_LOG_DIR"] = "/tmp"
-
+        matlab_env["MW_CD_ANYWHERE_ENABLED"] = "true"
         if self.licensing["type"] == "mhlm":
             matlab_env["MLM_WEB_LICENSE"] = "true"
             matlab_env["MLM_WEB_USER_CRED"] = access_token_data["token"]
