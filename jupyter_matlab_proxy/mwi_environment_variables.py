@@ -66,12 +66,12 @@ def get_env_name_development():
 
 def is_development_mode_enabled():
     """Returns true if the app is in development mode."""
-    return os.getenv(get_env_name_development()).lower() == "true"
+    return os.environ.get(get_env_name_development(), "false").lower() == "true"
 
 
 def is_testing_mode_enabled():
     """Returns true if the app is in testing mode."""
     return (
         is_development_mode_enabled()
-        and os.getenv(get_env_name_testing()).lower() == "true"
+        and os.environ.get(get_env_name_testing(), "false").lower() == "true"
     )
