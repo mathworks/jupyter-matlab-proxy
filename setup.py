@@ -54,6 +54,8 @@ setuptools.setup(
     version="0.2.0",
     url="https://github.com/mathworks/jupyter-matlab-proxy",
     author="The MathWorks, Inc.",
+    author_email="jupyter-support@mathworks.com",
+    license="MATHWORKS CLOUD REFERENCE ARCHITECTURE LICENSE",
     description="Jupyter extension to proxy MATLAB JavaScript Desktop",
     packages=setuptools.find_packages(exclude=["devel", "tests"]),
     keywords=["Jupyter"],

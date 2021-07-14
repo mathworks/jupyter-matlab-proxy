@@ -340,19 +340,23 @@ async def matlab_starter(app):
 
 
 async def start_background_tasks(app):
-    loop = asyncio.get_running_loop()
-    app["license_init"] = loop.create_task(license_init(app))
-    app["matlab_starter"] = loop.create_task(matlab_starter(app))
+    await license_init(app)
+    await matlab_starter(app)
 
 
 async def cleanup_background_tasks(app):
-
+    logger = mwi_logger.get()
     state = app["state"]
+    tasks = state.tasks
+    for task_name, task in tasks.items():
+        if not task.cancelled():
+            logger.debug(f"Cancelling MWI task: {task_name} : {task} ")
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
-    app["license_init"].cancel()
-    app["matlab_starter"].cancel()
-    await app["license_init"]
-    await app["matlab_starter"]
     await state.stop_matlab()
 
 
@@ -427,9 +431,21 @@ def main():
 
     async def shutdown():
         logger.info("Shutting down MATLAB proxy-app")
+        for task in asyncio.Task.all_tasks():
+            logger.debug(f"calling cancel on all_tasks: {task}")
+            task.cancel()
         await app.shutdown()
         await app.cleanup()
-        # waiting here to allow matlab to finish exiting.
-        await asyncio.sleep(5)
 
-    loop.run_until_complete(shutdown())
+        asyncio.ensure_future(exit())
+
+    try:
+        loop.run_until_complete(shutdown())
+    except:
+        pass
+
+    logger.info(
+        "Finished shutting down. Thank you for using the MATLAB web desktop proxy."
+    )
+    loop.close()
+    sys.exit(0)

@@ -34,6 +34,7 @@ class AppState:
         self.processes = {"matlab": None, "xvfb": None}
         self.matlab_port = None
         self.licensing = None
+        self.tasks = {}
         self.logs = {
             "matlab": deque(maxlen=200),
         }
@@ -65,6 +66,14 @@ class AppState:
         logger.info(f"Resetting cached licensing information...")
         self.licensing = None
         self.__delete_cached_licensing_file()
+
+    async def __update_and_persist_licensing(self):
+        successful_update = await self.update_entitlements()
+        if successful_update:
+            self.persist_licensing()
+        else:
+            self.__reset_and_delete_cached_licensing()
+        return successful_update
 
     async def init_licensing(self):
         """Initialize licensing from environment variable or cached file.
@@ -122,12 +131,9 @@ class AppState:
                         ) - timedelta(hours=1)
 
                         if expiry_window > datetime.now(timezone.utc):
-                            successful_update = await self.update_entitlements()
+                            successful_update = self.__update_and_persist_licensing()
                             if successful_update:
                                 logger.info("Successful re-use of cached information.")
-                                self.persist_licensing()
-                            else:
-                                self.__reset_and_delete_cached_licensing()
                         else:
                             self.__reset_and_delete_cached_licensing()
                     else:
@@ -198,8 +204,9 @@ class AppState:
                 "entitlement_id": entitlement_id,
             }
 
-            await self.update_entitlements()
-            self.persist_licensing()
+            successful_update = self.__update_and_persist_licensing()
+            if successful_update:
+                logger.info("Login successful, persisting login information.")
 
         except OnlineLicensingError as e:
             self.error = e
@@ -445,16 +452,19 @@ class AppState:
         self.processes["matlab"] = matlab
         logger.debug(f"Started MATLAB (PID={matlab.pid})")
 
-        async def reader():
+        async def matlab_stderr_reader():
+            logger.info("Starting task to save error logs from MATLAB")
             while not self.processes["matlab"].stderr.at_eof():
+                logger.info("Checking for any error logs from MATLAB to save...")
                 line = await self.processes["matlab"].stderr.readline()
                 if line is None:
                     break
+                logger.info("Saving error logs from MATLAB.")
                 self.logs["matlab"].append(line)
             await self.handle_matlab_output()
 
         loop = asyncio.get_running_loop()
-        loop.create_task(reader())
+        self.tasks["matlab_stderr_reader"] = loop.create_task(matlab_stderr_reader())
 
     async def stop_matlab(self):
         """Terminate MATLAB."""
@@ -497,12 +507,15 @@ class AppState:
         matlab = self.processes["matlab"]
 
         # Wait for MATLAB process to exit
+        logger.info("handle_matlab_output Waiting for MATLAB to exit...")
         await matlab.wait()
 
         rc = self.processes["matlab"].returncode
+        logger.info(f"handle_matlab_output MATLAB has exited with errorcode: {rc}")
 
         # Look for errors if MATLAB was not intentionally stopped and had an error code
         if len(self.logs["matlab"]) > 0 and self.processes["matlab"].returncode != 0:
+            logger.info(f"handle_matlab_output Some error was found!")
             err = None
             logs = [log.decode().rstrip() for log in self.logs["matlab"]]
 
