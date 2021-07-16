@@ -78,7 +78,7 @@ async def fetch_expand_token(mwa_api_endpoint, identity_token, source_id):
             data=aiohttp.FormData(
                 {
                     "tokenString": identity_token,
-                    "tokenPolicyName": "R1",
+                    "tokenPolicyName": "R2",
                     "sourceId": source_id,
                 }
             ),
