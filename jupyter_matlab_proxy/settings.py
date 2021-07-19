@@ -154,7 +154,12 @@ def create_xvfb_cmd():
     The second List contains a read and a write descriptor.
     The first List is the command to launch Xvfb process with the same write descriptor(from the first list) embedded in the command.
     """
-    dpipe = os.pipe()
+    # Using os.pipe() can lead to race conditions (ie.usage of same set of file descriptors between 2 processes)
+    # when called in quick succession and also when running tests.
+    # Using os.pipe2() with the flag os.O_NONBLOCK will avoid race conditions.
+    dpipe = os.pipe2(os.O_NONBLOCK)
+
+    # Allow child process to use the file descriptor created by parent.
     os.set_inheritable(dpipe[1], True)
 
     xvfb_cmd = [
