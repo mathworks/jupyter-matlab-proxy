@@ -414,7 +414,8 @@ def main():
     loop = asyncio.get_event_loop()
 
     # Override default loggers
-    runner = web.AppRunner(app, logger=logger, access_log=logger)
+    web_logger = None if not mwi_env.is_web_logging_enabled() else logger
+    runner = web.AppRunner(app, logger=web_logger, access_log=web_logger)
 
     loop.run_until_complete(runner.setup())
     site = web.TCPSite(

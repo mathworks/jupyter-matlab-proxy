@@ -19,6 +19,11 @@ def get_env_name_logging_level():
     return "MWI_LOG_LEVEL"
 
 
+def get_env_name_web_logging_enabled():
+    """Enable the logging of asyncio web traffic by setting to true"""
+    return "MWI_WEB_LOGGING_ENABLED"
+
+
 def get_env_name_log_file():
     """Specifies a file into which logging content is directed"""
     return "MWI_LOG_FILE"
@@ -78,3 +83,8 @@ def is_testing_mode_enabled():
         is_development_mode_enabled()
         and os.environ.get(get_env_name_testing(), "false").lower() == "true"
     )
+
+
+def is_web_logging_enabled():
+    """Returns true if the web logging is required to be enabled"""
+    return os.environ.get(get_env_name_web_logging_enabled(), "false") == "true"
