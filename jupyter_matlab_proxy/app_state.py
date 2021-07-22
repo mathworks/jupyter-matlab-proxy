@@ -131,7 +131,9 @@ class AppState:
                         ) - timedelta(hours=1)
 
                         if expiry_window > datetime.now(timezone.utc):
-                            successful_update = self.__update_and_persist_licensing()
+                            successful_update = (
+                                await self.__update_and_persist_licensing()
+                            )
                             if successful_update:
                                 logger.info("Successful re-use of cached information.")
                         else:
@@ -204,7 +206,7 @@ class AppState:
                 "entitlement_id": entitlement_id,
             }
 
-            successful_update = self.__update_and_persist_licensing()
+            successful_update = await self.__update_and_persist_licensing()
             if successful_update:
                 logger.info("Login successful, persisting login information.")
 
