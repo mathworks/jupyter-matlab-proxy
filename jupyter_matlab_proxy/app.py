@@ -408,6 +408,14 @@ def main():
     logger = mwi_logger.get(init=True)
 
     logger.info("Starting MATLAB proxy-app")
+    logger.info(
+        f" with base_url: {os.environ[mwi_env.get_env_name_base_url()]} and "
+        f"app_port:{os.environ[mwi_env.get_env_name_app_port()]}."
+    )
+    if os.environ.get(mwi_env.get_env_name_mhlm_context()) is None:
+        logger.info(
+            f"\n The webdesktop can be accessed on http://localhost:{os.environ[mwi_env.get_env_name_app_port()]}{os.environ[mwi_env.get_env_name_base_url()]}/index.html"
+        )
 
     app = create_app()
 

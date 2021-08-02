@@ -19,7 +19,7 @@ def __get_licensing_url():
     Returns:
         String: Licensing URL
     """
-    return "https://github.com/mathworks/jupyter-matlab-proxy/blob/main/MATLAB_Licensing_Info.md"
+    return "https://github.com/mathworks/jupyter-matlab-proxy/blob/main/MATLAB-Licensing-Info.md"
 
 
 async def fetch_entitlements(mhlm_api_endpoint, access_token, matlab_release):

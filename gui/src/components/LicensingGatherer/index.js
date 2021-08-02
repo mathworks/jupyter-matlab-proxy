@@ -62,7 +62,7 @@ function LicensingGatherer() {
                                     <p id="LicensingGathererNote">
                                         For more details, see&nbsp;
                                         <a
-                                            href="https://github.com/mathworks/jupyter-matlab-proxy/blob/main/MATLAB_Licensing_Info.md"
+                                            href="https://github.com/mathworks/jupyter-matlab-proxy/blob/main/MATLAB-Licensing-Info.md"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >

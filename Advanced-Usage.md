@@ -20,10 +20,27 @@ The following table describes all the environment variables that you can set to 
 | **MWI_LOG_LEVEL** | string | `"CRITICAL"` | Specify the Python log level to be one of the following `NOTSET`, `DEBUG`, `INFO`, `WARN`, `ERROR`, or `CRITICAL`. For more information on Python log levels, see [Logging Levels](https://docs.python.org/3/library/logging.html#logging-levels) .<br />The default value is `INFO`. |
 | **MWI_LOG_FILE** | string | `"/tmp/logs.txt"` | Specify the full path to the file where you want the logs to be written. |
 | **MWI_WEB_LOGGING_ENABLED** | string | `"True"` | Set this value to `"true"` to see additional web server logs. |
-| **MWI_CUSTOM_HTTP_HEADERS** | string  |`'{"Content-Security-Policy": "frame-ancestors *.example.com:*"}'`<br /> OR <br />`"/path/to/your/custom/http-headers.json"` |Specify valid HTTP headers as JSON data in a string format. <br /> Alternatively, specify the full path to the JSON file containing valid HTTP headers instead. These headers are injected into the HTTP response sent to the browser. </br> For  more information, see the [Custom HTTP Headers](#custom_http_headers) section.|
+| **MWI_CUSTOM_HTTP_HEADERS** | string  |`'{"Content-Security-Policy": "frame-ancestors *.example.com:*"}'`<br /> OR <br />`"/path/to/your/custom/http-headers.json"` |Specify valid HTTP headers as JSON data in a string format. <br /> Alternatively, specify the full path to the JSON file containing valid HTTP headers instead. These headers are injected into the HTTP response sent to the browser. </br> For  more information, see the [Custom HTTP Headers](#custom-http-headers) section.|
 
+## Usage outside of Jupyter environment
 
-### Custom HTTP Headers 
+This package can be run outside of the Jupyter environment by executing the python console script
+`matlab-jupyter-app`.
+
+Execute this command on the machine in which MATLAB is installed with the environment variables `MWI_BASE_URL` and `MWI_APP_PORT` set as follows:
+```bash
+env MWI_BASE_URL="/my_base_url" MWI_APP_PORT=8080 matlab-jupyter-app
+```
+
+You can then access the web server on the link
+```html
+http://localhost:8080/my_base_url/index.html
+```
+
+These environment variables are implicitly set by the Jupyter environment, and 
+you do not need to set them when accessing the integration through Jupyter. 
+
+## Custom HTTP Headers 
 If the web browser renders the MATLAB Integration for Jupyter with some other content, then the browser could block the integration because of mismatch of `Content-Security-Policy` header in the response headers from the integration.
 To avoid this, provide custom HTTP headers. This allows browsers to load the content.
 
