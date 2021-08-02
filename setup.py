@@ -1,9 +1,5 @@
 # Copyright 2020-2021 The MathWorks, Inc.
-
-import json
 import os
-from setuptools.command.build_py import build_py
-from setuptools.command.sdist import sdist
 from setuptools.command.install import install
 import setuptools
 from pathlib import Path
@@ -49,14 +45,19 @@ tests_require = [
     "aioresponses",
 ]
 
+HERE = Path(__file__).parent.resolve()
+long_description = (HERE / "README.md").read_text()
+
 setuptools.setup(
     name="jupyter-matlab-proxy",
-    version="0.3.0",
+    version="0.3.1",
     url="https://github.com/mathworks/jupyter-matlab-proxy",
     author="The MathWorks, Inc.",
     author_email="jupyter-support@mathworks.com",
     license="MATHWORKS CLOUD REFERENCE ARCHITECTURE LICENSE",
     description="Jupyter extension to proxy MATLAB JavaScript Desktop",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=setuptools.find_packages(exclude=["devel", "tests"]),
     keywords=["Jupyter"],
     classifiers=["Framework :: Jupyter"],
