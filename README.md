@@ -16,13 +16,13 @@ Once you have a Jupyter environment with the `jupyter-matlab-proxy` package inst
 2. If you are using Jupyter Notebook (on the left in figure below), on the `New` menu, select `MATLAB`. If you are using JupyterLab (on the right in figure below), select the MATLAB icon on the launcher.
 
 <p align="center">
-  <img width="600" src="img/combined_launchers.png">
+  <img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/combined_launchers.png">
 </p>
 
 3. If prompted to do so, enter credentials for a MathWorks account associated with a MATLAB license. If you are using a network license manager, change to the _Network License Manager_ tab and enter the license server address instead. To determine the appropriate method for your license type, consult [MATLAB Licensing Info](./MATLAB-Licensing-Info.md).
 
 <p align="center">
-  <img width="400" src="img/licensing_GUI.png">
+  <img width="400" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/licensing_GUI.png">
 </p>
 
 4. Wait for the MATLAB session to start. This can take several minutes.
@@ -30,13 +30,13 @@ Once you have a Jupyter environment with the `jupyter-matlab-proxy` package inst
 5. To manage the MATLAB integration for Jupyter, click the tools icon shown below.
 
 <p align="center">
-  <img width="100" src="img/tools_icon.png">
+  <img width="100" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/tools_icon.png">
 </p>
 
 6. Clicking the tools icon opens a status panel with buttons like the ones below:
 
     <p align="center">
-      <img width="800" src="img/status_panel.png">
+      <img width="800" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/status_panel.png">
     </p>
 
    The following options are available in the status panel (some options are only available in a specific context):
@@ -63,7 +63,7 @@ To install the `jupyter-matlab-proxy` package, follow these steps in your Jupyte
 3. Install [Node and Node Package Manager](https://nodejs.org/en/) version 13 or higher.
 4. Install the `jupyter-matlab-proxy` package by executing:
 ```bash
-python -m pip install https://github.com/mathworks/jupyter-matlab-proxy/archive/0.1.0.tar.gz
+python -m pip install jupyter-matlab-proxy
 ```
 
 If you want to use this integration with JupyterLab®, ensure that you have JupyterLab installed on your machine by running the following command:
