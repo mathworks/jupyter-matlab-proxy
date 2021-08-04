@@ -87,4 +87,4 @@ def is_testing_mode_enabled():
 
 def is_web_logging_enabled():
     """Returns true if the web logging is required to be enabled"""
-    return os.environ.get(get_env_name_web_logging_enabled(), "false") == "true"
+    return os.environ.get(get_env_name_web_logging_enabled(), "false").lower() == "true"
