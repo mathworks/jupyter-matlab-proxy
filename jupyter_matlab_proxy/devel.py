@@ -1,10 +1,11 @@
 # Copyright 2020-2021 The MathWorks, Inc.
 
 # Development specific functions
-import asyncio, aiohttp
+import asyncio
 from aiohttp import web
 import socket, time, os, sys
 from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
+from jupyter_matlab_proxy import mwi_embedded_connector as mwi_connector
 
 desktop_html = b"""
 <h1>Fake MATLAB Web Desktop</h1>
@@ -79,23 +80,30 @@ async def fake_matlab_started(app):
         print("Diagnostic Information", file=sys.stderr)
         sys.exit(1)
 
-    ready_file = app["ready_file"]
+    # Real MATLAB always uses  $MATLAB_LOG_DIR/connection.securePort as the ready file
+    # We mock reading from the environment variable by calling the helper functions
+    matlab_ready_file, matlab_log_dir = mwi_connector.get_matlab_ready_file(app["port"])
+
     ready_delay = app["ready_delay"]
     try:
         await asyncio.sleep(ready_delay)
-        print(f"Creating fake MATLAB Embedded Connector ready file at {ready_file}")
-        ready_file.touch()
+        print(
+            f"Creating fake MATLAB Embedded Connector ready file at {matlab_ready_file}"
+        )
+        matlab_ready_file.touch()
     except asyncio.CancelledError:
         pass
 
 
 async def start_background_tasks(app):
-    app["ready_file_writer"] = asyncio.create_task(fake_matlab_started(app))
+    await fake_matlab_started(app)
 
 
 async def cleanup_background_tasks(app):
-    app["ready_file_writer"].cancel()
-    await app["ready_file_writer"]
+    # Delete ready file on tear down
+    # NOTE MATLAB does not delete this file on shutdown.
+    matlab_ready_file, matlab_log_dir = mwi_connector.get_matlab_ready_file(app["port"])
+    matlab_ready_file.unlink()
 
 
 def matlab(args):
@@ -103,8 +111,8 @@ def matlab(args):
     wait_for_port(port)
     print(f"Serving fake MATLAB Embedded Connector at port {port}")
     app = web.Application()
-    app["ready_file"] = args.ready_file
     app["ready_delay"] = args.ready_delay
+    app["port"] = port
 
     app.router.add_route("GET", "/index-jsd-cr.html", web_handler)
 
@@ -129,18 +137,12 @@ def matlab(args):
 
 if __name__ == "__main__":
     import argparse
-    import tempfile
     from pathlib import Path
 
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="cmd", required=True)
     matlab_parser = subparsers.add_parser("matlab")
-    matlab_parser.add_argument(
-        "--ready-file",
-        default=Path(tempfile.gettempdir()) / "connector.securePort",
-        type=Path,
-    )
-    matlab_parser.add_argument("--ready-delay", default=10, type=int)
+    matlab_parser.add_argument("--ready-delay", default=2, type=int)
     matlab_parser.set_defaults(func=matlab)
     args = parser.parse_args()
     args.func(args)

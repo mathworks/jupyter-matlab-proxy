@@ -72,6 +72,12 @@ def get_env_name_development():
     return "MWI_DEV"
 
 
+def get_env_name_matlab_tempdir():
+    """The environment variables used to control the temp directory used by MATLAB on POSIX systems"""
+    # Order matters, MATLAB checks TMPDIR first and then TMP
+    return ["TMPDIR", "TMP"]
+
+
 def is_development_mode_enabled():
     """Returns true if the app is in development mode."""
     return os.environ.get(get_env_name_development(), "false").lower() == "true"

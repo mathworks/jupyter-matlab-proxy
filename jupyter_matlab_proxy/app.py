@@ -83,7 +83,7 @@ async def start_matlab(req):
     state = req.app["state"]
 
     # Start MATLAB
-    await state.start_matlab(restart=True)
+    await state.start_matlab(restart_matlab=True)
 
     return create_status_response(req.app)
 
@@ -119,7 +119,7 @@ async def set_licensing_info(req):
     if state.is_licensed() is True and not isinstance(state.error, LicensingError):
 
         # Start MATLAB
-        await state.start_matlab(restart=True)
+        await state.start_matlab(restart_matlab=True)
 
     return create_status_response(req.app)
 

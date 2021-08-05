@@ -1,14 +1,10 @@
 # Copyright 2021 The MathWorks, Inc.
 
-import pytest, asyncio, aiohttp, os, json, psutil, socket, subprocess, time, requests
+import pytest, asyncio, aiohttp, json, time
 from unittest.mock import patch
 from aiohttp import web
-from jupyter_matlab_proxy import app, settings
+from jupyter_matlab_proxy import app
 from jupyter_matlab_proxy.util.mwi_exceptions import MatlabInstallError
-from subprocess import Popen, PIPE
-from jupyter_matlab_proxy.app_state import AppState
-from distutils.dir_util import copy_tree
-from pathlib import Path
 
 
 def test_create_app():
@@ -174,7 +170,6 @@ def test_server_fixture(
     Args:
         loop (Event loop): The built-in event loop provided by pytest.
         aiohttp_client (aiohttp_client): Built-in pytest fixture used as a wrapper to the aiohttp web server.
-        matlab_port_setup (Integer): A pytest fixture which allocates a port and NLM connection string for matlab.
 
     Yields:
         aiohttp_client : A aiohttp_client server used by tests.
@@ -225,7 +220,7 @@ async def test_start_matlab_route(test_server):
     resp = await test_server.get("/get_status")
     assert resp.status == 200
     resp_json = json.loads(await resp.text())
-
+    count = 0
     # Check if Matlab restarted successfully
     while True:
         resp = await test_server.get("/get_status")
@@ -233,7 +228,10 @@ async def test_start_matlab_route(test_server):
         if resp_json["matlab"]["status"] != "down":
             break
         else:
-            await asyncio.sleep(2)
+            count += 1
+            await asyncio.sleep(0.5)
+            if count > max_tries:
+                raise ConnectionError
 
 
 async def test_stop_matlab_route(test_server):

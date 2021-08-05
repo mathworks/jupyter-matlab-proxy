@@ -66,22 +66,15 @@ def matlab_process_setup_fixture():
 
             devel_file = Path to devel_file
             matlab_cmd = The matlab command to start the matlab process
-            matlab_ready_file = A ready file required to run MATLAB Embedded connector
             master, slave =  Returns the master, slave file descriptors of returned by pty.openpty() function
     """
 
     matlab_setup_variables = namedtuple(
         "matlab_setup_variables",
-        ["devel_file", "matlab_cmd", "matlab_ready_file", "master", "slave"],
+        ["devel_file", "matlab_cmd", "master", "slave"],
     )
     devel_file = Path(os.path.join(os.getcwd(), "jupyter_matlab_proxy", "devel.py"))
 
-    matlab_temp_dir = Path(tempfile.gettempdir()) / ".matlab"
-    matlab_temp_dir.mkdir(parents=True, exist_ok=True)
-    # Place all temporary ready files into a common directory for easy cleanup
-    matlab_ready_file = Path(
-        tempfile.mkstemp(prefix="mrf_", dir=str(matlab_temp_dir))[1]
-    )
     master, slave = pty.openpty()
     python_executable = sys.executable
 
@@ -90,12 +83,10 @@ def matlab_process_setup_fixture():
         "-u",
         str(devel_file),
         "matlab",
-        "--ready-file",
-        str(matlab_ready_file),
+        "--ready-delay",
+        "0",
     ]
-    variables = matlab_setup_variables(
-        devel_file, matlab_cmd, matlab_ready_file, master, slave
-    )
+    variables = matlab_setup_variables(devel_file, matlab_cmd, master, slave)
 
     return variables
 

@@ -38,12 +38,7 @@ def get_ws_env_settings():
 
 def get_dev_settings():
     devel_file = Path(__file__).resolve().parent / "./devel.py"
-    matlab_temp_dir = Path(tempfile.gettempdir()) / ".matlab"
-    matlab_temp_dir.mkdir(parents=True, exist_ok=True)
-    # Place all temporary ready files into a common directory for easy cleanup
-    matlab_ready_file = Path(
-        tempfile.mkstemp(prefix="mrf_", dir=str(matlab_temp_dir))[1]
-    )
+    test_temp_dir = get_test_temp_dir()
     ws_env, ws_env_suffix = get_ws_env_settings()
     return {
         "matlab_path": Path(),
@@ -53,11 +48,8 @@ def get_dev_settings():
             "-u",
             str(devel_file),
             "matlab",
-            "--ready-file",
-            str(matlab_ready_file),
         ],
         "create_xvfb_cmd": create_xvfb_cmd,
-        "matlab_ready_file": matlab_ready_file,
         "base_url": os.environ.get(mwi_env.get_env_name_base_url(), ""),
         "app_port": os.environ.get(mwi_env.get_env_name_app_port(), 8000),
         "host_interface": os.environ.get(mwi_env.get_env_name_app_host(), "127.0.0.1"),
@@ -65,7 +57,7 @@ def get_dev_settings():
         "matlab_protocol": "http",
         "matlab_display": ":1",
         "nlm_conn_str": os.environ.get(mwi_env.get_env_name_network_license_manager()),
-        "matlab_config_file": matlab_temp_dir / "proxy_app_config.json",
+        "matlab_config_file": test_temp_dir / "proxy_app_config.json",
         "ws_env": ws_env,
         "mwa_api_endpoint": f"https://login{ws_env_suffix}.mathworks.com/authenticationws/service/v4",
         "mhlm_api_endpoint": f"https://licensing{ws_env_suffix}.mathworks.com/mls/service/v1/entitlement/list",
@@ -127,7 +119,6 @@ def get(dev=False):
                 f"try; run('{matlab_startup_file}'); catch; end;",
             ],
             "create_xvfb_cmd": create_xvfb_cmd,
-            "matlab_ready_file": Path(tempfile.gettempdir()) / "connector.securePort",
             "base_url": os.environ[mwi_env.get_env_name_base_url()],
             "app_port": os.environ[mwi_env.get_env_name_app_port()],
             "host_interface": os.environ.get(mwi_env.get_env_name_app_host()),
@@ -180,3 +171,25 @@ def create_xvfb_cmd():
     ]
 
     return xvfb_cmd, dpipe
+
+
+def get_matlab_tempdir():
+    """The temp directory used by MATLAB based on tempdir.m"""
+
+    for env_name in mwi_env.get_env_name_matlab_tempdir():
+        matlab_tempdir = os.environ.get(env_name)
+        if matlab_tempdir is not None:
+            break
+
+    # MATLAB defaults to '/tmp'
+    if matlab_tempdir is None:
+        matlab_tempdir = "/tmp"
+
+    return matlab_tempdir
+
+
+def get_test_temp_dir():
+    """The temp directory to be used by tests"""
+    test_temp_dir = Path(tempfile.gettempdir()) / "MWI" / "tests"
+    test_temp_dir.mkdir(parents=True, exist_ok=True)
+    return test_temp_dir

@@ -2,25 +2,23 @@
 
 import asyncio
 from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
-import xml.etree.ElementTree as ET
+from jupyter_matlab_proxy import mwi_embedded_connector as mwi_connector
 import os
 import json
 import pty
 import logging
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-import tempfile
 import socket
 import errno
 from collections import deque
-from .util import mw, mwi_logger, mwi_validators
+from .util import mw, mwi_logger
 from .util.mwi_exceptions import (
     LicensingError,
     InternalError,
     OnlineLicensingError,
     EntitlementError,
     MatlabInstallError,
-    NetworkLicensingError,
     log_error,
 )
 
@@ -33,6 +31,7 @@ class AppState:
         self.settings = settings
         self.processes = {"matlab": None, "xvfb": None}
         self.matlab_port = None
+        self.matlab_ready_file = None
         self.licensing = None
         self.tasks = {}
         self.logs = {
@@ -101,9 +100,10 @@ class AppState:
         # If NLM connection string is not present, then look for persistent LNU info
         elif self.__get_cached_licensing_file().exists():
             with open(self.__get_cached_licensing_file(), "r") as f:
-                licensing = json.loads(f.read())
                 logger.info("Found cached licensing information...")
                 try:
+                    # Load can throw if the file is empty for some reason.
+                    licensing = json.loads(f.read())
                     if licensing["type"] == "nlm":
                         # Note: Only NLM settings entered in browser were cached.
                         self.licensing = {
@@ -163,7 +163,7 @@ class AppState:
         elif xvfb.returncode is not None:
             return "down"
         # MATLAB processes started and MATLAB Embedded Connector ready file present
-        elif self.settings["matlab_ready_file"].exists():
+        elif self.matlab_ready_file.exists():
             return "up"
         # MATLAB processes started, but MATLAB Embedded Connector not ready
         return "starting"
@@ -315,9 +315,9 @@ class AppState:
             with open(cached_licensing_file, "w") as f:
                 f.write(json.dumps(self.licensing))
 
-    def reserve_matlab_port(self):
-        """Reserve a free port for MATLAB Embedded Connector in the allowed range."""
-
+    def get_free_matlab_port(self):
+        """Returns a free port for MATLAB Embedded Connector in the allowed range."""
+        # NOTE It is not guranteed that the port will remain free!
         # FIXME Because of https://github.com/http-party/node-http-proxy/issues/1342 the
         # node application in development mode always uses port 31515 to bypass the
         # reverse proxy. Once this is addressed, remove this special case.
@@ -325,7 +325,7 @@ class AppState:
             mwi_env.is_development_mode_enabled()
             and not mwi_env.is_testing_mode_enabled()
         ):
-            self.matlab_port = 31515
+            return 31515
         else:
 
             # TODO If MATLAB Connector is enhanced to allow any port, then the
@@ -337,18 +337,18 @@ class AppState:
                 try:
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.bind(("", port))
-                    self.matlab_port = port
                     s.close()
                     break
                 except socket.error as e:
                     if e.errno != errno.EADDRINUSE:
                         raise e
+        return port
 
-    async def start_matlab(self, restart=False):
+    async def start_matlab(self, restart_matlab=False):
         """Start MATLAB."""
 
         # FIXME
-        if self.get_matlab_state() != "down" and restart is False:
+        if self.get_matlab_state() != "down" and restart_matlab is False:
             raise Exception("MATLAB already running/starting!")
 
         # FIXME
@@ -377,15 +377,14 @@ class AppState:
         self.logs["matlab"].clear()
 
         # Reserve a port for MATLAB Embedded Connector
-        self.reserve_matlab_port()
+        self.matlab_port = self.get_free_matlab_port()
 
-        # The presence of matlab_ready_file indicates if MATLAB Embedded Connector is
-        # ready to receive connections, but this could be leftover from a terminated
-        # MATLAB, so ensure it is cleaned up before starting MATLAB
-        try:
-            self.settings["matlab_ready_file"].unlink()
-        except FileNotFoundError:
-            pass
+        # Create a folder to hold the matlab_ready_file that will be created by MATLAB to signal readiness
+        self.matlab_ready_file, matlab_log_dir = mwi_connector.get_matlab_ready_file(
+            self.matlab_port
+        )
+        logger.info(f"MATLAB_LOG_DIR:{str(matlab_log_dir)}")
+        logger.info(f"MATLAB_READY_FILE:{str(self.matlab_ready_file)}")
 
         # Configure the environment MATLAB needs to start
         matlab_env = os.environ.copy()
@@ -398,8 +397,8 @@ class AppState:
             self.settings["matlab_path"] / "ui" / "webgui" / "src"
         )
         matlab_env["MWAPIKEY"] = self.settings["mwapikey"]
-        # TODO Make this configurable (impacts the matlab ready file)
-        matlab_env["MATLAB_LOG_DIR"] = "/tmp"
+        # The matlab ready file is written into this location by MATLAB
+        matlab_env["MATLAB_LOG_DIR"] = str(matlab_log_dir)
         matlab_env["MW_CD_ANYWHERE_ENABLED"] = "true"
         if self.licensing["type"] == "mhlm":
             matlab_env["MLM_WEB_LICENSE"] = "true"
@@ -455,13 +454,10 @@ class AppState:
         logger.debug(f"Started MATLAB (PID={matlab.pid})")
 
         async def matlab_stderr_reader():
-            logger.info("Starting task to save error logs from MATLAB")
             while not self.processes["matlab"].stderr.at_eof():
-                logger.info("Checking for any error logs from MATLAB to save...")
                 line = await self.processes["matlab"].stderr.readline()
                 if line is None:
                     break
-                logger.info("Saving error logs from MATLAB.")
                 self.logs["matlab"].append(line)
             await self.handle_matlab_output()
 
@@ -488,11 +484,11 @@ class AppState:
 
         # Clean up matlab_ready_file
         try:
-            with open(self.settings["matlab_ready_file"], "r") as mrf:
-                port_in_matlab_ready_file = mrf.read()
-                if str(self.matlab_port) == port_in_matlab_ready_file:
-                    logger.info("Cleaning up matlab_ready_file...")
-                    self.settings["matlab_ready_file"].unlink()
+            if self.matlab_ready_file is not None:
+                logger.info(
+                    f"Cleaning up matlab_ready_file...{str(self.matlab_ready_file)}"
+                )
+                self.matlab_ready_file.unlink()
         except FileNotFoundError:
             # Some other process deleted this file
             pass
@@ -509,15 +505,14 @@ class AppState:
         matlab = self.processes["matlab"]
 
         # Wait for MATLAB process to exit
-        logger.info("handle_matlab_output Waiting for MATLAB to exit...")
+        logger.info("Waiting for MATLAB to exit...")
         await matlab.wait()
 
         rc = self.processes["matlab"].returncode
-        logger.info(f"handle_matlab_output MATLAB has exited with errorcode: {rc}")
+        logger.info(f"MATLAB has exited with errorcode: {rc}")
 
         # Look for errors if MATLAB was not intentionally stopped and had an error code
         if len(self.logs["matlab"]) > 0 and self.processes["matlab"].returncode != 0:
-            logger.info(f"handle_matlab_output Some error was found!")
             err = None
             logs = [log.decode().rstrip() for log in self.logs["matlab"]]
 
