@@ -1,7 +1,7 @@
 # MATLAB Integration for Jupyter
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mathworks/jupyter-matlab-proxy/MATLAB%20Jupyter%20Integration?logo=github)](https://github.com/mathworks/jupyter-matlab-proxy/actions)
 [![PyPI badge](https://img.shields.io/pypi/v/jupyter-matlab-proxy.svg?logo=pypi)](https://pypi.python.org/pypi/jupyter-matlab-proxy)
-
+[![codecov](https://codecov.io/gh/mathworks/jupyter-matlab-proxy/branch/main/graph/badge.svg?token=ZW3SESKCSS)](https://codecov.io/gh/mathworks/jupyter-matlab-proxy)
 The `jupyter-matlab-proxy` Python® package allows you to integrate MATLAB® with Jupyter®. The MATLAB integration for Jupyter enables you to open a MATLAB desktop in a web browser tab, directly from your Jupyter environment. This is not a kernel integration.
 
 The MATLAB Integration for Jupyter is under active development and you might find issues with the MATLAB graphical user interface. For support or to report issues, see the [Feedback](#feedback) section.

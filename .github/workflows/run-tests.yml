@@ -3,7 +3,7 @@ name: MATLAB Jupyter Integration
 on:
   push:
     branches:
-      - 'main'
+      - "main"
 
 jobs:
   node_tests:
@@ -54,3 +54,51 @@ jobs:
       - name: Test with pytest
         run: |
           python setup.py test
+
+  generate_and_upload_code_coverage:
+    needs: [python_tests, node_tests]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Use Node.js 13.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 13.x
+
+      - name: Install Python build dependencies
+        run: |
+          pip install -e .[DEV]
+
+      - name: Generate Code Coverage report for Python code
+        run: |
+          pytest --cov=./ --cov-report=xml
+
+      - name: Upload python coverage report to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          directory: ./
+          name: Python-codecov
+          files: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Install Node Dependencies
+        run: npm --prefix gui install gui
+
+      - name: Generate code coverage for Javascript code
+        run: npm --prefix gui test -- --coverage --watchAll=false
+
+      - name: Upload Javscript coverage report to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          directory: ./gui/coverage/
+          fail_ci_if_error: true
+          verbose: true
