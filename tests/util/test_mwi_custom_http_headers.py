@@ -4,7 +4,6 @@ from json.decoder import JSONDecodeError
 import pytest, os, time, json, stat
 from jupyter_matlab_proxy.util import mwi_custom_http_headers
 from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
-from pathlib import Path
 from contextlib import nullcontext as does_not_raise
 
 

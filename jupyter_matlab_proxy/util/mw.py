@@ -1,7 +1,7 @@
 # Copyright 2020-2021 The MathWorks, Inc.
 
 import xml.etree.ElementTree as ET
-import aiohttp, os, asyncio, select, logging
+import aiohttp, os, asyncio, select
 from .mwi_exceptions import (
     OnlineLicensingError,
     EntitlementError,

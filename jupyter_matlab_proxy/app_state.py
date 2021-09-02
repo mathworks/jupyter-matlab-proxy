@@ -8,7 +8,6 @@ import json
 import pty
 import logging
 from datetime import datetime, timezone, timedelta
-from pathlib import Path
 import socket
 import errno
 from collections import deque

@@ -7,10 +7,8 @@ from datetime import timezone
 from jupyter_matlab_proxy.util import mwi_exceptions
 from datetime import timedelta
 from collections import namedtuple
-from aioresponses import aioresponses
 
-
-"""This file tests methods present in jupyter_matlab_proxy/util/mw.py
+"""This file tests methods present in matlab_web_desktop_proxy/util/mw.py
 """
 
 
@@ -113,20 +111,27 @@ def fetch_access_token_valid_json_fixture():
     return json_data
 
 
-@pytest.fixture(name="mock_response")
-def mock_aiohttp_client_session():
-    """A pytest fixture which yields an aioresponses() object
+class MockResponse:
+    def __init__(self, reason, payload={}, status=200, text=""):
+        self._payload = payload
+        self._text = text
+        self.reason = reason
+        self.status = status
 
-    Yields:
-       aioresponses : An aioresponses() object which mocks the HTTP Response object.
-    """
-    with aioresponses() as m:
-        yield m
+    async def json(self):
+        return self._payload
+
+    async def text(self):
+        return self._text
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        pass
 
 
-async def test_fetch_access_token(
-    mwa_api_data, fetch_access_token_valid_json, mock_response
-):
+async def test_fetch_access_token(mwa_api_data, fetch_access_token_valid_json, mocker):
     """Test to check mw.fetch_access_token method returns valid json response.
 
     The mock_response fixture mocks the aiohttp.ClientSession().post() method to return a custom HTTP response.
@@ -134,38 +139,44 @@ async def test_fetch_access_token(
     Args:
         mwa_api_data (namedtuple): A pytest fixture which returns a namedtuple containing values for MW servers.
         fetch_access_token_valid_json (Dict): A pytest fixture which returns a dict representing a valid json response.
-        mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
+        mocker: Built in pytest fixture which can be used to mock functions.
     """
     json_data = fetch_access_token_valid_json
+
     payload = dict(accessTokenString=json_data["accessTokenString"])
 
-    url_pattern = mwa_api_data.mwa_api_endpoint_pattern
-    mock_response.post(url_pattern, payload=payload)
+    mock_resp = MockResponse(payload=payload, reason="OK")
 
-    resp = await mw.fetch_access_token(
+    url_pattern = mwa_api_data.mwa_api_endpoint_pattern
+
+    mocked = mocker.patch("aiohttp.ClientSession.post", return_value=mock_resp)
+    res = await mw.fetch_access_token(
         mwa_api_data.mwa_api_endpoint,
         mwa_api_data.identity_token,
         mwa_api_data.source_id,
     )
 
-    assert json_data["accessTokenString"] == resp["token"]
+    _, args, _ = mocked.mock_calls[0]
+    url = args[0]
+
+    assert re.match(url_pattern, url)
+    assert json_data["accessTokenString"] == res["token"]
 
 
-async def test_fetch_access_token_licensing_error(mwa_api_data, mock_response):
+async def test_fetch_access_token_licensing_error(mwa_api_data, mocker):
     """Test to check mw.fetch_access_token() method raises a mwi_exceptions.OnlineLicensingError.
 
     When an invalid response is received from the server, this test checks if mwi_exceptions.OnlineLicensingError is raised.
     Args:
-        mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
+        mocker: Built in pytest fixture which can be used to mock functions.
         mwa_api_data (namedtuple): A pytest fixture which returns a namedtuple containing values for MW authentication
     """
 
     url_pattern = mwa_api_data.mwa_api_endpoint_pattern
 
-    mock_response.post(
-        url_pattern,
-        exception=mwi_exceptions.OnlineLicensingError("Communication failed"),
-    )
+    mock_resp = MockResponse(payload={}, reason="NOT-OK", status=404)
+
+    mocked = mocker.patch("aiohttp.ClientSession.post", return_value=mock_resp)
 
     with pytest.raises(mwi_exceptions.OnlineLicensingError):
         resp = await mw.fetch_access_token(
@@ -174,21 +185,21 @@ async def test_fetch_access_token_licensing_error(mwa_api_data, mock_response):
             mwa_api_data.source_id,
         )
 
+    _, args, _ = mocked.mock_calls[0]
+    url = args[0]
+    assert re.match(url_pattern, url)
 
-async def test_fetch_expand_token_licensing_error(mock_response, mwa_api_data):
+
+async def test_fetch_expand_token_licensing_error(mocker, mwa_api_data):
     """Test to check fetch_expand_token raises mwi_exceptions.OnlineLicensing error.
 
     Args:
-        mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
+        mocker: Built in pytest fixture which can be used to mock functions.
         mwa_api_data (namedtuple): A pytest fixture which returns a namedtuple containing values for MW authentication
     """
-
     url_pattern = mwa_api_data.mwa_api_endpoint_pattern
-
-    mock_response.post(
-        url_pattern,
-        exception=mwi_exceptions.OnlineLicensingError("Communication failed"),
-    )
+    mock_resp = MockResponse(payload={}, reason="NOT-OK", status=503)
+    mocked = mocker.patch("aiohttp.ClientSession.post", return_value=mock_resp)
 
     with pytest.raises(mwi_exceptions.OnlineLicensingError):
         resp = await mw.fetch_expand_token(
@@ -196,6 +207,10 @@ async def test_fetch_expand_token_licensing_error(mock_response, mwa_api_data):
             mwa_api_data.identity_token,
             mwa_api_data.source_id,
         )
+
+    _, args, _ = mocked.mock_calls[0]
+    url = args[0]
+    assert re.match(url_pattern, url)
 
 
 @pytest.fixture(name="fetch_expand_token_valid_json")
@@ -229,21 +244,18 @@ def fetch_expand_token_valid_json_fixture():
     return json_data
 
 
-async def test_fetch_expand_token(
-    mock_response, fetch_expand_token_valid_json, mwa_api_data
-):
+async def test_fetch_expand_token(mocker, fetch_expand_token_valid_json, mwa_api_data):
     """Test to check if mw.fetch_expand_token returns a correct json response
 
     mock_response is used to mock ClientSession.post method to return a HTTP Response containing a valid json response.
     Args:
-        mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
+        mocker: Built in pytest fixture which can be used to mock functions.
         fetch_expand_token_valid_json (namedtuple): Pytest fixture which returns a dict which is returned by the server when no exception is raised.
         mwa_api_data (namedtuple): A namedtuple which contains info related to mwa.
     """
     json_data = fetch_expand_token_valid_json
 
     url_pattern = mwa_api_data.mwa_api_endpoint_pattern
-
     referenceDetail = dict(
         firstName=json_data["referenceDetail"]["firstName"],
         lastName=json_data["referenceDetail"]["lastName"],
@@ -256,7 +268,8 @@ async def test_fetch_expand_token(
         expirationDate=json_data["expirationDate"], referenceDetail=referenceDetail
     )
 
-    mock_response.post(url_pattern, payload=payload)
+    mock_resp = MockResponse(payload=payload, reason="OK", status=200)
+    mocked = mocker.patch("aiohttp.ClientSession.post", return_value=mock_resp)
 
     resp = await mw.fetch_expand_token(
         mwa_api_data.mwa_api_endpoint,
@@ -264,24 +277,25 @@ async def test_fetch_expand_token(
         mwa_api_data.source_id,
     )
 
+    _, args, _ = mocked.mock_calls[0]
+    url = args[0]
+
     assert resp is not None and len(resp.keys()) > 0
+    assert re.match(url_pattern, url)
 
 
-async def test_fetch_entitlements_licensing_error(mock_response, mwa_api_data):
+async def test_fetch_entitlements_licensing_error(mocker, mwa_api_data):
     """Test to check if fetch_entitlements raises mwi_exceptions.OnlineLicensingError.
 
     When an invalid response is received, this test checks if mwi_exceptions.OnlineLicenseError is raised.
 
     Args:
-        mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
+        mocker: Built in pytest fixture which can be used to mock functions.
         mwa_api_data (namedtuple): A namedtuple which contains info related to mwa.
     """
     url_pattern = mwa_api_data.mhlm_api_endpoint_pattern
-
-    mock_response.post(
-        url_pattern,
-        exception=mwi_exceptions.OnlineLicensingError("Communication Error"),
-    )
+    mock_resp = MockResponse(payload={}, reason="NOT-OK", status=503)
+    mocked = mocker.patch("aiohttp.ClientSession.post", return_value=mock_resp)
 
     with pytest.raises(mwi_exceptions.OnlineLicensingError):
         resp = await mw.fetch_entitlements(
@@ -289,6 +303,10 @@ async def test_fetch_entitlements_licensing_error(mock_response, mwa_api_data):
             mwa_api_data.access_token,
             mwa_api_data.matlab_release,
         )
+
+    _, args, _ = mocked.mock_calls[0]
+    url = args[0]
+    assert re.match(url_pattern, url)
 
 
 @pytest.fixture(
@@ -322,7 +340,7 @@ def invalid_entitlements_fixture(request):
 
 
 async def test_fetch_entitlements_entitlement_error(
-    mock_response, mwa_api_data, invalid_entitlements
+    mocker, mwa_api_data, invalid_entitlements
 ):
     """Test to check fetch_entitlements raises mwi_exceptions.EntitlementError.
 
@@ -332,13 +350,16 @@ async def test_fetch_entitlements_entitlement_error(
 
     Args:
 
-        mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
+        mocker: Built in pytest fixture which can be used to mock functions.
         mwa_api_data (namedtuple): A namedtuple which contains info related to mwa.
         invalid_entitlements (String): String containing invalid entitlements
     """
     url_pattern = mwa_api_data.mhlm_api_endpoint_pattern
 
-    mock_response.post(url_pattern, body=invalid_entitlements)
+    mock_resp = MockResponse(
+        payload={}, reason="OK", text=invalid_entitlements, status=404
+    )
+    mocked = mocker.patch("aiohttp.ClientSession.post", return_value=mock_resp)
 
     with pytest.raises(mwi_exceptions.EntitlementError):
         resp = await mw.fetch_entitlements(
@@ -346,6 +367,10 @@ async def test_fetch_entitlements_entitlement_error(
             mwa_api_data.access_token,
             mwa_api_data.matlab_release,
         )
+
+    _, args, _ = mocked.mock_calls[0]
+    url = args[0]
+    assert re.match(url_pattern, url)
 
 
 @pytest.fixture(name="valid_entitlements")
@@ -371,20 +396,23 @@ def valid_entitlements_fixture():
     )
 
 
-async def test_fetch_entitlements(mock_response, mwa_api_data, valid_entitlements):
+async def test_fetch_entitlements(mocker, mwa_api_data, valid_entitlements):
     """Test to check test_fetch_entitlements returns valid response.
 
 
     mock_response mocks aiohttpClientSession.post() method  to return valid entitlements as a HTTP response
     Args:
-        mock_response: Pytest fixture which yields a aioresponses() object for mocking HTTP response
+        mocker: Built in pytest fixture which can be used to mock functions.
         mwa_api_data (namedtuple): A namedtuple which contains info related to mwa.
         valid_entitlements (String): String containing valid entitlements as a response.
     """
 
     url_pattern = mwa_api_data.mhlm_api_endpoint_pattern
 
-    mock_response.post(url_pattern, body=valid_entitlements)
+    mock_resp = MockResponse(
+        payload={}, reason="OK", text=valid_entitlements, status=404
+    )
+    mocked = mocker.patch("aiohttp.ClientSession.post", return_value=mock_resp)
 
     resp = await mw.fetch_entitlements(
         mwa_api_data.mhlm_api_endpoint,
@@ -392,7 +420,11 @@ async def test_fetch_entitlements(mock_response, mwa_api_data, valid_entitlement
         mwa_api_data.matlab_release,
     )
 
+    _, args, _ = mocked.mock_calls[0]
+    url = args[0]
+
     assert resp is not None and len(resp) > 0
+    assert re.match(url_pattern, url)
 
 
 def test_parse_mhlm_no_error():

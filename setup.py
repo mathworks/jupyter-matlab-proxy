@@ -38,11 +38,9 @@ tests_require = [
     "pytest-env",
     "pytest-cov",
     "pytest-mock",
-    "pytest-dependency",
     "pytest-aiohttp",
     "requests",
     "psutil",
-    "aioresponses",
 ]
 
 HERE = Path(__file__).parent.resolve()

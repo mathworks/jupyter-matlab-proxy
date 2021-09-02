@@ -1,7 +1,6 @@
 # Copyright 2021 The MathWorks, Inc.
 
 import pytest, asyncio, aiohttp, json, time
-from unittest.mock import patch
 from aiohttp import web
 from jupyter_matlab_proxy import app
 from jupyter_matlab_proxy.util.mwi_exceptions import MatlabInstallError

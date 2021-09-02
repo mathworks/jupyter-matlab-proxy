@@ -1,6 +1,6 @@
 # Copyright 2021 The MathWorks, Inc.
 
-import pytest, asyncio, socket, os, tempfile, requests, pty, time, subprocess, sys
+import pytest, socket, os, requests, pty, time, subprocess, sys
 from pathlib import Path
 from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
 from collections import namedtuple

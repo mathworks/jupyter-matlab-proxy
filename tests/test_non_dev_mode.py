@@ -1,8 +1,6 @@
 # Copyright 2021 The MathWorks, Inc.
 
 import pytest, os, shutil
-from unittest.mock import patch
-from distutils.dir_util import copy_tree
 from pathlib import Path
 import jupyter_matlab_proxy
 from jupyter_matlab_proxy import mwi_environment_variables as mwi_env

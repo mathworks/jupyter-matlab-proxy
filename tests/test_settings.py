@@ -3,7 +3,6 @@
 import jupyter_matlab_proxy.settings as settings
 from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
 import pytest
-from pathlib import Path
 import os
 
 """This file tests methods defined in settings.py file
