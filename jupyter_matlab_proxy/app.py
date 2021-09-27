@@ -407,6 +407,8 @@ def main():
 
     logger = mwi_logger.get(init=True)
 
+    app = create_app()
+
     logger.info("Starting MATLAB proxy-app")
     logger.info(
         f" with base_url: {os.environ[mwi_env.get_env_name_base_url()]} and "
@@ -416,8 +418,6 @@ def main():
         logger.info(
             f"\n The webdesktop can be accessed on http://localhost:{os.environ[mwi_env.get_env_name_app_port()]}{os.environ[mwi_env.get_env_name_base_url()]}/index.html"
         )
-
-    app = create_app()
 
     loop = asyncio.get_event_loop()
 

@@ -10,6 +10,11 @@ With validator: if (valid(input)):
 
 Exceptions are thrown to signal failure.
 """
+from . import mwi_logger
+from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
+import sys
+
+logger = mwi_logger.get()
 
 
 def validate_mlm_license_file(nlm_conn_str):
@@ -20,10 +25,7 @@ def validate_mlm_license_file(nlm_conn_str):
     """
     import re
     import os
-    from . import mwi_logger
     from .mwi_exceptions import NetworkLicensingError
-
-    logger = mwi_logger.get()
 
     if nlm_conn_str is None:
         return None
@@ -59,3 +61,34 @@ def validate_mlm_license_file(nlm_conn_str):
 
     # Validation passed
     return nlm_conn_str
+
+
+def validate_app_port_is_free(port):
+    """Validates and returns port if its free else will error out and exit.
+
+    Args:
+        port (str|int): Port number either as a string or an integer.
+
+    Raises:
+        e: socket.error
+
+    Returns:
+        Boolean: True if provided port is occupied else False.
+    """
+    import socket, errno
+
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(("", int(port)))
+        s.close()
+
+        # Was able to allocate port. Validation passed.
+        return port
+    except socket.error as e:
+        if e.errno == errno.EADDRINUSE:
+            logger.error(
+                f"The port {port} is not available. Please set another value for the environment variable {mwi_env.get_env_name_app_port()}"
+            )
+            sys.exit(1)
+        else:
+            raise e

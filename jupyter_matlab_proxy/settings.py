@@ -120,7 +120,9 @@ def get(dev=False):
             ],
             "create_xvfb_cmd": create_xvfb_cmd,
             "base_url": os.environ[mwi_env.get_env_name_base_url()],
-            "app_port": os.environ[mwi_env.get_env_name_app_port()],
+            "app_port": mwi_validators.validate_app_port_is_free(
+                os.environ[mwi_env.get_env_name_app_port()]
+            ),
             "host_interface": os.environ.get(mwi_env.get_env_name_app_host()),
             "mwapikey": str(uuid.uuid4()),
             "matlab_protocol": "https",

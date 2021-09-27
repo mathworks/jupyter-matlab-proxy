@@ -2,7 +2,7 @@
 """Tests for functions in jupyter_matlab_proxy/util/mwi_validators.py
 """
 
-import pytest, os, tempfile
+import pytest, os, tempfile, socket
 from jupyter_matlab_proxy.util import mwi_validators
 from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
 from jupyter_matlab_proxy.util.mwi_exceptions import NetworkLicensingError
@@ -50,3 +50,23 @@ def test_get_with_environment_variables(monkeypatch):
         assert conn_str == str(path)
     finally:
         os.remove(path)
+
+
+def test_validate_app_port_is_free_false():
+    """Test to validate if supplied app port is free"""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("", 0))
+    port = s.getsockname()[1]
+    with pytest.raises(SystemExit) as e:
+        mwi_validators.validate_app_port_is_free(port)
+    assert e.value.code == 1
+    s.close()
+
+
+def test_validate_app_port_is_free_true():
+    """Test to validate if supplied app port is free"""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("", 0))
+    port = s.getsockname()[1]
+    s.close()
+    assert mwi_validators.validate_app_port_is_free(port) == port
