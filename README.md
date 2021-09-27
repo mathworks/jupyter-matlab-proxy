@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/mathworks/jupyter-matlab-proxy/branch/main/graph/badge.svg?token=ZW3SESKCSS)](https://codecov.io/gh/mathworks/jupyter-matlab-proxy)
 The `jupyter-matlab-proxy` Python® package allows you to integrate MATLAB® with Jupyter®. The MATLAB integration for Jupyter enables you to open a MATLAB desktop in a web browser tab, directly from your Jupyter environment. This is not a kernel integration.
 
-The MATLAB Integration for Jupyter is under active development and you might find issues with the MATLAB graphical user interface. For support or to report issues, see the [Feedback](#feedback) section.
+The MATLAB Integration for Jupyter is under active development and you might find issues with the MATLAB graphical user interface. For support or to report issues, see the [Feedback](https://github.com/mathworks/jupyter-matlab-proxy#feedback) section.
 
 
 ## Use the MATLAB Integration for Jupyter
@@ -19,7 +19,7 @@ Once you have a Jupyter environment with the `jupyter-matlab-proxy` package inst
   <img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/combined_launchers.png">
 </p>
 
-3. If prompted to do so, enter credentials for a MathWorks account associated with a MATLAB license. If you are using a network license manager, change to the _Network License Manager_ tab and enter the license server address instead. To determine the appropriate method for your license type, consult [MATLAB Licensing Info](./MATLAB-Licensing-Info.md).
+3. If prompted to do so, enter credentials for a MathWorks account associated with a MATLAB license. If you are using a network license manager, change to the _Network License Manager_ tab and enter the license server address instead. To determine the appropriate method for your license type, consult [MATLAB Licensing Info](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/MATLAB-Licensing-Info.md).
 
 <p align="center">
   <img width="400" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/licensing_GUI.png">

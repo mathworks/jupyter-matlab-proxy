@@ -29,6 +29,17 @@ def test_validate_mlm_license_file_for_valid_server_syntax(monkeypatch):
     assert conn_str == license_manager_address
 
 
+def test_validate_mlm_license_file_for_valid_server_triad_syntax(monkeypatch):
+    """Check if port@hostname passes validation"""
+    env_name = mwi_env.get_env_name_network_license_manager()
+    license_manager_address = (
+        "1234@1.2_any-alphanumeric,1234@1.2_any-alphanumeric,1234@1.2_any-alphanumeric"
+    )
+    monkeypatch.setenv(env_name, license_manager_address)
+    conn_str = mwi_validators.validate_mlm_license_file(os.getenv(env_name))
+    assert conn_str == license_manager_address
+
+
 def test_get_with_environment_variables(monkeypatch):
     """Check if path to license file passes validation"""
     env_name = mwi_env.get_env_name_network_license_manager()

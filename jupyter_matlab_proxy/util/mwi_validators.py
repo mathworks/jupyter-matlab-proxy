@@ -34,7 +34,9 @@ def validate_mlm_license_file(nlm_conn_str):
     # Regular expression to match port@hostname,
     # where port is any number and hostname is alphanumeric
     # regex = Start of Line, Any number of 0-9 digits , @, any number of nonwhite space characters with "- _ ." allowed
-    regex = "^[0-9]+[@](\w|\_|\-|\.)+$"
+    # "^[0-9]+[@](\w|\_|\-|\.)+$"
+    # Server triad is of the form : port@host1,port@host2,port@host3
+    regex = "(^[0-9]+[@](\w|\_|\-|\.)+$)|(^[0-9]+[@](\w|\_|\-|\.)+),([0-9]+[@](\w|\_|\-|\.)+),([0-9]+[@](\w|\_|\-|\.)+$)"
     if not re.search(regex, nlm_conn_str):
         logger.debug("NLM info is not in the form of port@hostname")
         if not os.path.isfile(nlm_conn_str):

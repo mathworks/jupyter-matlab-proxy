@@ -6,7 +6,14 @@ import {
     fetchSetLicensing
 } from '../../actionCreators';
 
-const connStrRegex = /^\d+@(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
+// Regular expression to match port@hostname,
+// where port is any number and hostname is alphanumeric
+// Regex FOR 
+//      Start of Line, Any number of 0-9 digits , @, any number of nonwhite space characters with "- _ ." allowed, and EOL
+// IS:
+// ^[0-9]+[@](\w|\_|\-|\.)+$
+// Server triad is of the form : port@host1,port@host2,port@host3
+const connStrRegex = /^[\d]+@[\w|\-|\_|\.]+$|^[\d]+@[\w|\-|\_|\.]+,[\d]+@[\w|\-|\_|\.]+,[\d]+@[\w|\-|\_|\.]+$/
 
 function validateInput(str) {
     return connStrRegex.test(str);
