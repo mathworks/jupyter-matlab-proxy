@@ -13,7 +13,7 @@ import {
 // IS:
 // ^[0-9]+[@](\w|\_|\-|\.)+$
 // Server triad is of the form : port@host1,port@host2,port@host3
-const connStrRegex = /^[\d]+@[\w|\-|\_|\.]+$|^[\d]+@[\w|\-|\_|\.]+,[\d]+@[\w|\-|\_|\.]+,[\d]+@[\w|\-|\_|\.]+$/
+const connStrRegex = /^[\d]+@[\w|\-|_|.]+$|^[\d]+@[\w|\-|_|.]+,[\d]+@[\w|\-|_|.]+,[\d]+@[\w|\-|_|.]+$/
 
 function validateInput(str) {
     return connStrRegex.test(str);
