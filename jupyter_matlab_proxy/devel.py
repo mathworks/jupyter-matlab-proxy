@@ -140,7 +140,11 @@ if __name__ == "__main__":
     from pathlib import Path
 
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="cmd", required=True)
+    subparsers = (
+        parser.add_subparsers(dest="cmd", required=True)
+        if sys.version_info[:2] >= (3, 7)
+        else parser.add_subparsers(dest="cmd")
+    )
     matlab_parser = subparsers.add_parser("matlab")
     matlab_parser.add_argument("--ready-delay", default=2, type=int)
     matlab_parser.set_defaults(func=matlab)
