@@ -7,4 +7,3 @@ dist/
 .vscode/
 htmlcov/
 .coverage
-jupyter_matlab_proxy/gui/

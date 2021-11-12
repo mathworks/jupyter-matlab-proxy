@@ -6,27 +6,6 @@ on:
       - "main"
 
 jobs:
-  node_tests:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Use Node.js 13.x
-        uses: actions/setup-node@v2
-        with:
-          node-version: 13.x
-
-      - name: Install Node dependencies
-        run: npm --prefix gui install gui
-
-      - name: Build Project
-        run: npm --prefix gui build --if-present
-
-      - name: Run Node tests
-        run: npm --prefix gui test
-
   python_tests:
     runs-on: ubuntu-latest
     strategy:
@@ -43,9 +22,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-      # Installing wheel package will slightly speed-up installing dependencies.
-      # Installing the package with "[dev]" flag  will install test dependecies as well, 
-      # enabling us to run pytest.
+        # Installing wheel package will slightly speed-up installing dependencies.
+        # Installing the package with "[dev]" flag  will install test dependecies as well,
+        # enabling us to run pytest.
         run: |
           python -m pip install --upgrade pip
           python -m pip install wheel
@@ -58,7 +37,7 @@ jobs:
         run: python -m pytest
 
   generate_and_upload_code_coverage:
-    needs: [python_tests, node_tests]
+    needs: [python_tests]
     if: success()
     runs-on: ubuntu-latest
     steps:
@@ -69,11 +48,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-
-      - name: Use Node.js 13.x
-        uses: actions/setup-node@v2
-        with:
-          node-version: 13.x
 
       - name: Install Python build dependencies
         run: |
@@ -91,18 +65,5 @@ jobs:
           directory: ./
           name: Python-codecov
           files: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
-
-      - name: Install Node Dependencies
-        run: npm --prefix gui install gui
-
-      - name: Generate code coverage for Javascript code
-        run: npm --prefix gui test -- --coverage --watchAll=false
-
-      - name: Upload Javscript coverage report to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          directory: ./gui/coverage/
           fail_ci_if_error: true
           verbose: true

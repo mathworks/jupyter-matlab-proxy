@@ -6,29 +6,6 @@ on:
     types: [created]
 
 jobs:
-  node_tests:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: ${{github.sha}}
-
-      - name: Use Node.js 13.x
-        uses: actions/setup-node@v2
-        with:
-          node-version: 13.x
-
-      - name: Install Node dependencies
-        run: npm --prefix gui install gui
-
-      - name: Build Project
-        run: npm --prefix gui build --if-present
-
-      - name: Run Node tests
-        run: npm --prefix gui test
-
   python_tests:
     runs-on: ubuntu-latest
 
@@ -44,9 +21,9 @@ jobs:
           python-version: 3.6
 
       - name: Install dependencies
-      # Installing wheel package will slightly speed-up installing dependencies.
-      # Installing the package with "[dev]" flag  will install test dependecies as well,
-      # enabling us to run pytest.
+        # Installing wheel package will slightly speed-up installing dependencies.
+        # Installing the package with "[dev]" flag  will install test dependecies as well,
+        # enabling us to run pytest.
         run: |
           python -m pip install --upgrade pip
           python -m pip install wheel
@@ -55,8 +32,8 @@ jobs:
       - name: Run Python Tests
         run: python -m pytest
 
-  build_and_publish:
-    needs: [python_tests, node_tests]
+  build_and_publish_pypi:
+    needs: [python_tests]
     if: success()
     runs-on: ubuntu-latest
 
@@ -70,11 +47,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.6
-
-      - name: Use Node.js 13.x
-        uses: actions/setup-node@v2
-        with:
-          node-version: 13.x
 
       - name: Install Python build dependencies
         run: |
@@ -91,3 +63,40 @@ jobs:
           verbose: true
           password: ${{ secrets.PYPI_TOKEN }}
           repository_url: https://upload.pypi.org/legacy/
+
+  # build_and_publish_anaconda:
+  #   needs: [build_and_publish_pypi]
+  #   if: success()
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         ref: ${{github.sha}}
+
+  #     - name: Set up Python 3.6
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.6
+
+  #     - name: Install Python build dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         python -m pip install wheel
+  #         python -m pip install .[dev]
+
+  #     - name: Build and Publish to Anaconda.
+  #       env:
+  #         ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
+
+  #       run: |
+  #         #  $CONDA is an environment variable pointing to the root of the miniconda directory
+  #         echo $CONDA/bin >> $GITHUB_PATH
+  #         conda install -y conda-build
+  #         conda install -y anaconda-client
+  #         cd ./anaconda
+  #         conda skeleton pypi jupyter-matlab-proxy
+  #         python parse_meta_file.py
+  #         conda build ./jupyter-matlab-proxy --python 3.6 --output-folder ./build
+  #         $CONDA/bin/anaconda upload --label main ./build/linux-64/jupyter*.tar.gz

@@ -1,12 +1,15 @@
 # Copyright 2020-2021 The MathWorks, Inc.
 
-import jupyter_matlab_proxy
-import os
+import os, inspect
+import matlab_proxy, jupyter_matlab_proxy
 from pathlib import Path
-from jupyter_matlab_proxy import mwi_environment_variables as mwi_env
+from matlab_proxy import mwi_environment_variables as mwi_env
+from jupyter_matlab_proxy.jupyter_config import config
 
 
 def test_get_env():
+    """Tests if _get_env() method returns the expected enviroment settings as a dict."""
+
     port = 10000
     base_url = "/foo/"
     r = jupyter_matlab_proxy._get_env(port, base_url)
@@ -21,16 +24,17 @@ def test_setup_matlab():
     Dictionary for the Matlab process.
     """
     # Setup
-    port = 10000
-    base_url = "/foo/"
-    icon_path = str(
-        os.path.join(Path(os.getcwd()), "jupyter_matlab_proxy", "icons", "matlab.svg")
-    )
+    package_path = Path(inspect.getfile(matlab_proxy)).parent
+    icon_path = package_path / "icons" / "matlab.svg"
 
     expected_matlab_setup = {
-        "command": ["matlab-jupyter-app"],
+        "command": [
+            matlab_proxy.get_executable_name(),
+            "--config",
+            config["extension_name"],
+        ],
         "timeout": 100,
-        "environment": jupyter_matlab_proxy._get_env(port, base_url),
+        "environment": jupyter_matlab_proxy._get_env,
         "absolute_url": True,
         "launcher_entry": {
             "title": "MATLAB",
@@ -40,8 +44,5 @@ def test_setup_matlab():
 
     actual_matlab_setup = jupyter_matlab_proxy.setup_matlab()
 
-    actual_matlab_setup["environment"] = actual_matlab_setup["environment"](
-        port, base_url
-    )
-
     assert expected_matlab_setup == actual_matlab_setup
+    assert os.path.isfile(actual_matlab_setup["launcher_entry"]["icon_path"])
