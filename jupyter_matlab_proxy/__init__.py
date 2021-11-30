@@ -33,11 +33,11 @@ def setup_matlab():
     """
 
     import matlab_proxy
-    from matlab_proxy.util import mwi_logger 
+    from matlab_proxy.util import mwi_logger
 
     logger = mwi_logger.get(init=True)
     logger.info("Initializing Jupyter MATLAB Proxy")
-    
+
     # Get MATLAB icon from matlab_proxy
     package_path = Path(inspect.getfile(matlab_proxy)).parent
     icon_path = package_path / "icons" / "matlab.svg"

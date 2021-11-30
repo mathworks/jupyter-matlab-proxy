@@ -61,13 +61,11 @@ Upon successful installation of `jupyter-matlab-proxy`, your Jupyter environment
 * Open your Jupyter environment by starting jupyter notebook or lab
   ```bash
   # For Jupyter Notebook
-  env MWI_BASE_URL="/matlab" jupyter notebook
+  jupyter notebook
 
   # For Jupyter Lab
-  env MWI_BASE_URL="/matlab" jupyter lab 
+  jupyter lab 
   ```
-
-  For more information on `MWI_BASE_URL`, refer [Advanced Usage](https://github.com/mathworks/matlab-proxy/blob/main/Advanced-Usage.md) from `matlab-proxy`.
 
 * If you are using Jupyter Notebook (on the left in figure below), on the `New` menu, select `MATLAB`. If you are using JupyterLab (on the right in figure below), select the MATLAB icon on the launcher.
 
