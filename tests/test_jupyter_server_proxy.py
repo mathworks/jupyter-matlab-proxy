@@ -3,7 +3,7 @@
 import os, inspect
 import matlab_proxy, jupyter_matlab_proxy
 from pathlib import Path
-from matlab_proxy import mwi_environment_variables as mwi_env
+from matlab_proxy.util.mwi import environment_variables as mwi_env
 from jupyter_matlab_proxy.jupyter_config import config
 
 

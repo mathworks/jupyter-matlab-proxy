@@ -16,7 +16,7 @@ def _get_env(port, base_url):
     Returns:
         [Dict]: Containing environment settings to launch the MATLAB Desktop.
     """
-    from matlab_proxy import mwi_environment_variables as mwi_env
+    from matlab_proxy.util.mwi import environment_variables as mwi_env
 
     return {
         mwi_env.get_env_name_app_port(): str(port),
@@ -33,7 +33,7 @@ def setup_matlab():
     """
 
     import matlab_proxy
-    from matlab_proxy.util import mwi_logger
+    from matlab_proxy.util.mwi import logger as mwi_logger
 
     logger = mwi_logger.get(init=True)
     logger.info("Initializing Jupyter MATLAB Proxy")
