@@ -15,7 +15,7 @@ long_description = (HERE / "README.md").read_text()
 
 setuptools.setup(
     name="jupyter-matlab-proxy",
-    version="0.4.1",
+    version="0.4.2",
     url=config["doc_url"],
     author="The MathWorks, Inc.",
     author_email="jupyter-support@mathworks.com",
@@ -48,7 +48,7 @@ setuptools.setup(
     install_requires=[
         "jupyter-server-proxy",
         "jupyter_contrib_nbextensions",
-        "matlab-proxy",
+        "matlab-proxy>=0.2.9",
     ],
     tests_require=tests_require,
     extras_require={"dev": ["black", "ruamel.yaml"] + tests_require},
