@@ -24,8 +24,8 @@ def test_setup_matlab():
     Dictionary for the Matlab process.
     """
     # Setup
-    package_path = Path(inspect.getfile(matlab_proxy)).parent
-    icon_path = package_path / "icons" / "matlab.svg"
+    package_path = Path(inspect.getfile(jupyter_matlab_proxy)).parent
+    icon_path = package_path / "icon_open_matlab.svg"
 
     expected_matlab_setup = {
         "command": [
@@ -37,7 +37,7 @@ def test_setup_matlab():
         "environment": jupyter_matlab_proxy._get_env,
         "absolute_url": True,
         "launcher_entry": {
-            "title": "MATLAB",
+            "title": "Open MATLAB",
             "icon_path": icon_path,
         },
     }

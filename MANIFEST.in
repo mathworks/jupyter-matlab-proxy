@@ -1,2 +1,2 @@
 include README.md
-
+recursive-include src/jupyter_matlab_kernel/matlab *

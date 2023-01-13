@@ -15,22 +15,22 @@ jobs:
         with:
           ref: ${{github.sha}}
 
-      - name: Set up Python 3.6
+      - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: 3.7
 
       - name: Install dependencies
         # Installing wheel package will slightly speed-up installing dependencies.
         # Installing the package with "[dev]" flag  will install test dependecies as well,
         # enabling us to run pytest.
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install wheel
-          pip install .[dev]
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel pytest
+          python3 -m pip install .[dev]
 
       - name: Run Python Tests
-        run: python -m pytest
+        run: python3 -m pytest
 
   build_and_publish_pypi:
     needs: [python_tests]
@@ -43,18 +43,18 @@ jobs:
         with:
           ref: ${{github.sha}}
 
-      - name: Set up Python 3.6
+      - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: 3.7
 
       - name: Install Python build dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install wheel
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel hatch
 
       - name: Build Source and Binary wheel distributions
-        run: python setup.py bdist_wheel sdist
+        run: python3 -m hatch build -t wheel
 
       - name: Publish to PyPI.
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -62,41 +62,4 @@ jobs:
           user: __token__
           verbose: true
           password: ${{ secrets.PYPI_TOKEN }}
-          repository_url: https://upload.pypi.org/legacy/
-
-  # build_and_publish_anaconda:
-  #   needs: [build_and_publish_pypi]
-  #   if: success()
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-  #       with:
-  #         ref: ${{github.sha}}
-
-  #     - name: Set up Python 3.6
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: 3.6
-
-  #     - name: Install Python build dependencies
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         python -m pip install wheel
-  #         python -m pip install .[dev]
-
-  #     - name: Build and Publish to Anaconda.
-  #       env:
-  #         ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
-
-  #       run: |
-  #         #  $CONDA is an environment variable pointing to the root of the miniconda directory
-  #         echo $CONDA/bin >> $GITHUB_PATH
-  #         conda install -y conda-build
-  #         conda install -y anaconda-client
-  #         cd ./anaconda
-  #         conda skeleton pypi jupyter-matlab-proxy
-  #         python parse_meta_file.py
-  #         conda build ./jupyter-matlab-proxy --python 3.6 --output-folder ./build
-  #         $CONDA/bin/anaconda upload --label main ./build/linux-64/jupyter*.tar.gz
+          repository_url: ${{ secrets.PYPI_REPOSITORY_URL }}

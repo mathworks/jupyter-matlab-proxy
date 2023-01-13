@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9, 3.10]
 
     steps:
       - name: Checkout
@@ -26,15 +26,15 @@ jobs:
         # Installing the package with "[dev]" flag  will install test dependecies as well,
         # enabling us to run pytest.
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install wheel
-          pip install .[dev]
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel pytest
+          python3 -m pip install .[dev]
 
       - name: Lint with black
         run: black --check .
 
       - name: Test with pytest
-        run: python -m pytest
+        run: python3 -m pytest
 
   generate_and_upload_code_coverage:
     needs: [python_tests]
@@ -52,8 +52,8 @@ jobs:
       - name: Install Python build dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install wheel
-          pip install .[dev]
+          python3 -m pip install wheel pytest
+          python3 -m pip install .[dev]
 
       - name: Generate Code Coverage report for Python code
         run: |

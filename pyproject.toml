@@ -1,0 +1,105 @@
+[build-system]
+requires = [
+    "jupyterlab>=3.1",
+    "hatchling"
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "jupyter-matlab-proxy"
+version = "0.5.0"
+description = "MATLAB Integration for Jupyter"
+readme = "README.md"
+license = { file = "LICENSE.md" }
+requires-python = ">=3.7"
+authors = [
+    { name = "The MathWorks Inc.", email = "jupyter-support@mathworks.com" },
+]
+keywords = [
+    "Jupyter",
+    "Jupyter Proxy",
+    "Jupyter Server Proxy",
+    "MATLAB",
+    "MATLAB Integration for Jupyter",
+    "MATLAB Proxy",
+    "MATLAB Web Desktop",
+    "Remote MATLAB Web Access",
+    "JupyterLab",
+    "MATLAB Kernel for Jupyter"
+]
+classifiers = [
+    "Framework :: Jupyter",
+    "Framework :: Jupyter :: JupyterLab",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "jupyter-server-proxy",
+    "jupyter-contrib-nbextensions",
+    "matlab-proxy>=0.2.9",
+    "requests"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/jupyter_matlab_kernel",
+    "src/jupyter_matlab_proxy"
+]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"src/jupyter_matlab_labextension/jupyter_matlab_labextension/labextension" = "share/jupyter/labextensions/jupyter_matlab_labextension"
+"src/jupyter_matlab_labextension/install.json" = "share/jupyter/labextensions/jupyter_matlab_labextension/install.json"
+"src/jupyter_matlab_kernel/kernel.json" = "share/jupyter/kernels/jupyter_matlab_kernel/kernel.json"
+"img/logo-64x64.png" = "share/jupyter/kernels/jupyter_matlab_kernel/logo-64x64.png"
+"img/logo-svg.svg" = "share/jupyter/kernels/jupyter_matlab_kernel/logo-svg.svg"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".github",
+]
+
+[tool.hatch.build.hooks.jupyter-builder]
+dependencies = ["hatch-jupyter-builder>=0.8.1"]
+build-function = "hatch_jupyter_builder.npm_builder"
+ensured-targets = [
+    "src/jupyter_matlab_labextension/jupyter_matlab_labextension/labextension/static/style.js",
+    "src/jupyter_matlab_labextension/jupyter_matlab_labextension/labextension/package.json",
+]
+skip-if-exists = [
+    "src/jupyter_matlab_labextension/jupyter_matlab_labextension/labextension/static/style.js",
+]
+
+[tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
+build_cmd = "install:extension"
+npm = [
+    "jlpm",
+]
+
+[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
+path = "src/jupyter_matlab_labextension"
+build_cmd = "build:prod"
+npm = [
+    "jlpm",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "ruamel.yaml",
+    "pytest",
+    "pytest-cov",
+]
+
+[project.entry-points.jupyter_serverproxy_servers]
+matlab = "jupyter_matlab_proxy:setup_matlab"
+
+[project.entry-points.matlab_proxy_configs]
+Jupyter = "jupyter_matlab_proxy.jupyter_config:config"
+
+[project.urls]
+Homepage = "https://github.com/mathworks/jupyter-matlab-proxy"

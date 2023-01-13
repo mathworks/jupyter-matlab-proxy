@@ -1,0 +1,18 @@
+{
+    "argv": [
+        "python3",
+        "-m",
+        "jupyter_matlab_kernel",
+        "-f",
+        "{connection_file}"
+    ],
+    "display_name": "MATLAB Kernel",
+    "language": "matlab",
+    "interrupt_mode": "message",
+    "env": {},
+    "metadata": {
+        "debugger": false
+    },
+    "copyright": "Copyright 2023 The MathWorks, Inc.",
+    "description": "Jupyter kernelspec for MATLAB Kernel. For more information, please look at https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs"
+}

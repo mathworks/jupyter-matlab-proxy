@@ -1,196 +1,201 @@
 # MATLAB Integration for Jupyter
 ----
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mathworks/jupyter-matlab-proxy/MATLAB%20Jupyter%20Integration?logo=github)](https://github.com/mathworks/jupyter-matlab-proxy/actions) [![PyPI badge](https://img.shields.io/pypi/v/jupyter-matlab-proxy.svg?logo=pypi)](https://pypi.python.org/pypi/jupyter-matlab-proxy) [![codecov](https://codecov.io/gh/mathworks/jupyter-matlab-proxy/branch/main/graph/badge.svg?token=ZW3SESKCSS)](https://codecov.io/gh/mathworks/jupyter-matlab-proxy)
-
-
-Copyright (c) 2021 The MathWorks, Inc. All rights reserved.
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mathworks/jupyter-matlab-proxy/run-tests.yml?branch=main&logo=github)](https://github.com/mathworks/jupyter-matlab-proxy/actions) [![PyPI badge](https://img.shields.io/pypi/v/jupyter-matlab-proxy.svg?logo=pypi)](https://pypi.python.org/pypi/jupyter-matlab-proxy) [![codecov](https://codecov.io/gh/mathworks/jupyter-matlab-proxy/branch/main/graph/badge.svg?token=ZW3SESKCSS)](https://codecov.io/gh/mathworks/jupyter-matlab-proxy)
 
 ---
+This repository shows how you can access MATLAB® from your Jupyter® environment. With MATLAB Integration for Jupyter, you can integrate MATLAB with an existing JupyterHub deployment, single user Jupyter Notebook Server, and many other Jupyter-based systems running in the cloud or on-premises.
 
-The MATLAB Integration for Jupyter enables you to access MATLAB in a web browser from your Jupyter environment. 
+Once installed, you can:
+|Capability| Example|
+|--|--|
+|**Run MATLAB code in Jupyter notebook** | <p align="center"><img width="600" src="img/JupyterKernel.gif"></p>|
+|**Access MATLAB in a browser**|<p align="center"><img width="600" src="img/JupyterMATLABDesktop.gif"></p>|
 
-`jupyter-matlab-proxy` is a Python® package based on the following packages.
-| Package | Description |
-|----|----|
-| [matlab-proxy](https://github.com/mathworks/matlab-proxy) | Provides infrastructure to launch MATLAB and connect to it from a web browser.|
-| [jupyter-server-proxy](https://github.com/jupyterhub/jupyter-server-proxy) | Extends Jupyter environments to launch MATLAB as an external process alongside the notebook server. For more information see [GUI Launchers](https://jupyter-server-proxy.readthedocs.io/en/latest/launchers.html#jupyterlab-launcher-extension).|
+This package supports both Jupyter Notebook and JupyterLab. Some capabilities are limited to the JupyterLab interface.
 
-**NOTE:** This package *currently*, does not provide a kernel level integration with Jupyter. (under active development)
-
-To report any issues or suggestions, see the [Feedback](#feedback) section.
+This package is under active development. To report any issues or suggestions, see the [Feedback](#feedback) section.
 
 ----
 ## Requirements
 
-This package has the same requirements as its dependencies:
-* See [Requirements](https://github.com/jupyterhub/jupyter-server-proxy#requirements) from `jupyter-server-proxy`
-* See [Requirements](https://github.com/mathworks/matlab-proxy#requirements) from `matlab-proxy`
+* Python versions: **3.7** | **3.8** | **3.9**  | **3.10**
+
+* MATLAB R2020b or later is installed and on the system PATH.
+  ```bash
+  # Confirm MATLAB is on the PATH
+  which matlab
+  ```
+  *note:* MATLAB is only required if you want to execute MATLAB code. Viewing notebooks does not require MATLAB to be installed.
+
+* System dependencies required to run MATLAB.
+  - The `base-dependencies.txt` files in the [matlab-deps](https://github.com/mathworks-ref-arch/container-images/tree/master/matlab-deps) repository lists the basic libraries that need to be installed for the desired combination of MATLAB version & Operating system. Refer to the Dockerfiles in the same folder for example usage of these files.</br></br>
+  
+* For Linux® based systems only, install `X Virtual Frame Buffer (Xvfb)` using:
+
+  Install it on your Linux machine using:
+  ```bash
+  # On a Debian/Ubuntu based system:
+  $ sudo apt install xvfb
+ 
+  # On a RHEL based system:
+  $ yum search Xvfb
+  xorg-x11-server-Xvfb.x86_64 : A X Windows System virtual framebuffer X server.
+  $ sudo yum install xorg-x11-server-Xvfb
+  ```
+* [Browser Requirements](https://www.mathworks.com/support/requirements/browser-requirements.html)
+
+* Supported Operating Systems:
+    * Linux®
+    * MacOS
+
+    **NOTE**: Support for Windows is unavailable due to [jupyter-server-proxy/issue#47](https://github.com/jupyterhub/jupyter-server-proxy/issues/147)
 
 ## Installation
 
+MATLAB Integration for Jupyter is provided as a Python® package that can be installed from PyPI or built from sources as shown below.
+
 ### PyPI
-This repository can be installed directly from the Python Package Index.
+This repository can be installed directly from the Python Package Index using:
 ```bash
-python -m pip install jupyter-matlab-proxy
+python3 -m pip install jupyter-matlab-proxy
 ```
+Installing this package will not automatically install MATLAB. You must have [MATLAB](https://www.mathworks.com/help/install/install-products.html) installed to execute MATLAB code through Jupyter.
 
-If you want to use this integration with JupyterLab®, ensure that you have JupyterLab installed on your machine by running the following command:
-```bash
-python -m pip install jupyterlab
-```
-
-You should then install `jupyterlab-server-proxy` JupyterLab extension. To install the extension, use the following command:
-
-``` bash
-jupyter labextension install @jupyterlab/server-proxy
-```
 
 ### Building From Sources
+Building from sources requires Node.js® version 16 or higher.
+To install Node.js, see [Node.js downloads](https://nodejs.org/en/download/).
 ```bash
 git clone https://github.com/mathworks/jupyter-matlab-proxy.git
-
 cd jupyter-matlab-proxy
-
-python -m pip install .
+python3 -m pip install .
 ```
 
 ## Usage
 
-Upon successful installation of `jupyter-matlab-proxy`, your Jupyter environment should present options to launch MATLAB.
+Open your Jupyter environment by starting Jupyter Notebook or JupyterLab:
 
-* Open your Jupyter environment by starting jupyter notebook or lab
   ```bash
   # For Jupyter Notebook
   jupyter notebook
 
-  # For Jupyter Lab
+  # For JupyterLab
   jupyter lab 
   ```
 
-* If you are using Jupyter Notebook (on the left in figure below), on the `New` menu, select `MATLAB`. If you are using JupyterLab (on the right in figure below), select the MATLAB icon on the launcher.
+Upon successful installation of the `jupyter-matlab-proxy` package, your Jupyter 
+environment should present several options for using MATLAB in Jupyter.
 
-<p align="center">
-  <img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/combined_launchers.png">
-</p>
+|Classic Jupyter | JupyterLab |
+|--|--|
+|<p align="center"><img width="200" src="img/classic-jupyter.png"></p> | <p align="center"><img width="500" src="img/jupyterlab_icons.png"></p> |
 
-* If prompted to do so, enter credentials for a MathWorks account associated with a MATLAB license. If you are using a network license manager, change to the _Network License Manager_ tab and enter the license server address instead. To determine the appropriate method for your license type, consult [MATLAB Licensing Info](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/MATLAB-Licensing-Info.md).
+## Detailed Usage
 
-<p align="center">
-  <img width="400" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/licensing_GUI.png">
-</p>
+### **MATLAB Kernel: Create a Jupyter Notebook using MATLAB kernel for Jupyter**
+Click the icon below to launch a notebook:
 
+|Icon | Notebook |
+|--|--|
+|<p align="center"><img width="100" src="img/matlab-kernel-button.png"></p> | <p align="center"><img width="600" src="img/jupyterlab-notebook.png"></p> |
+
+
+* The first time you execute code in a MATLAB notebook you will be asked to log in or use a network license manager. Follow the [licensing](#licensing) instructions below.
+* Subsequent notebooks in the same server will not request for licensing information.
 * Wait for the MATLAB session to start. This can take several minutes.
+* **NOTE**: All notebooks in a Jupyter server share the same underlying MATLAB process. Executing code in one notebook will effect the workspace in other notebooks. Users must be mindful of this while working with multiple notebooks at the same time.
+* **For MATLAB R2022b and later:** Local functions can be defined at the end of a cell for use in the same cell
+    ![cellLocalFunctions](img/cell-local-function.png)
+
+For more information, see [MATLAB Kernel for Jupyter](src/jupyter_matlab_kernel/README.md).
+
+### **Open MATLAB: Open a browser-based version of the MATLAB development environment from Jupyter**
+Click the icon below to open a browser-based version of the MATLAB development environment:
+|Icon | Desktop |
+|--|--|
+|<p align="center"><img width="100" src="img/matlab-desktop-button.png"></p> | <p align="center"><img width="600" src="img/jupyter_matlab_desktop.png"></p> |
+
+* Notebooks in JupyterLab, also have a `Open MATLAB` shortcut on the top to access the MATLAB desktop.
+|![open-matlab-button](img/open-matlab-button.png)
+
+For more information, see [Open MATLAB in a browser](src/jupyter_matlab_proxy/README.md).
+
+
+### **MATLAB File: Open a new MATLAB file (.m) in JupyterLab**
+Click the icon below to start editing a new MATLAB file in a new JupyterLab tab:
+|Icon | MATLAB File |
+|--|--|
+|<p align="center"><img width="100" src="img/new-matlab-file-button.png"></p> | <p align="center"><img width="600" src="img/new-matlab-file.png"></p> |
+* MATLAB code in this file will include syntax highlighting.
+* You can also use the command palette, by using `CTRL+SHIFT+C` and then typing `New MATLAB File`.
+* Execution of `MATLAB Files (.m)` files in JupyterLab is currently **not** supported.
+
+
+## Licensing
+
+* If prompted to do so, enter credentials for a MathWorks account associated with a MATLAB license. If you are using a network license manager, change to the _Network License Manager_ tab and enter the license server address instead.
+To determine the appropriate method for your license type, consult [MATLAB Licensing Info](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/MATLAB-Licensing-Info.md).
+
 <p align="center">
-  <img width="800" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/jupyter_matlab_desktop.png">
+<img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/licensing_GUI.png">
 </p>
-
-* To manage the MATLAB integration for Jupyter, click the tools icon shown below.
-
-<p align="center">
-  <img width="100" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/tools_icon.png">
-</p>
-
-* Clicking the tools icon opens a status panel with buttons like the ones below:
-
-    <p align="center">
-      <img width="800" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/status_panel.png">
-    </p>
-
-   The following options are available in the status panel (some options are only available in a specific context):
-
-  | Option |  Description |
-  | ---- | ---- |
-  | Start MATLAB Session | Start your MATLAB session. Available if MATLAB is stopped.|
-  | Restart MATLAB Session | Restart your MATLAB session. Available if MATLAB is running or starting.|
-  | Stop MATLAB Session | Stop your MATLAB session. Use this option if you want to free up RAM and CPU resources. Available if MATLAB is running or starting.|
-  | Sign Out | Sign out of MATLAB. Use this to stop MATLAB and sign in with an alternative account. Available if using online licensing.|
-  | Unset License Server Address | Unset network license manager server address. Use this to stop MATLAB and enter new licensing information. Available if using network license manager.|
-  | Feedback | Send us feedback. This action opens your default email application.|
-  | Help | Open a help pop-up for a detailed description of the options.|
-
-## Limitations
-This package supports the same subset of MATLAB features and commands as MATLAB® Online, except there is no support for Simulink® Online.
-[Click here for a full list of Specifications and Limitations for MATLAB Online](https://www.mathworks.com/products/matlab-online/limitations.html). 
-
-If you need to use functionality that is not yet supported, or for versions of MATLAB earlier than R2020b, you can use the alternative [MATLAB Integration for Jupyter using VNC](https://github.com/mathworks/jupyter-matlab-vnc-proxy).
 
 ## Integration with JupyterHub
 
-To use this integration with JupyterHub®, you must install the `jupyter-matlab-proxy` Python package in the Jupyter environment launched by your JupyterHub platform. 
+To use this integration with JupyterHub, you must install the `jupyter-matlab-proxy` Python package in the Jupyter environment launched by your JupyterHub platform. 
 
 For example, if your JupyterHub platform launches Docker containers, then install this package in the Docker image used to launch them.
 
 A reference architecture that installs `jupyter-matlab-proxy` in a Docker image is available at: [Use MATLAB Integration for Jupyter in a Docker Container](https://github.com/mathworks-ref-arch/matlab-integration-for-jupyter/tree/main/matlab).
 
+## Limitations
+
+* Notebooks running on the same server share the same MATLAB. It is currently not possible to have separate workspaces for each notebook.
+
+* Kernels cannot restart MATLAB automatically when users explicitly terminate their MATLAB session using the `exit` command or through the browser-based MATLAB development environment. Users must manually restart MATLAB using the options shown [here](/src/jupyter_matlab_proxy/README.md/#usage).
+
+* Some MATLAB commands are currently not supported in notebooks. These include:
+
+    * Commands that request interactive user input from users. For Example: `input` and `keyboard`.
+
+    * MATLAB Debugger commands. For Example: `dbstep`, `dbup`, and `dbstack`.
+
+    * Commands which require another browser tab to be opened. For Example: `doc` and `appdesigner`.
+
+    * Commands that create animations. For Example: `movie, vibes`.
+
+    * **For MATLAB R2022a and earlier,** `LASTERR` and `LASTERROR` do not capture MATLAB errors from execution in notebooks. 
+
+* Notebook results are truncated when there are more than 10 rows or 30 columns of results from MATLAB. This is represented by a `(...)` at the end of the result. Example:
+    |![truncation-issue](img/truncation-issue.png)|
+    |-|
+
+* Handles from Graphics objects do not persist between cells. For Example:
+    |![invalid-handle](img/invalid-handle.png)|
+    |-|
+
+* Graphics functions like `gca, gcf, gco, gcbo, gcbf, clf, cla` which access `current` handles are **scoped to a notebook cell**. The following example illustrates this:
+    |![gca-issue](img/gca-issue.png)|
+    |-|
+
+* Notebooks do not show intermediate figures that were created during execution.
+
+* Outputs from code cells are only displayed after the entire code cell has been run.
+
+* MATLAB notebooks and MATLAB files do not auto-indent after `case` statements.
+
+* Locally licensed MATLABs are currently not supported. Users must either login using Online Licensing or a Network License Manager.
+
 ## Troubleshooting
-
-In the environment that you have installed the package:
-
-* Verify if the MATLAB executable is discoverable (ie. if it is in the PATH)
-    ```bash
-    $ which matlab
-    /usr/local/bin/matlab
-    ```
-
-* Check if their Python version is 3.6 or higher
-    ```bash
-    $ python --version
-    Python 3.7.3
-    ```
-
-* Ensure that `matlab-proxy-app` and the `jupyter` executables are in the same environment as the python executable.
-    For example if youare using VENV to manage your python environments:
-    ```bash
-    $ which python
-    /home/user/my-project/packages/.venv/bin/python
-
-    $ which matlab-proxy-app
-    /home/user/my-project/packages/.venv/bin/matlab-proxy-app
-
-    $ which jupyter
-    /home/user/my-project/packages/.venv/bin/jupyter
-    ```
-    Notice that `matlab-proxy-app`, `jupyter` and the `python` executable are in the same parent directory, in this case it is: `/home/user/my-project/packages/.venv/bin`
-
-* Ensure that you are launching `jupyter notebook` using the same executable as listed above.
-
-* Ensure that all three packages are installed in the same python environment
-    ```bash
-    # Pipe the output of pip freeze and grep for jupyter, matlab-proxy and jupyter-matlab-proxy.
-    # All three packages should be highlighted in the output.
-    # If you don't see anyone of them, then either the packages missing in the output have been installed
-    # in a different python environment or not installed at all.
-    $ pip freeze | grep -E "jupyter|matlab-proxy|jupyter-matlab-proxy"
-    ```
-
-* If the integration is not showing up as an option to the dropdown box in the Juptyer notebook:
-    ```bash
-    #Run the following commands and verify that you are able to see similar output:
-    
-    $ jupyter serverextension list
-    config dir: /home/user/anaconda3/etc/jupyter
-        jupyter_server_proxy  enabled
-        - Validating...
-        jupyter_server_proxy  OK
-        jupyterlab  enabled
-        - Validating...
-        jupyterlab 2.2.6 OK
-    
-    $ jupyter nbextension list
-    Known nbextensions:
-    config dir: /home/user/anaconda3/etc/jupyter/nbconfig
-        notebook section
-        jupyter-js-widgets/extension  enabled
-        - Validating: OK
-        tree section
-        jupyter_server_proxy/tree  enabled
-        - Validating: OK  $ pip freeze | grep -E "jupyter|matlab-proxy|jupyter-matlab-proxy"
-    
-    # IF the server does not show up in the commands above, install:
-    $ pip install jupyter_contrib_nbextensions
-    ```
+See [Troubleshooting](./troubleshooting.md) for guidance on how to investigate common installation issues.
 
 ## Feedback
 
 We encourage you to try this repository with your environment and provide feedback.
 If you encounter a technical issue or have an enhancement request, create an issue [here](https://github.com/mathworks/jupyter-matlab-proxy/issues) or send an email to `jupyter-support@mathworks.com`
+
+----
+
+Copyright (c) 2021-2023 The MathWorks, Inc. All rights reserved.
+
+----
