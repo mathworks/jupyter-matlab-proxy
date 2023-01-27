@@ -1,4 +1,6 @@
-# Copyright 2020-2021 The MathWorks, Inc
+# Copyright (c) 2020-2023 The MathWorks, Inc
+
+# Workflow to release MATLAB Jupyter Integration to PyPi
 name: Release to PyPI
 
 on:
@@ -11,12 +13,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{github.sha}}
 
       - name: Set up Python 3.7
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
 
@@ -39,12 +41,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{github.sha}}
 
       - name: Set up Python 3.7
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
 
