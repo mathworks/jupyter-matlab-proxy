@@ -2,7 +2,7 @@
 
 This JupyterLab Labextension provides features to aid working
 with MATLAB code in Jupyter. It is provided as
-part of [MATLAB Integration for Jupyter](../../README.md).
+part of [MATLAB Integration for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy#matlab-integration-for-jupyter).
 
 ## Supported Features
 * Syntax highlighting

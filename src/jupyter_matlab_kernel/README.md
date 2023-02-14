@@ -14,7 +14,7 @@ Click on `MATLAB Kernel` to create a Jupyter notebook for MATLAB.
 
 ## Architecture
 
-|![kernelArchitecture](../../img/kernel-architecture.png)|
+|![kernelArchitecture](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/kernel-architecture.png)|
 |-|
 
 **Key takeaways:**
@@ -46,10 +46,10 @@ Click on `MATLAB Kernel` to create a Jupyter notebook for MATLAB.
     * Inline static plot images
     * LaTeX representation for symbolic expressions
 * **For MATLAB R2022b and later:** Local functions can be defined at the end of a cell for use in the same cell
-    ![cellLocalFunctions](../../img/cell-local-function.png)
+    ![cellLocalFunctions](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/cell-local-function.png)
 
 ## Limitations
-Please refer to this [README](../../README.md#limitations) file for a listing of the current limitations. 
+Please refer to this [README](https://github.com/mathworks/jupyter-matlab-proxy#limitations) file for a listing of the current limitations. 
 
 ## Feedback
 

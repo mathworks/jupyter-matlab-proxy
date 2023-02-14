@@ -8,7 +8,7 @@ This functionality requires the following packages:
 | [matlab-proxy](https://github.com/mathworks/matlab-proxy) | Provides infrastructure to launch MATLAB and connect to it from a web browser.|
 | [jupyter-server-proxy](https://github.com/jupyterhub/jupyter-server-proxy) | Extends Jupyter environments to launch MATLAB as an external process alongside the notebook server. For more information see [GUI Launchers](https://jupyter-server-proxy.readthedocs.io/en/latest/launchers.html#jupyterlab-launcher-extension).|
 
-To report any issues or suggestions, see the [Feedback](#feedback) section.
+To report any issues or suggestions, see the [Feedback](https://github.com/mathworks/jupyter-matlab-proxy#feedback) section.
 
 ----
 ## Usage
@@ -19,7 +19,7 @@ To report any issues or suggestions, see the [Feedback](#feedback) section.
 |--|--|
 |<p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/classic-jupyter.png"></p> | <p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/jupyterlab-notebook-section.png"></p> |
 
-* To enter your license information, see [Licensing](../../README.md#licensing).
+* To enter your license information, see [Licensing](https://github.com/mathworks/jupyter-matlab-proxy#licensing).
 
 * Wait for the MATLAB session to start. This can take several minutes.
 

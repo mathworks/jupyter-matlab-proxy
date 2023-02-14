@@ -105,9 +105,9 @@ Click the icon below to launch a notebook:
 * Wait for the MATLAB session to start. This can take several minutes.
 * **NOTE**: All notebooks in a Jupyter server share the same underlying MATLAB process. Executing code in one notebook will effect the workspace in other notebooks. Users must be mindful of this while working with multiple notebooks at the same time.
 * **For MATLAB R2022b and later:** Local functions can be defined at the end of a cell for use in the same cell
-    ![cellLocalFunctions](img/cell-local-function.png)
+    ![cellLocalFunctions](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/cell-local-function.png)
 
-For more information, see [MATLAB Kernel for Jupyter](src/jupyter_matlab_kernel/README.md).
+For more information, see [MATLAB Kernel for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/README.md).
 
 ### **Open MATLAB: Open a browser-based version of the MATLAB development environment from Jupyter**
 Click the icon below to open a browser-based version of the MATLAB development environment:
@@ -116,9 +116,9 @@ Click the icon below to open a browser-based version of the MATLAB development e
 |<p align="center"><img width="100" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/matlab-desktop-button.png"></p> | <p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/jupyter_matlab_desktop.png"></p> |
 
 * Notebooks in JupyterLab, also have a `Open MATLAB` shortcut on the top to access the MATLAB desktop.
-|![open-matlab-button](img/open-matlab-button.png)
+|![open-matlab-button](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/open-matlab-button.png)
 
-For more information, see [Open MATLAB in a browser](src/jupyter_matlab_proxy/README.md).
+For more information, see [Open MATLAB in a browser](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_proxy/README.md).
 
 
 ### **MATLAB File: Open a new MATLAB file (.m) in JupyterLab**
@@ -152,7 +152,7 @@ A reference architecture that installs `jupyter-matlab-proxy` in a Docker image 
 
 * Notebooks running on the same server share the same MATLAB. It is currently not possible to have separate workspaces for each notebook.
 
-* Kernels cannot restart MATLAB automatically when users explicitly terminate their MATLAB session using the `exit` command or through the browser-based MATLAB development environment. Users must manually restart MATLAB using the options shown [here](/src/jupyter_matlab_proxy/README.md/#usage).
+* Kernels cannot restart MATLAB automatically when users explicitly terminate their MATLAB session using the `exit` command or through the browser-based MATLAB development environment. Users must manually restart MATLAB using the options shown [here](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_proxy/README.md/#usage).
 
 * Some MATLAB commands are currently not supported in notebooks. These include:
 
@@ -167,15 +167,15 @@ A reference architecture that installs `jupyter-matlab-proxy` in a Docker image 
     * **For MATLAB R2022a and earlier,** `LASTERR` and `LASTERROR` do not capture MATLAB errors from execution in notebooks. 
 
 * Notebook results are truncated when there are more than 10 rows or 30 columns of results from MATLAB. This is represented by a `(...)` at the end of the result. Example:
-    |![truncation-issue](img/truncation-issue.png)|
+    |![truncation-issue](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/truncation-issue.png)|
     |-|
 
 * Handles from Graphics objects do not persist between cells. For Example:
-    |![invalid-handle](img/invalid-handle.png)|
+    |![invalid-handle](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/invalid-handle.png)|
     |-|
 
 * Graphics functions like `gca, gcf, gco, gcbo, gcbf, clf, cla` which access `current` handles are **scoped to a notebook cell**. The following example illustrates this:
-    |![gca-issue](img/gca-issue.png)|
+    |![gca-issue](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/gca-issue.png)|
     |-|
 
 * Notebooks do not show intermediate figures that were created during execution.
@@ -187,7 +187,7 @@ A reference architecture that installs `jupyter-matlab-proxy` in a Docker image 
 * Locally licensed MATLABs are currently not supported. Users must either login using Online Licensing or a Network License Manager.
 
 ## Troubleshooting
-See [Troubleshooting](./troubleshooting.md) for guidance on how to investigate common installation issues.
+See [Troubleshooting](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/troubleshooting.md) for guidance on how to investigate common installation issues.
 
 ## Feedback
 
