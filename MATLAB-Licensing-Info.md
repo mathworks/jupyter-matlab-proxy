@@ -22,9 +22,8 @@ Based on the license that you want to use, you can follow the procedures outline
 
 | License Type | Procedure |
 | ------ | ------ |
-| Individual (that only you use and is in your name; not a Home or Student)  | Your license is already configured for use with MATLAB Integration for Jupyter. Using the _Online License Manager_ tab, enter the credentials to your MathWorks account to get started.   |
+| Individual, Home or Student (that only you use and is in your name)  | Your license is already configured for use with MATLAB Integration for Jupyter. Using the _Online License Manager_ tab, enter the credentials to your MathWorks account to get started.   |
 | Campus-Wide License | Your license is already configured for use with MATLAB Integration for Jupyter. Using the _Online License Manager_ tab, enter the credentials to your MathWorks account to get started.  |
-| Home and Student (that only you use and is in your name)  | These license types are not supported for use with MATLAB Integration for Jupyter.   |
 | Concurrent and Network Named User  | Using the _Network License Manager_ tab, enter the address to your organization’s network license manager. You can contact your license administrator* to find the address for the network license manager. |
 
 

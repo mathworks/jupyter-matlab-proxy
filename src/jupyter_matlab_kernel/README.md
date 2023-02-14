@@ -10,7 +10,7 @@ Click on `MATLAB Kernel` to create a Jupyter notebook for MATLAB.
 
 |Jupyter Notebook| JupyterLab |
 |--|--|
-|<p align="center"><img width="200" src="../../img/classic-jupyter.png"></p> | <p align="center"><img width="500" src="../../img/jupyterlab-notebook-section.png"></p> |
+|<p align="center"><img width="200" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/classic-jupyter.png"></p> | <p align="center"><img width="500" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/jupyterlab-notebook-section.png"></p> |
 
 ## Architecture
 

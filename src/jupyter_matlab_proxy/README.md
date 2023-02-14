@@ -17,7 +17,7 @@ To report any issues or suggestions, see the [Feedback](#feedback) section.
 
 |Jupyter Notebook| JupyterLab |
 |--|--|
-|<p align="center"><img width="600" src="../../img/classic-jupyter.png"></p> | <p align="center"><img width="600" src="../../img/jupyterlab-notebook-section.png"></p> |
+|<p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/classic-jupyter.png"></p> | <p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/jupyterlab-notebook-section.png"></p> |
 
 * To enter your license information, see [Licensing](../../README.md#licensing).
 

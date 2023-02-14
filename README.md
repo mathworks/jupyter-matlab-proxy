@@ -8,8 +8,8 @@ This repository shows how you can access MATLAB® from your Jupyter® environmen
 Once installed, you can:
 |Capability| Example|
 |--|--|
-|**Run MATLAB code in Jupyter notebook** | <p align="center"><img width="600" src="img/JupyterKernel.gif"></p>|
-|**Access MATLAB in a browser**|<p align="center"><img width="600" src="img/JupyterMATLABDesktop.gif"></p>|
+|**Run MATLAB code in Jupyter notebook** | <p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/JupyterKernel.gif"></p>|
+|**Access MATLAB in a browser**|<p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/JupyterMATLABDesktop.gif"></p>|
 
 This package supports both Jupyter Notebook and JupyterLab. Some capabilities are limited to the JupyterLab interface.
 
@@ -88,7 +88,7 @@ environment should present several options for using MATLAB in Jupyter.
 
 |Classic Jupyter | JupyterLab |
 |--|--|
-|<p align="center"><img width="200" src="img/classic-jupyter.png"></p> | <p align="center"><img width="500" src="img/jupyterlab_icons.png"></p> |
+|<p align="center"><img width="200" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/classic-jupyter.png"></p> | <p align="center"><img width="500" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/jupyterlab_icons.png"></p> |
 
 ## Detailed Usage
 
@@ -97,7 +97,7 @@ Click the icon below to launch a notebook:
 
 |Icon | Notebook |
 |--|--|
-|<p align="center"><img width="100" src="img/matlab-kernel-button.png"></p> | <p align="center"><img width="600" src="img/jupyterlab-notebook.png"></p> |
+|<p align="center"><img width="100" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/matlab-kernel-button.png"></p> | <p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/jupyterlab-notebook.png"></p> |
 
 
 * The first time you execute code in a MATLAB notebook you will be asked to log in or use a network license manager. Follow the [licensing](#licensing) instructions below.
@@ -113,7 +113,7 @@ For more information, see [MATLAB Kernel for Jupyter](src/jupyter_matlab_kernel/
 Click the icon below to open a browser-based version of the MATLAB development environment:
 |Icon | Desktop |
 |--|--|
-|<p align="center"><img width="100" src="img/matlab-desktop-button.png"></p> | <p align="center"><img width="600" src="img/jupyter_matlab_desktop.png"></p> |
+|<p align="center"><img width="100" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/matlab-desktop-button.png"></p> | <p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/jupyter_matlab_desktop.png"></p> |
 
 * Notebooks in JupyterLab, also have a `Open MATLAB` shortcut on the top to access the MATLAB desktop.
 |![open-matlab-button](img/open-matlab-button.png)
@@ -125,7 +125,7 @@ For more information, see [Open MATLAB in a browser](src/jupyter_matlab_proxy/RE
 Click the icon below to start editing a new MATLAB file in a new JupyterLab tab:
 |Icon | MATLAB File |
 |--|--|
-|<p align="center"><img width="100" src="img/new-matlab-file-button.png"></p> | <p align="center"><img width="600" src="img/new-matlab-file.png"></p> |
+|<p align="center"><img width="100" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/new-matlab-file-button.png"></p> | <p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/new-matlab-file.png"></p> |
 * MATLAB code in this file will include syntax highlighting.
 * You can also use the command palette, by using `CTRL+SHIFT+C` and then typing `New MATLAB File`.
 * Execution of `MATLAB Files (.m)` files in JupyterLab is currently **not** supported.
