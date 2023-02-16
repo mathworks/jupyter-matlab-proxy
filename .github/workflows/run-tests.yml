@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10']
-
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
+    name: "Run Python Tests with Python ${{matrix.python-version}}"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,30 +38,30 @@ jobs:
         run: black --check .
 
       - name: Test with pytest
+        if: ${{matrix.python-version}} != "3.7"
         run: python3 -m pytest
 
-  generate_and_upload_code_coverage:
+      - name: Test with pytest and get code coverage for Python 3.7
+        if: ${{matrix.python-version}} == "3.7"
+        run: python3 -m pytest --cov --cov-report=xml
+
+      - name: Persist coverage data to be uploaded if all jobs are successful.
+        if: ${{matrix.python-version}} == "3.7"
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_file
+          path: ./coverage.xml
+
+  upload_code_coverage:
+    name: "Upload Code Coverage using codecov"
     needs: [python_tests]
     if: success()
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v4
+      - name: Get coverage files from previous job
+        uses: actions/download-artifact@v3
         with:
-          python-version: 3.7
-
-      - name: Install Python build dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python3 -m pip install wheel pytest
-          python3 -m pip install .[dev]
-
-      - name: Generate Code Coverage report for Python code
-        run: |
-          pytest --cov=./ --cov-report=xml
+          name: coverage_file
 
       - name: Upload python coverage report to Codecov
         uses: codecov/codecov-action@v2
