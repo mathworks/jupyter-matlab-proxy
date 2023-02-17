@@ -9,16 +9,11 @@ When starting MATLAB through this integration, you are presented with a user int
   <img width="400" src="img/licensing_GUI.png">
 </p>
 
-To choose the right option, determine what MATLAB licenses you have access to. Your license must be current on [MathWorks® Software Maintenance Service](https://www.mathworks.com/services/maintenance.html). 
+To choose the right option, determine what MATLAB licenses you have access to.
 
-
-
-If you are an academic user, you can use [this tool](https://www.mathworks.com/licensecenter/licenses/add) to determine if you have access to a campus-wide license through your institution. Otherwise, to see the licenses linked to your account, log in to your MathWorks account and go to [License Center](https://www.mathworks.com/licensecenter/?s_tid=hp_ff_s_license). You can link your MathWorks account with a license using [this tool](https://www.mathworks.com/licensecenter/licenses/add).
-
-
+If you are an academic user, you can use [this tool](https://www.mathworks.com/academia/tah-support-program/eligibility.html) to determine if you have access to a campus-wide license through your institution. Otherwise, to see the licenses linked to your account, log in to your MathWorks account and go to [License Center](https://www.mathworks.com/licensecenter/?s_tid=hp_ff_s_license). You can link your MathWorks account with a license using [this tool](https://www.mathworks.com/licensecenter/licenses/add).
 
 Based on the license that you want to use, you can follow the procedures outlined in the table below to setup the MATLAB licensing for this integration.
-
 
 | License Type | Procedure |
 | ------ | ------ |
@@ -26,11 +21,9 @@ Based on the license that you want to use, you can follow the procedures outline
 | Campus-Wide License | Your license is already configured for use with MATLAB Integration for Jupyter. Using the _Online License Manager_ tab, enter the credentials to your MathWorks account to get started.  |
 | Concurrent and Network Named User  | Using the _Network License Manager_ tab, enter the address to your organization’s network license manager. You can contact your license administrator* to find the address for the network license manager. |
 
-
 *Not sure who the license administrator is? Sign in to your [MathWorks Account](https://www.mathworks.com/mwaccount/), click the license you are using, then click the tab marked “Contact Administrators”.
 
 **For Administrators**
-
 
 | Scenario | License Type | Procedure |
 | ------ | ------ | ------ |
