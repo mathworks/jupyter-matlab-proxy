@@ -46,7 +46,7 @@ request = struct('requestId', 'jupyter_matlab_kernel',...
 % Disable Hotlinks in the output captured. The hotlinks do not have a purpose
 % in Jupyter notebooks.
 hotlinksPreviousState = feature('hotlinks','off');
-hotlinksCleanupObj = onCleanup(@() feature('hotlinks', hotlinksPreviousState))
+hotlinksCleanupObj = onCleanup(@() feature('hotlinks', hotlinksPreviousState));
 
 % Use the Live editor API for execution of MATLAB code and capturing the outputs
 resp = jsondecode(matlab.internal.editor.evaluateSynchronousRequest(request));
