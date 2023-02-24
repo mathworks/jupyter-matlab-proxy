@@ -1,8 +1,7 @@
+# Copyright 2023 The MathWorks, Inc.
+
 [build-system]
-requires = [
-    "jupyterlab>=3.1",
-    "hatchling"
-]
+requires = ["jupyterlab>=3.1,<4.0.0", "hatchling"]
 build-backend = "hatchling.build"
 
 [project]
@@ -25,7 +24,7 @@ keywords = [
     "MATLAB Web Desktop",
     "Remote MATLAB Web Access",
     "JupyterLab",
-    "MATLAB Kernel for Jupyter"
+    "MATLAB Kernel for Jupyter",
 ]
 classifiers = [
     "Framework :: Jupyter",
@@ -42,14 +41,30 @@ dependencies = [
     "jupyter-server-proxy",
     "jupyter-contrib-nbextensions",
     "matlab-proxy>=0.2.9",
-    "requests"
+    "requests",
 ]
 
+[project.urls]
+Homepage = "https://github.com/mathworks/jupyter-matlab-proxy"
+
+[project.optional-dependencies]
+dev = ["black", "ruamel.yaml", "pytest", "pytest-cov"]
+
+[project.entry-points.jupyter_serverproxy_servers]
+matlab = "jupyter_matlab_proxy:setup_matlab"
+
+[project.entry-points.matlab_proxy_configs]
+Jupyter = "jupyter_matlab_proxy.jupyter_config:config"
+
+
 [tool.hatch.build.targets.wheel]
-packages = [
-    "src/jupyter_matlab_kernel",
-    "src/jupyter_matlab_proxy"
+packages = ["src/jupyter_matlab_kernel", "src/jupyter_matlab_proxy"]
+
+[tool.hatch.build.targets.sdist]
+artifacts = [
+    "src/jupyter_matlab_labextension/jupyter_matlab_labextension/labextension",
 ]
+exclude = [".github"]
 
 [tool.hatch.build.targets.wheel.shared-data]
 "src/jupyter_matlab_labextension/jupyter_matlab_labextension/labextension" = "share/jupyter/labextensions/jupyter_matlab_labextension"
@@ -57,11 +72,6 @@ packages = [
 "src/jupyter_matlab_kernel/kernel.json" = "share/jupyter/kernels/jupyter_matlab_kernel/kernel.json"
 "img/logo-64x64.png" = "share/jupyter/kernels/jupyter_matlab_kernel/logo-64x64.png"
 "img/logo-svg.svg" = "share/jupyter/kernels/jupyter_matlab_kernel/logo-svg.svg"
-
-[tool.hatch.build.targets.sdist]
-exclude = [
-    ".github",
-]
 
 [tool.hatch.build.hooks.jupyter-builder]
 dependencies = ["hatch-jupyter-builder>=0.8.1"]
@@ -74,32 +84,24 @@ skip-if-exists = [
     "src/jupyter_matlab_labextension/jupyter_matlab_labextension/labextension/static/style.js",
 ]
 
-[tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
-build_cmd = "install:extension"
-npm = [
-    "jlpm",
-]
-
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 path = "src/jupyter_matlab_labextension"
 build_cmd = "build:prod"
-npm = [
-    "jlpm",
-]
+npm = ["jlpm"]
 
-[project.optional-dependencies]
-dev = [
-    "black",
-    "ruamel.yaml",
-    "pytest",
-    "pytest-cov",
-]
+[tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
+path = "src/jupyter_matlab_labextension"
+build_cmd = "install:extension"
+npm = ["jlpm"]
 
-[project.entry-points.jupyter_serverproxy_servers]
-matlab = "jupyter_matlab_proxy:setup_matlab"
 
-[project.entry-points.matlab_proxy_configs]
-Jupyter = "jupyter_matlab_proxy.jupyter_config:config"
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::RuntimeWarning"]
 
-[project.urls]
-Homepage = "https://github.com/mathworks/jupyter-matlab-proxy"
+[tool.coverage.run]
+source = ["jupyter_matlab_proxy", "jupyter_matlab_kernel"]
+omit = ["**/__main__.py"]
+branch = true

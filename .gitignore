@@ -7,3 +7,5 @@ dist/
 .vscode/
 htmlcov/
 .coverage
+coverage.xml
+cov_html
