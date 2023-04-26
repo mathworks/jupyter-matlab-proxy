@@ -89,7 +89,6 @@ def start_matlab_proxy():
     # incase the jupyter server is started by JupyterHub.
     jh_api_token = os.getenv("JUPYTERHUB_API_TOKEN")
 
-
     url = "{protocol}://localhost:{port}{base_url}matlab".format(
         protocol="https" if nb_server["secure"] else "http",
         port=nb_server["port"],
