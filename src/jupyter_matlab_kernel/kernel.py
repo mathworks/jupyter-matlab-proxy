@@ -3,10 +3,12 @@
 
 # Import Python Standard Library
 import os
+import sys
 import time
 
 # Import Dependencies
 import ipykernel.kernelbase
+import psutil
 import requests
 from requests.exceptions import HTTPError
 
@@ -43,7 +45,6 @@ def start_matlab_proxy():
             headers (dict): HTTP headers required while sending HTTP requests to matlab-proxy
     """
 
-    found_nb_server = False
     nb_server_list = []
 
     # The matlab-proxy server, if running, could have been started by either
@@ -59,42 +60,54 @@ def start_matlab_proxy():
     except ImportError:
         pass
 
-    # Use parent process id of the kernel to filter Jupyter Server from the list
-    ppid = os.getppid()
-    nb_server = dict()
+    # Use parent process id of the kernel to filter Jupyter Server from the list.
+    jupyter_server_pid = os.getppid()
 
+    # On Windows platforms using venv/virtualenv an intermediate python process spaws the kernel.
+    # jupyter_server ---spawns---> intermediate_process ---spawns---> jupyter_matlab_kernel
+    # Thus we need to go one level higher to acquire the process id of the jupyter server.
+    # Note: conda environments do not require this, and for these environments sys.prefix == sys.base_prefix
+    is_virtual_env = sys.prefix != sys.base_prefix
+    if sys.platform == "win32" and is_virtual_env:
+        jupyter_server_pid = psutil.Process(jupyter_server_pid).ppid()
+
+    nb_server = dict()
+    found_nb_server = False
     for server in nb_server_list:
-        if server["pid"] == ppid:
+        if server["pid"] == jupyter_server_pid:
             found_nb_server = True
             nb_server = server
+
+    # Error out if the server is not found!
+    if found_nb_server == False:
+        raise MATLABConnectionError(
+            """The MATLAB Kernel for Jupyter was unable to find the notebook server from which it was spawned!\n
+            Please relaunch kernel from JupyterLab or Classic Jupyter Notebook."""
+        )
 
     # Fetch JupyterHub API token for HTTP request authentication
     # incase the jupyter server is started by JupyterHub.
     jh_api_token = os.getenv("JUPYTERHUB_API_TOKEN")
 
-    if found_nb_server:
-        url = "{protocol}://localhost:{port}{base_url}matlab".format(
-            protocol="https" if nb_server["secure"] else "http",
-            port=nb_server["port"],
-            base_url=nb_server["base_url"],
-        )
 
-        token = nb_server["token"] if jh_api_token is None else jh_api_token
-        headers = {
-            "Authorization": f"token {token}",
-        }
+    url = "{protocol}://localhost:{port}{base_url}matlab".format(
+        protocol="https" if nb_server["secure"] else "http",
+        port=nb_server["port"],
+        base_url=nb_server["base_url"],
+    )
 
-        # send request to the matlab-proxy endpoint to make sure it is available.
-        # If matlab-proxy is not started, jupyter-server starts it at this point.
-        resp = requests.get(url, headers=headers, verify=False)
-        if resp.status_code == requests.codes.OK:
-            return url, nb_server["base_url"], headers
-        else:
-            resp.raise_for_status()
+    token = nb_server["token"] if jh_api_token is None else jh_api_token
+    headers = {
+        "Authorization": f"token {token}",
+    }
+
+    # send request to the matlab-proxy endpoint to make sure it is available.
+    # If matlab-proxy is not started, jupyter-server starts it at this point.
+    resp = requests.get(url, headers=headers, verify=False)
+    if resp.status_code == requests.codes.OK:
+        return url, nb_server["base_url"], headers
     else:
-        raise MATLABConnectionError(
-            "Kernel needs to be started by a Jupyter Server. Please use JupyterLab or Classic Notebook while using MATLAB Kernel for Jupyter."
-        )
+        resp.raise_for_status()
 
 
 class MATLABKernel(ipykernel.kernelbase.Kernel):
