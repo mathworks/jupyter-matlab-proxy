@@ -40,7 +40,7 @@ classifiers = [
 dependencies = [
     "jupyter-server-proxy",
     "jupyter-contrib-nbextensions",
-    "matlab-proxy>=0.2.9",
+    "matlab-proxy>=0.5.11",
     "psutil",
     "requests",
 ]

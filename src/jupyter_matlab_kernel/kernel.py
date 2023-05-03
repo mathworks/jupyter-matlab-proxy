@@ -77,17 +77,29 @@ def start_matlab_proxy():
         if server["pid"] == jupyter_server_pid:
             found_nb_server = True
             nb_server = server
+            # Stop iterating over the server list
+            break
+
+    # Verify that Password is disabled
+    if nb_server["password"] is True:
+        # TODO: To support passwords, we either need to acquire it from Jupyter or ask the user?
+        raise MATLABConnectionError(
+            """
+            Error: MATLAB Kernel could not communicate with MATLAB.\n
+            Reason: There is a password set to access the Jupyter server.\n
+            Resolution: Delete the cached Notebook password file, and restart the kernel.\n
+            See https://jupyter-notebook.readthedocs.io/en/stable/public_server.html#securing-a-notebook-server for more information.
+            """
+        )
 
     # Error out if the server is not found!
     if found_nb_server == False:
         raise MATLABConnectionError(
-            """The MATLAB Kernel for Jupyter was unable to find the notebook server from which it was spawned!\n
-            Please relaunch kernel from JupyterLab or Classic Jupyter Notebook."""
+            """
+            Error: MATLAB Kernel for Jupyter was unable to find the notebook server from which it was spawned!\n
+            Resolution: Please relaunch kernel from JupyterLab or Classic Jupyter Notebook.
+            """
         )
-
-    # Fetch JupyterHub API token for HTTP request authentication
-    # incase the jupyter server is started by JupyterHub.
-    jh_api_token = os.getenv("JUPYTERHUB_API_TOKEN")
 
     url = "{protocol}://localhost:{port}{base_url}matlab".format(
         protocol="https" if nb_server["secure"] else "http",
@@ -95,15 +107,43 @@ def start_matlab_proxy():
         base_url=nb_server["base_url"],
     )
 
-    token = nb_server["token"] if jh_api_token is None else jh_api_token
-    headers = {
-        "Authorization": f"token {token}",
-    }
+    # Fetch JupyterHub API token for HTTP request authentication
+    # incase the jupyter server is started by JupyterHub.
+    jh_api_token = os.getenv("JUPYTERHUB_API_TOKEN")
+
+    # set the token to be used during communication with Jupyter
+    # In environments where tokens are set for both nb_server & JupyterHub
+    # precedence is given to the nb_server token
+    if nb_server["token"]:
+        token = nb_server["token"]
+    elif jh_api_token:
+        token = jh_api_token
+    else:
+        token = None
+
+    if token:
+        headers = {
+            "Authorization": f"token {token}",
+        }
+    else:
+        headers = None
+
+    # This is content that is present in the matlab-proxy index.html page which
+    # can be used to validate a proper response.
+    matlab_proxy_index_page_identifier = "MWI_MATLAB_PROXY_IDENTIFIER"
 
     # send request to the matlab-proxy endpoint to make sure it is available.
     # If matlab-proxy is not started, jupyter-server starts it at this point.
     resp = requests.get(url, headers=headers, verify=False)
     if resp.status_code == requests.codes.OK:
+        # Verify that the returned value is correct
+        if matlab_proxy_index_page_identifier not in resp.text:
+            raise MATLABConnectionError(
+                """
+                Error: MATLAB Kernel could not communicate with MATLAB.
+                Reason: Possibly due to invalid jupyter security tokens.
+                """
+            )
         return url, nb_server["base_url"], headers
     else:
         resp.raise_for_status()
