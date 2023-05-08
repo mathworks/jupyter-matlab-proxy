@@ -11,34 +11,34 @@ import { ICodeMirror } from '@jupyterlab/codemirror';
 /** Of the default codemirror tokens, "keyword" matches MATLAB comment style best,
  * and variable-2 matches MATLAB keyword style best. These tokens are only used for
  * display and not for execution. */
-export const token_to_matlab_style = new Map<string, string>([
-    ["comment", "keyword"],
-    ["string", "string-2"],
-    ["keyword", "variable-2"]
+export const tokenToMatlabStyle = new Map<string, string>([
+    ['comment', 'keyword'],
+    ['string', 'string-2'],
+    ['keyword', 'variable-2']
 ]);
 
 const baseRegex = [
     /** The boolean "sol" is needed as the ^ regexp marker is not
      * sufficient in this context.
      * See https://codemirror.net/5/demo/simplemode.html. */
-    { regex: /([\s]*)(%\{)[^\S\n]*$/, token: token_to_matlab_style.get("comment"), next: 'comment', sol: true },
-    { regex: /%.*$/, token: token_to_matlab_style.get("comment") },
-    { regex: /".*?("|$)/, token: token_to_matlab_style.get("string") },
-    { regex: /'.*?('|$)/, token: token_to_matlab_style.get("string") },
-    { regex: /\b(break|case|classdef|continue|global|otherwise|persistent|return|spmd)\b/, token: token_to_matlab_style.get("keyword") },
+    { regex: /([\s]*)(%\{)[^\S\n]*$/, token: tokenToMatlabStyle.get('comment'), next: 'comment', sol: true },
+    { regex: /%.*$/, token: tokenToMatlabStyle.get('comment') },
+    { regex: /".*?("|$)/, token: tokenToMatlabStyle.get('string') },
+    { regex: /'.*?('|$)/, token: tokenToMatlabStyle.get('string') },
+    { regex: /\b(break|case|classdef|continue|global|otherwise|persistent|return|spmd)\b/, token: tokenToMatlabStyle.get('keyword') },
     { regex: /(\bimport\b)(.*)(?=;|%|$)/, token: ['variable', 'meta', 'variable'] },
-    { regex: /\b(arguments|enumeration|events|for|function|if|methods|parfor|properties|try|while)\b/, indent: true, token: token_to_matlab_style.get("keyword") },
-    { regex: /\b(switch)\b/, indent: true, token: token_to_matlab_style.get("keyword") },
-    { regex: /\b(catch|else|elseif)\b/, indent: true, dedent: true, token: token_to_matlab_style.get("keyword") },
-    { regex: /\b(?:end)\b/, dedent: true, token: token_to_matlab_style.get("keyword") },
+    { regex: /\b(arguments|enumeration|events|for|function|if|methods|parfor|properties|try|while)\b/, indent: true, token: tokenToMatlabStyle.get('keyword') },
+    { regex: /\b(switch)\b/, indent: true, token: tokenToMatlabStyle.get('keyword') },
+    { regex: /\b(catch|else|elseif)\b/, indent: true, dedent: true, token: tokenToMatlabStyle.get('keyword') },
+    { regex: /\b(?:end)\b/, dedent: true, token: tokenToMatlabStyle.get('keyword') },
     /** Removing this line (or adding \s* around it) will break tab completion. */
-    { regex: /[a-zA-Z_]\w*/, token: "variable" }
+    { regex: /[a-zA-Z_]\w*/, token: 'variable' }
 ];
 
 const startRegex = baseRegex;
 const multilineCommentRegex = [
-    { regex: /([\s]*)(%\})[^\S\n]*(?:$)/, token: token_to_matlab_style.get("comment"), next: 'start', sol: true },
-    { regex: /.*/, token: token_to_matlab_style.get("comment") }
+    { regex: /([\s]*)(%\})[^\S\n]*(?:$)/, token: tokenToMatlabStyle.get('comment'), next: 'start', sol: true },
+    { regex: /.*/, token: tokenToMatlabStyle.get('comment') }
 ];
 
 /** Install mode in CodeMirror */
@@ -71,7 +71,7 @@ export const matlabCodeMirrorPlugin: JupyterFrontEndPlugin<void> = {
     requires: [ICodeMirror],
     activate: (
         app: JupyterFrontEnd,
-        codeMirror: ICodeMirror,
+        codeMirror: ICodeMirror
     ) => {
         defineMATLABMode(codeMirror);
     }
