@@ -399,9 +399,10 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
 
         # Wait until MATLAB is started before sending requests.
         timeout = 0
+        MATLAB_STARTUP_MAX_TIMEOUT = 120
         while (
             self.matlab_status != "up"
-            and timeout != 15
+            and timeout != MATLAB_STARTUP_MAX_TIMEOUT
             and not self.matlab_proxy_has_error
         ):
             if self.is_matlab_licensed:
@@ -429,7 +430,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         # If MATLAB is not available after 15 seconds of licensing information
         # being available either through user input or through matlab-proxy cache,
         # then display connection error to the user.
-        if timeout == 15 or self.matlab_proxy_has_error:
+        if timeout == MATLAB_STARTUP_MAX_TIMEOUT or self.matlab_proxy_has_error:
             raise MATLABConnectionError
 
     def display_output(self, out):
