@@ -13,6 +13,9 @@ Once installed, you can:
 
 This package supports both Jupyter Notebook and JupyterLab. Some capabilities are limited to the JupyterLab interface.
 
+**Note on JupyterLab 4:**
+Features such as tab completion and syntax highlighting are available in JupyterLab 3, but not yet supported in JupyterLab 4.
+
 This package is under active development. To report any issues or suggestions, see the [Feedback](#feedback) section.
 
 ----
@@ -61,6 +64,11 @@ python3 -m pip install jupyter-matlab-proxy
 ```
 Installing this package will not automatically install MATLAB. You must have [MATLAB](https://www.mathworks.com/help/install/install-products.html) installed to execute MATLAB code through Jupyter.
 
+MATLAB code execution is available on both JupyterLab 3 and JupyterLab 4, but other features (such as syntax highlighting) are currently only supported on JupyterLab 3.
+Install JupyterLab 3 using:
+```bash
+python3 -m pip install 'jupyterlab>=3.0.0,<4.0.0a0'
+```
 
 ### Building From Sources
 Building from sources requires Node.js® version 16 or higher.
