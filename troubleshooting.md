@@ -8,10 +8,10 @@ In the environment that you have installed the package:
     /usr/local/bin/matlab
     ```
 
-* Check if Python version is 3.6 or higher
+* Check if Python version is 3.8 or higher
     ```bash
     $ python --version
-    Python 3.7.3
+    Python 3.8.3
     ```
 
 * Ensure that `matlab-proxy-app` and the `jupyter` executables are in the same environment as the python executable.

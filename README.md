@@ -21,7 +21,7 @@ This package is under active development. To report any issues or suggestions, s
 ----
 ## Requirements
 
-* Python versions: **3.7** | **3.8** | **3.9**  | **3.10**
+* Python versions: **3.8** | **3.9**  | **3.10** | **3.11**
 
 * MATLAB R2020b or later is installed and on the system PATH.
   ```bash
@@ -50,8 +50,7 @@ This package is under active development. To report any issues or suggestions, s
 * Supported Operating Systems:
     * Linux®
     * MacOS
-
-    **NOTE**: Support for Windows is unavailable due to [jupyter-server-proxy/issue#47](https://github.com/jupyterhub/jupyter-server-proxy/issues/147)
+    * Windows® Operating System (starting v0.6.0 of jupyter-matlab-proxy)
 
 ## Installation
 

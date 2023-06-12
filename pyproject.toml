@@ -6,11 +6,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "jupyter-matlab-proxy"
-version = "0.5.4"
+version = "0.6.0"
 description = "MATLAB Integration for Jupyter"
 readme = "README.md"
 license = { file = "LICENSE.md" }
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 authors = [
     { name = "The MathWorks Inc.", email = "jupyter-support@mathworks.com" },
 ]
@@ -32,15 +32,15 @@ classifiers = [
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
     "jupyter-server-proxy",
     "jupyter-contrib-nbextensions",
-    "matlab-proxy>=0.5.11",
+    "matlab-proxy>=0.6.0",
     "psutil",
     "requests",
 ]

@@ -17,10 +17,10 @@ jobs:
         with:
           ref: ${{github.sha}}
 
-      - name: Set up Python 3.7
+      - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       - name: Install dependencies
         # Installing wheel package will slightly speed-up installing dependencies.
@@ -45,10 +45,10 @@ jobs:
         with:
           ref: ${{github.sha}}
 
-      - name: Set up Python 3.7
+      - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       - name: Install Python build dependencies
         run: |
