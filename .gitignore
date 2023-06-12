@@ -9,3 +9,4 @@ htmlcov/
 .coverage
 coverage.xml
 cov_html
+.python-version

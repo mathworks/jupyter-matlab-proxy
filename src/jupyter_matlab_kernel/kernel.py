@@ -80,6 +80,15 @@ def start_matlab_proxy():
             # Stop iterating over the server list
             break
 
+    # Error out if the server is not found!
+    if found_nb_server == False:
+        raise MATLABConnectionError(
+            """
+            Error: MATLAB Kernel for Jupyter was unable to find the notebook server from which it was spawned!\n
+            Resolution: Please relaunch kernel from JupyterLab or Classic Jupyter Notebook.
+            """
+        )
+
     # Verify that Password is disabled
     if nb_server["password"] is True:
         # TODO: To support passwords, we either need to acquire it from Jupyter or ask the user?
@@ -89,15 +98,6 @@ def start_matlab_proxy():
             Reason: There is a password set to access the Jupyter server.\n
             Resolution: Delete the cached Notebook password file, and restart the kernel.\n
             See https://jupyter-notebook.readthedocs.io/en/stable/public_server.html#securing-a-notebook-server for more information.
-            """
-        )
-
-    # Error out if the server is not found!
-    if found_nb_server == False:
-        raise MATLABConnectionError(
-            """
-            Error: MATLAB Kernel for Jupyter was unable to find the notebook server from which it was spawned!\n
-            Resolution: Please relaunch kernel from JupyterLab or Classic Jupyter Notebook.
             """
         )
 
