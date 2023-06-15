@@ -37,8 +37,14 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
+
+# Note: Simpervisor v1.0.0 is required to support jupyter-matlab-proxy on Windows.
+# While fresh installs of juptyer-server-proxy will download v1.0.0 of simpervisor,
+# Existing installations where jupyter-matlab-proxy is being deployed would not get this update.
+# It is safe to update simpervisor to v1.0.0 while keeping jupyter-server-proxy at its existing level.
 dependencies = [
     "jupyter-server-proxy",
+    "simpervisor>=1.0.0",
     "jupyter-contrib-nbextensions",
     "matlab-proxy>=0.6.0",
     "psutil",
