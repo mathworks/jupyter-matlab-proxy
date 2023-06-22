@@ -14,7 +14,7 @@ Once installed, you can:
 This package supports both Jupyter Notebook and JupyterLab. Some capabilities are limited to the JupyterLab interface.
 
 **Note on JupyterLab 4:**
-Features such as tab completion and syntax highlighting are available in JupyterLab 3, but not yet supported in JupyterLab 4.
+Features such as auto-indentation and syntax highlighting are available in JupyterLab 3, but not yet supported in JupyterLab 4.
 
 This package is under active development. To report any issues or suggestions, see the [Feedback](#feedback) section.
 

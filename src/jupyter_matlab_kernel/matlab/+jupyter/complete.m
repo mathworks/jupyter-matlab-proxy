@@ -39,11 +39,6 @@ if isfield(completionData, "signatures")
     end
 end
 
-% The results might have duplicate entries. We are de-duplicating only 'matches'
-% cell array but not 'completions' because it is JupyterLab specific and not part
-% of the official Jupyter tab completion API.
-result.matches = unique(result.matches);
-
 if ~isempty(result.completions)
     result.start = result.completions{1}.start;
     result.end = result.completions{1}.end;
