@@ -8,34 +8,14 @@ on:
     types: [created]
 
 jobs:
-  python_tests:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{github.sha}}
-
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      - name: Install dependencies
-        # Installing wheel package will slightly speed-up installing dependencies.
-        # Installing the package with "[dev]" flag  will install test dependecies as well,
-        # enabling us to run pytest.
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install wheel pytest
-          python3 -m pip install .[dev]
-
-      - name: Run Python Tests
-        run: python3 -m pytest
+  call-unit-tests:
+    # Runs unit tests
+    uses: ./.github/workflows/run-unit-tests.yml
 
   build_and_publish_pypi:
-    needs: [python_tests]
+    # TODO: Add integration-tests as a dependency to
+    # the release pipeline.
+    needs: [call-unit-tests]
     if: success()
     runs-on: ubuntu-latest
 

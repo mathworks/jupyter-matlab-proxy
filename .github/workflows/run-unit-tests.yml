@@ -1,0 +1,80 @@
+# Copyright 2020-2023 The MathWorks, Inc
+
+# Workflow that contains jobs to test MATLAB Jupyter Integration
+name: Unit Testing MATLAB Jupyter Integration
+
+on:
+  # Reusable workflow
+  # Trigger on workflow call
+  workflow_call:
+
+jobs:
+  python_unit_tests:
+    env:
+      code-cov-py: "3.11"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.8", "3.11"]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        # Installing wheel package will slightly speed-up installing dependencies.
+        # Installing the package with "[dev]" flag  will install test dependecies as well,
+        # enabling us to run pytest.
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel pytest
+          python3 -m pip install .[dev]
+
+      - name: Lint with black
+        run: black --check .
+
+      - name: Test with pytest
+        if: ${{ matrix.python-version != env.code-cov-py }}
+        run: python3 -m pytest tests/unit
+
+      - name: Test with pytest and get code coverage for Python ${{env.code-cov-py}}
+        if: ${{matrix.python-version == env.code-cov-py }}
+        run: python3 -m pytest --cov --cov-report=xml tests/unit
+
+      - name: Persist coverage data to be uploaded if all jobs are successful.
+        if: ${{matrix.python-version == env.code-cov-py }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_file
+          path: ./coverage.xml
+          retention-days: 5
+
+  upload_code_coverage:
+    name: "Upload Code Coverage using codecov"
+    needs: [python_unit_tests]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get coverage files from previous job
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage_file
+
+      - name: Upload python coverage report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./
+          name: Python-codecov
+          files: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true

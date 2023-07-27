@@ -1,0 +1,54 @@
+# Copyright 2020-2023 The MathWorks, Inc
+
+# Workflow that contains jobs to test MATLAB Jupyter Integration
+name: Integration testing MATLAB Jupyter Integration
+
+on:
+  # Reusable workflow
+  # Trigger on workflow call
+  workflow_call:
+
+jobs:
+  python_integration_tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        #TODO: Add test coverage for macOs
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.8", "3.11"]
+        matlab-release: [R2020b, R2023a]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up MATLAB ${{ matrix.matlab-release }}
+        # Use MATLAB Actions to get running MATLAB in GitHub Actions
+        uses: matlab-actions/setup-matlab@v2-beta
+        with:
+          release: ${{ matrix.matlab-release }}
+          products: MATLAB Symbolic_Math_Toolbox
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Python dependencies
+        # Installing wheel package will slightly speed-up installing dependencies.
+        # Installing the package with "[dev]" flag  will install test dependecies as well,
+        # enabling us to run pytest.
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel pytest
+          python3 -m pip install .[dev]
+
+      - name: Ensure browsers are installed for playwright
+        run: python3 -m playwright install --with-deps
+
+      - name: Integration test with pytest
+        run: python3 -m pytest tests/integration
+        env:
+          TEST_USERNAME: ${{secrets.TEST_USERNAME}}
+          TEST_PASSWORD: ${{secrets.TEST_PASSWORD}}

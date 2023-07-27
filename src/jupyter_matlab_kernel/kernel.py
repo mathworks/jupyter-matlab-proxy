@@ -29,6 +29,49 @@ class MATLABConnectionError(Exception):
         super().__init__(message)
 
 
+def is_jupyter_testing_enabled():
+    """
+    Checks if testing mode is enabled
+
+    Returns:
+        bool: True if MWI_JUPYTER_TEST environment variable is set to 'true'
+        else False
+    """
+
+    return os.environ.get("MWI_JUPYTER_TEST", "false").lower() == "true"
+
+
+def start_matlab_proxy_for_testing():
+    """
+    Only used for testing purposes. Gets the matlab-proxy server configuration
+    from environment variables and mocks the 'start_matlab_proxy' function
+
+    Returns:
+        Tuple (string, string, dict):
+            url (string): Complete URL to send HTTP requests to matlab-proxy
+            base_url (string): Complete base url for matlab-proxy obtained from tests
+            headers (dict): Empty dictionary
+    """
+
+    import matlab_proxy.util.mwi.environment_variables as mwi_env
+
+    # These environment variables are being set by tests, using dictionary lookup
+    # instead of '.getenv' to make sure that the following line fails with the
+    # Exception 'KeyError' in case the environment variables are not set
+    matlab_proxy_base_url = os.environ[mwi_env.get_env_name_base_url()]
+    matlab_proxy_app_port = os.environ[mwi_env.get_env_name_app_port()]
+
+    # '127.0.0.1' is used instead 'localhost' for testing since Windows machines consume
+    # some time to resolve 'localhost' hostname
+    url = "{protocol}://127.0.0.1:{port}{base_url}".format(
+        protocol="http",
+        port=matlab_proxy_app_port,
+        base_url=matlab_proxy_base_url,
+    )
+    headers = {}
+    return url, matlab_proxy_base_url, headers
+
+
 def start_matlab_proxy():
     """
     Start matlab-proxy registered with the jupyter server which started the
@@ -44,6 +87,12 @@ def start_matlab_proxy():
             base_url (string): Complete base url for matlab-proxy provided by jupyter server
             headers (dict): HTTP headers required while sending HTTP requests to matlab-proxy
     """
+
+    # If jupyter testing is enabled, then a standalone matlab-proxy server would be
+    # launched by the tests and kernel would expect the configurations of this matlab-proxy
+    # server which is provided through environment variables to 'start_matlab_proxy_for_testing'
+    if is_jupyter_testing_enabled():
+        return start_matlab_proxy_for_testing()
 
     nb_server_list = []
 
@@ -176,7 +225,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         # Call superclass constructor to initialize ipykernel infrastructure
         super(MATLABKernel, self).__init__(*args, **kwargs)
         try:
-            # Start matlab-proxy using the jupyter-matlab-proxy registered endpoint
+            # Start matlab-proxy using the jupyter-matlab-proxy registered endpoint.
             self.murl, self.server_base_url, self.headers = start_matlab_proxy()
             (
                 self.is_matlab_licensed,

@@ -10,3 +10,7 @@ htmlcov/
 coverage.xml
 cov_html
 .python-version
+*.env
+*node_modules
+*playwright-report
+*test-results
