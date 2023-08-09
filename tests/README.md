@@ -20,8 +20,20 @@ These tests validate if the Jupyter Notebook Integration works well in presence 
     ```
 4. MATLAB Proxy requirements
 5. Jupyter MATLAB Proxy requirements
+6. Valid MathWorks Account credentials
 
 ### How to run
+* Set the environment variables TEST_USERNAME and TEST_PASSWORD to be your
+  MathWorks Account user credentials.
+    - Bash (Linux/macOS):
+        ```bash
+        TEST_USERNAME="some-username" && TEST_PASSWORD="some-password"
+        ```
+    - Powershell (Windows):
+        ```powershell
+        $env:TEST_USERNAME="some-username"; $env:TEST_PASSWORD="some-password"
+        ```
+
 * Run the following command from the root directory of the project:
     ```
     python3 -m pytest tests/integration

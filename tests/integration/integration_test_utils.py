@@ -17,7 +17,7 @@ def perform_basic_checks():
     import matlab_proxy.settings
 
     # Validate MATLAB before testing
-    matlab_path = matlab_proxy.settings.get_matlab_root_path()
+    _, matlab_path = matlab_proxy.settings.get_matlab_executable_and_root_path()
 
     # Check if MATLAB is in the system path
     assert matlab_path is not None, "MATLAB is not in system path"
