@@ -34,25 +34,39 @@ def test_fetch_matlab_proxy_status_unauth_request(monkeypatch):
     assert MockUnauthorisedRequestResponse().exception_msg in str(exceptionInfo.value)
 
 
-def test_fetch_matlab_proxy_status(monkeypatch):
+@pytest.mark.parametrize(
+    "input_lic_type, expected_license_status",
+    [
+        ("mhlm_entitled", True),
+        ("mhlm_unentitled", False),
+        ("nlm", True),
+        ("existing_license", True),
+        ("default", False),
+    ],
+)
+def test_fetch_matlab_proxy_status(
+    input_lic_type, expected_license_status, monkeypatch
+):
     """
     This test checks that fetch_matlab_proxy_status returns the correct
     values for a valid request to matlab-proxy.
     """
 
     def mock_get(*args, **kwargs):
-        return MockMatlabProxyStatusResponse(True, "up", False)
+        return MockMatlabProxyStatusResponse(
+            lic_type=input_lic_type, matlab_status="up", has_error=False
+        )
 
     monkeypatch.setattr(requests, "get", mock_get)
 
     (
-        is_matlab_licened,
+        is_matlab_licensed,
         matlab_status,
         matlab_proxy_has_error,
     ) = fetch_matlab_proxy_status("", "{}")
-    assert is_matlab_licened == True
+    assert is_matlab_licensed == expected_license_status
     assert matlab_status == "up"
-    assert matlab_proxy_has_error == True
+    assert matlab_proxy_has_error == False
 
 
 def test_interrupt_request_bad_request(monkeypatch):

@@ -24,7 +24,7 @@ class MockUnauthorisedRequestResponse:
 class MockMatlabProxyStatusResponse:
     """A mock of a matlab-proxy status response."""
 
-    def __init__(self, is_licensed, matlab_status, has_error) -> None:
+    def __init__(self, lic_type, matlab_status, has_error) -> None:
         """Construct a mock matlab-proxy status response.
 
         Args:
@@ -32,11 +32,63 @@ class MockMatlabProxyStatusResponse:
             matlab_status (string): indicates the MATLAB status, i.e. is it "starting", "running" etc.
             has_error (bool): indicates if there is an error with MATLAB
         """
-        self.licensed = is_licensed
+
+        self.licensed = self.process_license_type(lic_type)
         self.matlab_status = matlab_status
-        self.error = has_error
+        self.error = MockError("An example error") if has_error else None
 
     status_code = requests.codes.ok
+
+    @staticmethod
+    def handle_entitled_mhlm():
+        return {
+            "type": "mhlm",
+            "emailAddress": "test@mathworks.com",
+            "entitlements": [
+                {
+                    "id": "123456",
+                    "label": "MATLAB - Staff Use",
+                    "license_number": "123456",
+                }
+            ],
+            "entitlementId": "123456",
+        }
+
+    @staticmethod
+    def handle_unentitled_mhlm():
+        return {
+            "type": "mhlm",
+            "emailAddress": "test@mathworks.com",
+            "entitlements": [
+                {
+                    "id": "123456",
+                    "label": "MATLAB - Staff Use",
+                    "license_number": "123456",
+                }
+            ],
+            "entitlementId": None,
+        }
+
+    @staticmethod
+    def handle_nlm():
+        return {"type": "nlm", "connectionString": "123@internal"}
+
+    @staticmethod
+    def handle_existing_license():
+        return {"type": "existing_license"}
+
+    @staticmethod
+    def default():
+        return None
+
+    def process_license_type(self, lic_type):
+        types = {
+            "mhlm_entitled": self.handle_entitled_mhlm,
+            "mhlm_unentitled": self.handle_unentitled_mhlm,
+            "nlm": self.handle_nlm,
+            "existing_license": self.handle_existing_license,
+        }
+        return types.get(lic_type, self.default)()
 
     def json(self):
         """Return a matlab-proxy status JSON object."""
@@ -74,3 +126,13 @@ class MockSimpleBadResponse:
     def raise_for_status(self):
         """Raise a HTTPError with custom error message."""
         raise HTTPError(self.error_message)
+
+
+class MockError(Exception):
+    """An example error used for testing purposes
+
+    Args:
+        Exception (Any): Dummy exception
+    """
+
+    pass

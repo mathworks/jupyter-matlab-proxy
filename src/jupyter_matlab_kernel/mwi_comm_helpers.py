@@ -34,12 +34,22 @@ def fetch_matlab_proxy_status(url, headers):
     resp = requests.get(url + "/get_status", headers=headers, verify=False)
     if resp.status_code == requests.codes.OK:
         data = resp.json()
-        is_matlab_licensed = data["licensing"] != None
+        is_matlab_licensed = check_licensing_status(data)
+
         matlab_status = data["matlab"]["status"]
         matlab_proxy_has_error = data["error"] != None
         return is_matlab_licensed, matlab_status, matlab_proxy_has_error
     else:
         resp.raise_for_status()
+
+
+def check_licensing_status(data):
+    licensing_status = data["licensing"] != None
+
+    # Check for entitlementId only in the event of online licensing
+    if licensing_status and data["licensing"]["type"] == "mhlm":
+        licensing_status = data["licensing"]["entitlementId"] != None
+    return licensing_status
 
 
 def send_execution_request_to_matlab(url, headers, code):
