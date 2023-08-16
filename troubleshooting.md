@@ -1,8 +1,8 @@
 # Troubleshooting
 
-In the environment that you have installed the package:
+If you have trouble installing the package, consult this guide. In the environment where you have installed the package:
 
-* Verify if the MATLAB executable is discoverable (ie. if it is in the PATH)
+* Verify that the MATLAB executable is on the PATH
     ```bash
     $ which matlab
     /usr/local/bin/matlab
@@ -28,7 +28,7 @@ In the environment that you have installed the package:
     ```
     Notice that `matlab-proxy-app`, `jupyter` and the `python` executable are in the same parent directory, in this case it is: `/home/user/my-project/packages/.venv/bin`
 
-* Ensure that you are launching `jupyter lab` using the same executable as listed above.
+* Ensure that you are launching `jupyter lab` using the same executable listed above.
 
 * Ensure that all three packages are installed in the same python environment
     ```bash
@@ -39,7 +39,7 @@ In the environment that you have installed the package:
     $ pip freeze | grep -E "jupyter|matlab-proxy|jupyter-matlab-proxy"
     ```
 
-* If the integration is not showing up as an option to the dropdown box in the Jupyter notebook:
+* If the integration is not a visible option in the dropdown box inside the Jupyter notebook:
     ```bash
     #Run the following commands and verify that you are able to see similar output:
     
@@ -74,6 +74,6 @@ In the environment that you have installed the package:
 
 ----
 
-Copyright (c) 2021-2023 The MathWorks, Inc. All rights reserved.
+Copyright 2023 The MathWorks, Inc.
 
 ----
