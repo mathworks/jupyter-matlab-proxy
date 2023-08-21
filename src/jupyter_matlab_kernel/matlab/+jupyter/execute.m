@@ -110,7 +110,7 @@ for ii = 1:length(outputs)
         case 'variable'
             result{ii} = processVariable(outputData);
         case 'variableString'
-            result{ii} = processVariable(outputData);
+            result{ii} = processVariableString(outputData);
         case 'symbolic'
             result{ii} = processSymbolic(outputData);
         case 'error'
@@ -165,9 +165,27 @@ end
 result = processText(text);
 
 function result = processVariable(output)
-text = sprintf("%s = %s\n   %s", output.name, output.header, strtrim(output.value));
+if isempty(output.header)
+    indentation = '';
+else
+    indentation = sprintf('\n    ');
+end
+text = sprintf("%s = %s%s%s", output.name, output.header, indentation, output.value);
 result = processText(text);
 
+function result = processVariableString(output)
+indentation = '';
+useSingleLineDisplay = ~contains(output.value, sprintf(newline));
+if useSingleLineDisplay
+    if ~isempty(output.header)
+        indentation = sprintf(newline);
+    end
+else
+    indentation = sprintf(newline);
+end
+text = sprintf("%s = %s%s%s", output.name, output.header, indentation, output.value);
+result = processText(text);
+    
 % Helper function for post-processing symbolic outputs. The captured output
 % contains MathML representation of symbolic expressions. Since Jupyter and
 % GitHub have native support for LaTeX, we use EquationRenderer JS API to

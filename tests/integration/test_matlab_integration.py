@@ -30,7 +30,7 @@ class MATLABKernelTests(jupyter_kernel_test.KernelTests):
     code_hello_world = "disp('hello, world')"
 
     # Executes code and validates output
-    code_execute_result = [{"code": "a = 1;a = a + 1", "result": "a = \n   2"}]
+    code_execute_result = [{"code": "a = 1;a = a + 1", "result": "a = 2"}]
 
     # Clears the cell output area
     code_clear_output = "clc"
