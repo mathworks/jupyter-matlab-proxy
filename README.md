@@ -183,7 +183,7 @@ This opens an untitled `.m` file where you can write MATLAB code with syntax hig
 
 ## Limitations
 
-* This package has limitations. For example, it does not support certain MATLAB commands. For details, see [Limitations](limitations.md).
+* This package has limitations. For example, it does not support certain MATLAB commands. For details, see [Limitations](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/limitations.md).
 
 * To discuss a technical issue or submit an enhancement request, [create a GitHub issue](https://github.com/mathworks/jupyter-matlab-proxy/issues), or send an email to `jupyter-support@mathworks.com`.
 
