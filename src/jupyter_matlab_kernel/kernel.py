@@ -293,7 +293,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             # Perform execution and categorization of outputs in MATLAB. Blocks
             # until execution results are received from MATLAB.
             outputs = mwi_comm_helpers.send_execution_request_to_matlab(
-                self.murl, self.headers, code
+                self.murl, self.headers, code, self.ident
             )
 
             # Clear the output area of the current cell. This removes any previous
@@ -399,7 +399,9 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         )
 
     def do_shutdown(self, restart):
-        # TODO: Implement clean-up
+        mwi_comm_helpers.send_shutdown_request_to_matlab(
+            self.murl, self.headers, self.ident
+        )
         return super().do_shutdown(restart)
 
     # Helper functions

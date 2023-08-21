@@ -103,8 +103,9 @@ def test_execution_request_bad_request(monkeypatch):
     url = ""
     headers = {}
     code = "placeholder for code"
+    kernelid = ""
     with pytest.raises(HTTPError) as exceptionInfo:
-        send_execution_request_to_matlab(url, headers, code)
+        send_execution_request_to_matlab(url, headers, code, kernelid)
     assert mock_exception_message in str(exceptionInfo.value)
 
 
@@ -133,8 +134,9 @@ def test_execution_request_invalid_feval_response(monkeypatch):
     url = ""
     headers = {}
     code = "placeholder for code"
+    kernelid = ""
     with pytest.raises(HTTPError) as exceptionInfo:
-        send_execution_request_to_matlab(url, headers, code)
+        send_execution_request_to_matlab(url, headers, code, kernelid)
     assert str(exceptionInfo.value) == ""
 
 
@@ -175,8 +177,9 @@ def test_execution_interrupt(monkeypatch):
     url = ""
     headers = {}
     code = "placeholder for code"
+    kernelid = ""
     with pytest.raises(Exception) as exceptionInfo:
-        send_execution_request_to_matlab(url, headers, code)
+        send_execution_request_to_matlab(url, headers, code, kernelid)
     assert "Operation may have interrupted by user" in str(exceptionInfo.value)
 
 
@@ -212,8 +215,9 @@ def test_execution_success(monkeypatch):
     url = ""
     headers = {}
     code = "placeholder for code"
+    kernelid = ""
     try:
-        outputs = send_execution_request_to_matlab(url, headers, code)
+        outputs = send_execution_request_to_matlab(url, headers, code, kernelid)
     except Exception as exceptionInfo:
         pytest.fail("Unexpected failured in execution request")
 

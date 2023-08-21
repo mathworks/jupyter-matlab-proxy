@@ -11,9 +11,12 @@ function result = processJupyterKernelRequest(request_type, execution_request_ty
 %                                   on value of input request_type
 %                                   - "execute"
 %                                      - string - MATLAB code to be executed
+%                                      - string - ID of the kernel
 %                                   - "complete"
 %                                      - string - MATLAB code
 %                                      - number - cursor position
+%                                   - "shutdown"
+%                                      - string - ID of the kernel
 %   Outputs:
 %       - cell array on struct
 %           - type      - string - jupyter output type. Supported values are
@@ -47,10 +50,14 @@ end
 try
     switch(request_type)
         case 'execute'
-            output = jupyter.execute(code);
+            kernelId = varargin{2};
+            output = jupyter.execute(code, kernelId);
         case 'complete'
             cursorPosition = varargin{2};
             output = jupyter.complete(code, cursorPosition);
+        case 'shutdown'
+            kernelId = varargin{1};
+            output = jupyter.shutdown(kernelId);
     end
 catch ME
     % The code withing try block should be exception safe. In case anything we

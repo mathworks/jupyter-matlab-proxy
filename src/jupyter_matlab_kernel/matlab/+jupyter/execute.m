@@ -3,7 +3,7 @@
 % change without any prior notice. Usage of these undocumented APIs outside of
 % these files is not supported.
 
-function result = execute(code)
+function result = execute(code, kernelId)
 % EXECUTE A helper function for handling execution of MATLAB code and post-processing
 % the outputs to conform to Jupyter API. We use the Live Editor API for majority
 % of the work.
@@ -17,13 +17,13 @@ function result = execute(code)
 % Embed user MATLAB code in a try-catch block for MATLAB versions less than R2022b.
 % This is will disable inbuilt ErrorRecovery mechanism. Any exceptions created in
 % user code would be handled by +jupyter/getOrStashExceptions.m
-if verLessThan('matlab', '9.13')
+if isMATLABReleaseOlderThan("R2022b")
     code = sprintf(['try\n'...
-                    '%s\n'...
-                    'catch JupyterKernelME\n'...
-                    'jupyter.getOrStashExceptions(JupyterKernelME)\n'...
-                    'clear JupyterKernelME\n'...
-                    'end'], code);
+        '%s\n'...
+        'catch JupyterKernelME\n'...
+        'jupyter.getOrStashExceptions(JupyterKernelME)\n'...
+        'clear JupyterKernelME\n'...
+        'end'], code);
 end
 
 % Value that needs to be shown in the error message when a particular error
@@ -32,16 +32,15 @@ end
 fileToShowErrors = 'Notebook';
 
 % Prepare the input for the Live Editor API.
-jsonedRegionList = jsonencode(struct(...
-    'regionLineNumber',1,...
-    'regionString',code,...
-    'regionNumber',0,...
-    'endOfSection',true,...
-    'sectionNumber',1));
+% 'requestId'   - char array - UUID
+% 'editorId'    - char array - unique identifier usually corresponding to a file.
 request = struct('requestId', 'jupyter_matlab_kernel',...
-    'regionArray', jsonedRegionList,...
+    'editorId', kernelId,...
     'fullText', code,...
     'fullFilePath', fileToShowErrors);
+
+% Update additional fields in the request based on MATLAB and LiveEditor API version.
+request = updateRequest(request, code);
 
 % Disable Hotlinks in the output captured. The hotlinks do not have a purpose
 % in Jupyter notebooks.
@@ -54,6 +53,49 @@ resp = jsondecode(matlab.internal.editor.evaluateSynchronousRequest(request));
 % Post-process the outputs to conform to Jupyter API.
 result = processOutputs(resp.outputs);
 
+% Helper function to update fields in the request based on MATLAB and LiveEditor
+% API version.
+function request = updateRequest(request, code)
+% Support for MATLAB version <= R2023a.
+if isMATLABReleaseOlderThan("R2023b")
+    request = updateRequestFromBefore23b(request, code);
+else
+    % Support for MATLAB version >= R2023b.
+    
+    % To maintain backwards compatibility, each case in the switch
+    % encodes conversion from the version number in the case
+    % to the current version.
+    switch matlab.internal.editor.getApiVersion('synchronous')
+        case 1
+            request = updateRequestFromVersion1(request, code);
+        otherwise
+            error("Invalid API version. Create an issue at https://github.com/mathworks/jupyter-matlab-proxy for further support.");
+    end
+end
+
+% Helper function to update fields in the request for MATLAB versions less than
+% R2023b
+function request = updateRequestFromBefore23b(request, code)
+jsonedRegionList = jsonencode(struct(...
+    'regionLineNumber',1,...
+    'regionString',code,...
+    'regionNumber',0,...
+    'endOfSection',true,...
+    'sectionNumber',1));
+request.regionArray = jsonedRegionList;
+
+% Helper function to update fields in the request when LiveEditor API version is 1.
+function request = updateRequestFromVersion1(request, code)
+request.sectionBoundaries = [];
+request.startLine = 1;
+request.endLine = numel(splitlines(code));
+
+% Allow figures to be used across Notebook cells. Cleanup needs to be
+% done explicitly when the kernel shutsdown.
+request.shouldResetState = false;
+request.shouldDoFullCleanup = false;
+
+% Helper function to process different types of outputs given by LiveEditor API.
 function result = processOutputs(outputs)
 result =cell(1,length(outputs));
 figureTrackingMap = containers.Map;
@@ -137,11 +179,11 @@ persistent idler;
 
 if isempty(webwindow)
     url = 'toolbox/matlab/codetools/liveeditor/index.html';
-
+    
     % MATLAB versions R2020b and R2021a requires specifying the base url.
     % Not doing so results in the URL not being loaded with the error
     %"Not found. Request outside of context root".
-    if verLessThan('matlab','9.11')
+    if isMATLABReleaseOlderThan("R2021b")
         url = strcat(getenv("MWI_BASE_URL"), '/', url);
     end
     webwindow = matlab.internal.cef.webwindow(connector.getUrl(url));

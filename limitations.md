@@ -22,11 +22,11 @@ This package has some constraints and limitations:
     |![truncation-issue](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/truncation-issue.png)|
     |-|
 
-* Handles for graphics objects are scoped to a single cell. For example:
+* Handles for graphics objects are scoped to a single cell in MATLAB versions <= R2023a. For example:
     |![invalid-handle](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/invalid-handle.png)|
     |-|
 
-* Graphics functions like `gca, gcf, gco, gcbo, gcbf, clf, cla`, which access `current` handles, are scoped to a single notebook cell. The following example illustrates this:
+* Graphics functions like `gca, gcf, gco, gcbo, gcbf, clf, cla`, which access `current` handles, are scoped to a single notebook cell in MATLAB versions <= R2023a. The following example illustrates this:
     |![gca-issue](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/gca-issue.png)|
     |-|
 
