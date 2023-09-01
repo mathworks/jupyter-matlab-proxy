@@ -46,7 +46,8 @@
     "stylelint:check": "stylelint --cache \"style/**/*.css\"",
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "tsc -w",
-    "watch:labextension": "jupyter labextension watch ."
+    "watch:labextension": "jupyter labextension watch .",
+    "audit:fix": "npx yarn-audit-fix"
   },
   "dependencies": {
     "@jupyterlab/application": "^3.1.0",
@@ -68,6 +69,7 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.1.1",
     "rimraf": "^3.0.2",
+    "semver": ">=5.7.2",
     "typescript": "~4.1.3"
   },
   "sideEffects": [
