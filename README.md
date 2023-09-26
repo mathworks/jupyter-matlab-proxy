@@ -3,7 +3,7 @@
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mathworks/jupyter-matlab-proxy/run-tests.yml?branch=main&logo=github)](https://github.com/mathworks/jupyter-matlab-proxy/actions) [![PyPI badge](https://img.shields.io/pypi/v/jupyter-matlab-proxy.svg?logo=pypi)](https://pypi.python.org/pypi/jupyter-matlab-proxy) [![codecov](https://codecov.io/gh/mathworks/jupyter-matlab-proxy/branch/main/graph/badge.svg?token=ZW3SESKCSS)](https://codecov.io/gh/mathworks/jupyter-matlab-proxy)
 
 
-Run MATLAB code in Jupyter environments such as Jupyter notebooks, JupyterLab, and JupyterHub.
+Run MATLAB® code in Jupyter® environments such as Jupyter notebooks, JupyterLab, and JupyterHub.
 
 
 ## Table of Contents  
@@ -46,7 +46,7 @@ From your Jupyter notebook or JupyterLab, you can also open the MATLAB developme
 * System dependencies required to run MATLAB:
   - The [MATLAB Dependencies](https://github.com/mathworks-ref-arch/container-images/tree/master/matlab-deps) repository contains `base-dependencies.txt` files that list the libraries required to run each release of MATLAB on a given operating system. To see how to use these files, refer to the Dockerfiles in the same folder.
 
-* Linux® based systems also require `X Virtual Frame Buffer (Xvfb)`, which you can install with: 
+* Linux based systems also require `X Virtual Frame Buffer (Xvfb)`, which you can install with: 
 
   ```bash
   # On a Debian/Ubuntu based system:
@@ -89,7 +89,7 @@ To use MATLAB with JupyterHub, install the `jupyter-matlab-proxy` Python package
 
 ### Using Simulink
 
-This package lets you use Simulink programmatically by entering commands in a Jupyter notebook. To view a model or use other Simulink features that require the Simulink UI, you can use a VNC to connect your Jupyter environment to a Linux® desktop where you have MATLAB and Simulink installed. For instructions, see [MATLAB Jupyter VNC Solution](https://github.com/mathworks/jupyter-matlab-vnc-proxy).     
+This package lets you use Simulink® programmatically by entering commands in a Jupyter notebook. To view a model or use other Simulink features that require the Simulink UI, you can use a VNC to connect your Jupyter environment to a Linux desktop where you have MATLAB and Simulink installed. For instructions, see [MATLAB Jupyter VNC Solution](https://github.com/mathworks/jupyter-matlab-vnc-proxy).     
 
 ### Troubleshooting
 
