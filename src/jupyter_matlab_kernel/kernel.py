@@ -213,6 +213,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
     }
 
     # MATLAB Kernel state
+    murl = ""
     is_matlab_licensed: bool = False
     matlab_status = ""
     matlab_proxy_has_error: bool = False
@@ -359,7 +360,9 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             completion_results = mwi_comm_helpers.send_completion_request_to_matlab(
                 self.murl, self.headers, code, cursor_pos
             )
-        except HTTPError as e:
+        except (MATLABConnectionError, HTTPError):
+            # Jupyter doesn't show the error messages to the user for this request.
+            # Hence, we'll currently do nothing when an error occurs here.
             pass
 
         return {
@@ -399,9 +402,15 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         )
 
     def do_shutdown(self, restart):
-        mwi_comm_helpers.send_shutdown_request_to_matlab(
-            self.murl, self.headers, self.ident
-        )
+        try:
+            mwi_comm_helpers.send_shutdown_request_to_matlab(
+                self.murl, self.headers, self.ident
+            )
+        except (MATLABConnectionError, HTTPError):
+            # Jupyter doesn't show the error messages to the user for this request.
+            # Hence, we'll currently do nothing when an error occurs here.
+            pass
+
         return super().do_shutdown(restart)
 
     # Helper functions
