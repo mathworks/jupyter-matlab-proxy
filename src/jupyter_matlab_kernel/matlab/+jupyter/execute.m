@@ -88,7 +88,7 @@ request.regionArray = jsonedRegionList;
 function request = updateRequestFromVersion1(request, code)
 request.sectionBoundaries = [];
 request.startLine = 1;
-request.endLine = numel(splitlines(code));
+request.endLine = builtin('count', code, newline) + 1;
 
 % Allow figures to be used across Notebook cells. Cleanup needs to be
 % done explicitly when the kernel shutsdown.
@@ -175,7 +175,7 @@ result = processText(text);
 
 function result = processVariableString(output)
 indentation = '';
-useSingleLineDisplay = ~contains(output.value, sprintf(newline));
+useSingleLineDisplay = ~(builtin('contains', output.value, newline));
 if useSingleLineDisplay
     if ~isempty(output.header)
         indentation = sprintf(newline);
@@ -242,12 +242,15 @@ result.content.name = stream;
 result.content.text = text;
 
 % Helper function for processing figure outputs.
-% base64Data will be "data:image/png;base64,<base64_value>"
+% base64Data will be 'data:image/png;base64,<base64_value>'
 function result = processFigure(base64Data)
+pattern = "data:(?<mimetype>.*);base64,(?<value>.*)";
+result = builtin('regexp', base64Data, pattern, 'names');
+assert(builtin('startsWith', result.mimetype, 'image'), 'Error in processFigure. ''mimetype'' is not an image');
+assert(~isempty(result.value), 'Error in processFigure. ''value'' is empty');
+result.mimetype = {result.mimetype};
+result.value = {result.value};
 result.type = 'execute_result';
-base64DataSplit = split(base64Data,";");
-result.mimetype = {extractAfter(base64DataSplit{1},5)};
-result.value = {extractAfter(base64DataSplit{2},7)};
 
 % Helper function to notify browser page load finished
 function pageLoadCallback(~,~,idler)
