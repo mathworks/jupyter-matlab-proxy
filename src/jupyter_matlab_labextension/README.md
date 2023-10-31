@@ -12,6 +12,6 @@ part of [MATLAB Integration for Jupyter](https://github.com/mathworks/jupyter-ma
 
 ----
 
-Copyright (c) 2023 The MathWorks, Inc. All rights reserved.
+Copyright (c) 2023 The MathWorks, Inc.
 
 ----

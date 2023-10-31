@@ -33,7 +33,7 @@ Click on `MATLAB Kernel` to create a Jupyter notebook for MATLAB.
     * Any variables or data created through the notebook manifests in the spawned MATLAB process.
     * This implies that all notebooks access the same MATLAB workspace, and users must keep this in mind when working with multiple notebooks.
 
-* If simulaneous execution requests are made from two notebooks, they are processed by MATLAB in a **first-in, first-out basis**.
+* If simultaneous execution requests are made from two notebooks, they are processed by MATLAB in a **first-in, first-out basis**.
 
 * Kernel interrupts can be used to interrupt the execution that is currently being processed by MATLAB.
 
@@ -46,7 +46,7 @@ Click on `MATLAB Kernel` to create a Jupyter notebook for MATLAB.
     * Inline static plot images
     * LaTeX representation for symbolic expressions
 * **For MATLAB R2022b and later:** Local functions can be defined at the end of a cell for use in the same cell
-    ![cellLocalFunctions](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/cell-local-function.png)
+    ![cellLocalFunctions](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/img/local_functions.png)
 
 ## Limitations
 Please refer to this [README](https://github.com/mathworks/jupyter-matlab-proxy#limitations) file for a listing of the current limitations. 
@@ -58,6 +58,6 @@ If you encounter a technical issue or have an enhancement request, create an iss
 
 ----
 
-Copyright (c) 2023 The MathWorks, Inc. All rights reserved.
+Copyright 2023 The MathWorks, Inc.
 
 ----
