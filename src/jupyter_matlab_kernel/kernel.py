@@ -72,6 +72,32 @@ def start_matlab_proxy_for_testing():
     return url, matlab_proxy_base_url, headers
 
 
+def _start_matlab_proxy_using_jupyter(url, headers):
+    """
+    Start matlab-proxy using jupyter server which started the current kernel
+    process by sending HTTP request to the endpoint registered through
+    jupyter-matlab-proxy.
+
+    Args:
+        url (string): URL to send HTTP request
+        headers (dict): HTTP headers required for the request
+
+    Returns:
+        bool: True if jupyter server has successfully started matlab-proxy else False.
+    """
+    # This is content that is present in the matlab-proxy index.html page which
+    # can be used to validate a proper response.
+    matlab_proxy_index_page_identifier = "MWI_MATLAB_PROXY_IDENTIFIER"
+
+    # send request to the matlab-proxy endpoint to make sure it is available.
+    # If matlab-proxy is not started, jupyter-server starts it at this point.
+    resp = requests.get(url, headers=headers, verify=False)
+    return (
+        resp.status_code == requests.codes.OK
+        and matlab_proxy_index_page_identifier in resp.text
+    )
+
+
 def start_matlab_proxy():
     """
     Start matlab-proxy registered with the jupyter server which started the
@@ -79,7 +105,6 @@ def start_matlab_proxy():
 
     Raises:
         MATLABConnectionError: Occurs when kernel is not started by jupyter server.
-        HTTPError: Occurs when kernel cannot connect with matlab-proxy.
 
     Returns:
         Tuple (string, string, dict):
@@ -156,46 +181,27 @@ def start_matlab_proxy():
         base_url=nb_server["base_url"],
     )
 
-    # Fetch JupyterHub API token for HTTP request authentication
-    # incase the jupyter server is started by JupyterHub.
-    jh_api_token = os.getenv("JUPYTERHUB_API_TOKEN")
+    available_tokens = {
+        "jupyter_server": nb_server.get("token"),
+        "jupyterhub": os.getenv("JUPYTERHUB_API_TOKEN"),
+        "default": None,
+    }
 
-    # set the token to be used during communication with Jupyter
-    # In environments where tokens are set for both nb_server & JupyterHub
-    # precedence is given to the nb_server token
-    if nb_server["token"]:
-        token = nb_server["token"]
-    elif jh_api_token:
-        token = jh_api_token
-    else:
-        token = None
+    for token in available_tokens.values():
+        if token:
+            headers = {"Authorization": f"token {token}"}
+        else:
+            headers = None
 
-    if token:
-        headers = {
-            "Authorization": f"token {token}",
-        }
-    else:
-        headers = None
+        if _start_matlab_proxy_using_jupyter(url, headers):
+            return url, nb_server["base_url"], headers
 
-    # This is content that is present in the matlab-proxy index.html page which
-    # can be used to validate a proper response.
-    matlab_proxy_index_page_identifier = "MWI_MATLAB_PROXY_IDENTIFIER"
-
-    # send request to the matlab-proxy endpoint to make sure it is available.
-    # If matlab-proxy is not started, jupyter-server starts it at this point.
-    resp = requests.get(url, headers=headers, verify=False)
-    if resp.status_code == requests.codes.OK:
-        # Verify that the returned value is correct
-        if matlab_proxy_index_page_identifier not in resp.text:
-            raise MATLABConnectionError(
-                """
+    raise MATLABConnectionError(
+        """
                 Error: MATLAB Kernel could not communicate with MATLAB.
                 Reason: Possibly due to invalid jupyter security tokens.
                 """
-            )
-        return url, nb_server["base_url"], headers
-    else:
-        resp.raise_for_status()
+    )
 
 
 class MATLABKernel(ipykernel.kernelbase.Kernel):
@@ -233,7 +239,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
                 self.matlab_status,
                 self.matlab_proxy_has_error,
             ) = mwi_comm_helpers.fetch_matlab_proxy_status(self.murl, self.headers)
-        except (MATLABConnectionError, HTTPError) as err:
+        except MATLABConnectionError as err:
             self.startup_error = err
 
     # ipykernel Interface API
