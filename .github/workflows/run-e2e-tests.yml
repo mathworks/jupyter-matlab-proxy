@@ -1,0 +1,86 @@
+# Copyright 2023 The MathWorks, Inc.
+
+name: End-to-End Tests for Jupyter Integration for MATLAB
+on:
+  workflow_call:
+
+jobs:
+  playwright_e2e_tests:
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: 18
+      PYTHON_VERSION: 3.8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Install node dependencies
+        working-directory: ./tests/e2e
+        run: npm ci
+
+      - name: Run the linter
+        working-directory: ./tests/e2e
+        run: npm run lint
+
+      - name: Set up MATLAB
+        # Use MATLAB Actions to get running MATLAB in GitHub Actions
+        uses: matlab-actions/setup-matlab@v2-beta
+        with:
+          products: MATLAB Symbolic_Math_Toolbox
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install jupyterlab and jupyter-matlab-proxy
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install ".[dev]"
+          pip install "jupyterlab>3.1.0,<4.0.0"
+
+      - name: Install playwright browsers
+        working-directory: ./tests/e2e
+        run: npx playwright install --with-deps
+
+      - name: Find an available port
+        run: |
+          FREE_PORT=$(python -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()');
+          echo "Using port = ${FREE_PORT}"
+          echo "TEST_JMP_PORT=$FREE_PORT" >> "$GITHUB_ENV"
+
+      # Playwright will start and stop the JupyterLab server, so we need
+      # to activate the Python venv. The command that is executed by Playwright
+      # is set by the webServer setting in the file playwright.config.ts
+      - name: Run playwright tests
+        working-directory: tests/e2e
+        env:
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          TEST_JMP_PORT: ${{ env.TEST_JMP_PORT }}
+        run: |
+          echo "Playwright version: $(npx playwright -V)"
+          npx playwright test
+
+      - name: Zip test results
+        if: always()
+        working-directory: tests/e2e
+        run: |
+          zip -r zipped-e2e-test-results.zip ./playwright-report ./test-results
+
+      - name: Preserve test results after the job has finished
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e_test_results
+          path: ./tests/e2e/zipped-e2e-test-results.zip
+          retention-days: 5

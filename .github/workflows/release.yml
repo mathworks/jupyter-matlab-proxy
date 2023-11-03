@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The MathWorks, Inc
+# Copyright 2020-2023 The MathWorks, Inc.
 
 # Workflow to release MATLAB Jupyter Integration to PyPi
 name: Release to PyPI

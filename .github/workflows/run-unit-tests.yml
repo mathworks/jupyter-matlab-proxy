@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The MathWorks, Inc
+# Copyright 2020-2023 The MathWorks, Inc.
 
 # Workflow that contains jobs to test MATLAB Jupyter Integration
 name: Unit Testing MATLAB Jupyter Integration
