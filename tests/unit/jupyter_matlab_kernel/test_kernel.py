@@ -1,15 +1,12 @@
 # Copyright 2023 The MathWorks, Inc.
 
 # This file contains tests for jupyter_matlab_kernel.kernel
-from jupyter_matlab_kernel.kernel import (
-    start_matlab_proxy,
-    MATLABConnectionError,
-)
-
+import mocks.mock_jupyter_server as MockJupyterServer
 import pytest
 from jupyter_server import serverapp
 from mocks.mock_jupyter_server import MockJupyterServerFixture
-import mocks.mock_jupyter_server as MockJupyterServer
+
+from jupyter_matlab_kernel.kernel import MATLABConnectionError, start_matlab_proxy
 
 
 def test_start_matlab_proxy_without_jupyter_server():
@@ -33,7 +30,7 @@ def test_start_matlab_proxy(MockJupyterServerFixture):
 
     url, server, headers = start_matlab_proxy()
     assert server == MockJupyterServer.BASE_URL
-    assert headers == MockJupyterServer.AUTHORISED_HEADERS
+    assert headers == MockJupyterServer.AUTHORIZED_HEADERS
     expected_url = (
         "http://localhost:"
         + MockJupyterServer.PORT
@@ -73,15 +70,14 @@ def test_start_matlab_proxy_secure(monkeypatch, MockJupyterServerFixture):
     assert url == expected_url
 
 
-# TODO: Need to update usage of mock response in this test.
-# def test_start_matlab_proxy_jh_api_token(monkeypatch, MockJupyterServerFixture):
-#     """
-#     The test checks that start_matlab_proxy makes use of the environment variable
-#     JUPYTERHUB_API_TOKEN if it is set.
-#     """
+def test_start_matlab_proxy_jh_api_token(monkeypatch, MockJupyterServerFixture):
+    """
+    The test checks that start_matlab_proxy makes use of the environment variable
+    JUPYTERHUB_API_TOKEN if it is set.
+    """
+    token = "test_jh_token"
+    monkeypatch.setattr(MockJupyterServer, "TEST_TOKEN", None)
 
-#     monkeypatch.setattr(MockJupyterServer, "TEST_TOKEN", None)
-
-#     monkeypatch.setenv("JUPYTERHUB_API_TOKEN", "test_jh_token")
-#     _, _, headers = start_matlab_proxy()
-#     assert headers == {"Authorization": "token test_jh_token"}
+    monkeypatch.setenv("JUPYTERHUB_API_TOKEN", token)
+    _, _, headers = start_matlab_proxy()
+    assert headers == {"Authorization": f"token {token}"}

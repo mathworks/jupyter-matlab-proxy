@@ -6,10 +6,10 @@ with Jupyter server.
 """
 
 
-import pytest
-
-import requests
 import os
+
+import pytest
+import requests
 from jupyter_server import serverapp
 
 PID = "server 1"
@@ -18,7 +18,7 @@ BASE_URL = "server_of_nb/"
 SECURE = False
 TEST_TOKEN = "test_token"
 LICENSING = True
-AUTHORISED_HEADERS = {"Authorization": "token test_token"}
+AUTHORIZED_HEADERS = {"Authorization": "token test_token"}
 PASSWORD = ""
 
 
@@ -46,8 +46,11 @@ def MockJupyterServerFixture(monkeypatch):
         ]
 
     class MockResponse:
-        status_code = requests.codes.ok
-        text = "MWI_MATLAB_PROXY_IDENTIFIER"
+        def __init__(
+            self, status_code=requests.codes.ok, text="MWI_MATLAB_PROXY_IDENTIFIER"
+        ) -> None:
+            self.status_code = status_code
+            self.text = text
 
         @staticmethod
         def json():
@@ -58,7 +61,12 @@ def MockJupyterServerFixture(monkeypatch):
             }
 
     def mock_get(*args, **kwargs):
-        return MockResponse()
+        # Return a successful matlab_proxy startup message if there is any header present,
+        # else return an unsuccessful result (via status codes other than 200)
+        if "headers" in kwargs and kwargs["headers"]:
+            return MockResponse()
+        else:
+            return MockResponse(status_code=requests.codes.unavailable)
 
     monkeypatch.setattr(serverapp, "list_running_servers", fake_list_running_servers)
     monkeypatch.setattr(os, "getppid", fake_getppid)
