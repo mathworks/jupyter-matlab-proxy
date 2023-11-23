@@ -8,6 +8,10 @@ import time
 
 import requests
 
+from matlab_proxy.settings import get_process_startup_timeout
+
+MATLAB_STARTUP_TIMEOUT = get_process_startup_timeout()
+
 
 def perform_basic_checks():
     """
@@ -85,18 +89,13 @@ def wait_matlab_proxy_ready(matlab_proxy_url):
 
     from jupyter_matlab_kernel import mwi_comm_helpers
 
-    # Timeout for polling the matlab-proxy http endpoints.
-    # matlab-proxy takes more time to be 'up' in machines
-    # other than Linux
-    MAX_TIMEOUT = 120 if system.is_linux() else 300
-
     is_matlab_licensed = False
     matlab_status = "down"
     start_time = time.time()
 
     # Poll for matlab-proxy to be up
     while matlab_status in ["down", "starting"] and (
-        time.time() - start_time < MAX_TIMEOUT
+        time.time() - start_time < MATLAB_STARTUP_TIMEOUT
     ):
         time.sleep(1)
         try:

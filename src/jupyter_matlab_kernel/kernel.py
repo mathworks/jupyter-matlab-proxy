@@ -13,6 +13,11 @@ import requests
 from requests.exceptions import HTTPError
 
 from jupyter_matlab_kernel import mwi_comm_helpers
+from matlab_proxy import util as mwi_util
+from matlab_proxy import settings as mwi_settings
+
+
+_MATLAB_STARTUP_TIMEOUT = mwi_settings.get_process_startup_timeout()
 
 
 class MATLABConnectionError(Exception):
@@ -142,7 +147,7 @@ def start_matlab_proxy():
     # Thus we need to go one level higher to acquire the process id of the jupyter server.
     # Note: conda environments do not require this, and for these environments sys.prefix == sys.base_prefix
     is_virtual_env = sys.prefix != sys.base_prefix
-    if sys.platform == "win32" and is_virtual_env:
+    if mwi_util.system.is_windows() and is_virtual_env:
         jupyter_server_pid = psutil.Process(jupyter_server_pid).ppid()
 
     nb_server = dict()
@@ -465,10 +470,9 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
 
         # Wait until MATLAB is started before sending requests.
         timeout = 0
-        MATLAB_STARTUP_MAX_TIMEOUT = 120
         while (
             self.matlab_status != "up"
-            and timeout != MATLAB_STARTUP_MAX_TIMEOUT
+            and timeout != _MATLAB_STARTUP_TIMEOUT
             and not self.matlab_proxy_has_error
         ):
             if self.is_matlab_licensed:
@@ -496,7 +500,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         # If MATLAB is not available after 15 seconds of licensing information
         # being available either through user input or through matlab-proxy cache,
         # then display connection error to the user.
-        if timeout == MATLAB_STARTUP_MAX_TIMEOUT or self.matlab_proxy_has_error:
+        if timeout == _MATLAB_STARTUP_TIMEOUT or self.matlab_proxy_has_error:
             raise MATLABConnectionError
 
     def display_output(self, out):

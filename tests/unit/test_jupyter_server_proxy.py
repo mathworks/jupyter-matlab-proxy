@@ -55,7 +55,7 @@ def test_get_env_with_token_auth_disabled(monkeypatch):
     assert r.get(mwi_env.get_env_name_mwi_auth_token()) == None
 
 
-def test_setup_matlab(monkeypatch):
+def test_setup_matlab():
     """Tests for a valid Server Process Configuration Dictionary
 
     This test checks if the jupyter proxy returns the expected Server Process Configuration

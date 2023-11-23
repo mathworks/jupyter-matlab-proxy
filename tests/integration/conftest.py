@@ -6,6 +6,10 @@ import integration_test_utils
 import pytest
 import requests
 
+from matlab_proxy import settings as mwi_settings
+
+_MATLAB_STARTUP_TIMEOUT = mwi_settings.get_process_startup_timeout()
+
 
 @pytest.fixture(autouse=True, scope="module")
 def matlab_proxy_fixture(module_monkeypatch):
@@ -50,7 +54,7 @@ def matlab_proxy_fixture(module_monkeypatch):
     integration_test_utils.poll_web_service(
         matlab_proxy_url,
         step=5,
-        timeout=120,
+        timeout=_MATLAB_STARTUP_TIMEOUT,
         ignore_exceptions=(
             requests.exceptions.ConnectionError,
             requests.exceptions.SSLError,
@@ -122,6 +126,5 @@ def __get_matlab_config_file():
     Returns:
         string: MATLAB config file path
     """
-    from matlab_proxy import settings
 
-    return settings.get()["matlab_config_file"]
+    return mwi_settings.get()["matlab_config_file"]

@@ -46,7 +46,7 @@ dependencies = [
     "jupyter-server-proxy",
     "simpervisor>=1.0.0",
     "jupyter-contrib-nbextensions",
-    "matlab-proxy>=0.8.0",
+    "matlab-proxy>=0.9.1",
     "psutil",
     "requests",
 ]

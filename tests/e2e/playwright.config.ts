@@ -25,7 +25,7 @@ const config = {
     webServer: {
         command: webserverCommand,
         url: BASE_URL + '/api',
-        timeout: 120 * 1000,
+        timeout: 600 * 1000, // This value should be the same as the one we get from matlab_proxy.settings.get_process_startup_timeout()
         reuseExistingServer: !process.env.CI
     },
 
