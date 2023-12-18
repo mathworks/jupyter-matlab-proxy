@@ -68,6 +68,8 @@ else
     switch matlab.internal.editor.getApiVersion('synchronous')
         case 1
             request = updateRequestFromVersion1(request, code);
+        case 2
+            request = updateRequestFromVersion2(request, code);
         otherwise
             error("Invalid API version. Create an issue at https://github.com/mathworks/jupyter-matlab-proxy for further support.");
     end
@@ -94,6 +96,13 @@ request.endLine = builtin('count', code, newline) + 1;
 % done explicitly when the kernel shutsdown.
 request.shouldResetState = false;
 request.shouldDoFullCleanup = false;
+
+% Helper function to update fields in the request when LiveEditor API version is 2.
+function request = updateRequestFromVersion2(request, code)
+request = updateRequestFromVersion1(request, code);
+
+% Request MIME based outputs.
+request.preferBasicOutputs = true;
 
 % Helper function to process different types of outputs given by LiveEditor API.
 function result = processOutputs(outputs)
@@ -141,6 +150,8 @@ for ii = 1:length(outputs)
                 end
                 result{idx} = processFigure(outputData.figureImage);
             end
+        case 'text/html'
+            result{ii} = processHtml(outputData);
     end
 end
 
@@ -185,7 +196,7 @@ else
 end
 text = sprintf("%s = %s%s%s", output.name, output.header, indentation, output.value);
 result = processText(text);
-    
+
 % Helper function for post-processing symbolic outputs. The captured output
 % contains MathML representation of symbolic expressions. Since Jupyter and
 % GitHub have native support for LaTeX, we use EquationRenderer JS API to
@@ -251,6 +262,12 @@ assert(~isempty(result.value), 'Error in processFigure. ''value'' is empty');
 result.mimetype = {result.mimetype};
 result.value = {result.value};
 result.type = 'execute_result';
+
+% Helper function for processing text/html mime-type outputs.
+function result = processHtml(text)
+result.type = 'execute_result';
+result.mimetype = {"text/html", "text/plain"};
+result.value = [sprintf("%s",text), text];
 
 % Helper function to notify browser page load finished
 function pageLoadCallback(~,~,idler)

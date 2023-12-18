@@ -36,6 +36,15 @@ This package has some constraints and limitations:
 
 * MATLAB notebooks and MATLAB files do not autoindent after `case` statements.
 
+* **For MATLAB R2024a and later,** tables are displayed as ASCII instead of HTML if the table meets any of the below conditions. Note that the below list is not exhaustive.
+    * is an empty table
+    * has more than 1000 rows
+    * has more than 100 columns
+    * has nested/grouped headers
+    * has multi-column variables
+    * is an event table
+    * is a dataset
+
 ----
 
 Copyright 2023 The MathWorks, Inc.
