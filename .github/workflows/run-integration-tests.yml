@@ -16,7 +16,10 @@ jobs:
         #TODO: Add test coverage for macOs
         os: [ubuntu-latest, windows-latest]
         python-version: ["3.8", "3.11"]
-        matlab-release: [R2020b, R2023a]
+
+        # The minimum matlab-release is set to 21b as 20b and 21a are not supported by matlab-actions/setup-matlab.
+        # See https://github.com/matlab-actions/setup-matlab/issues/76
+        matlab-release: [R2021b, R2023a]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -48,7 +51,20 @@ jobs:
         run: python3 -m playwright install --with-deps
 
       - name: Integration test with pytest
-        run: python3 -m pytest tests/integration
+        run: python3 -m pytest tests/integration -vs
         env:
           TEST_USERNAME: ${{secrets.TEST_USERNAME}}
           TEST_PASSWORD: ${{secrets.TEST_PASSWORD}}
+
+      - name: Copy Log File
+        if: ${{ always() }}
+        run: |
+          cp ${{ github.workspace }}/tests/integration/integ_logs.log ${{ matrix.os }}${{ matrix.matlab-release }}${{ matrix.python-version }}.log
+
+      - name: Make logs files available for downloading
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: MATLAB Proxy Integration Test Log File
+          path: ${{ matrix.os }}${{ matrix.matlab-release }}${{ matrix.python-version }}.log
+          retention-days: 7

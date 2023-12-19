@@ -34,6 +34,13 @@ def matlab_proxy_fixture(module_monkeypatch):
     # some time to resolve 'localhost' hostname
     matlab_proxy_url = f"http://127.0.0.1:{mwi_app_port}{mwi_base_url}"
 
+    # Set the log path based on the test's execution environment
+    log_path = "tests/integration/integ_logs.log"
+    base_path = os.environ.get(
+        "GITHUB_WORKSPACE", os.path.dirname(os.path.abspath(__name__))
+    )
+    matlab_proxy_logs_path = os.path.join(base_path, log_path)
+
     # Start matlab-proxy-app for testing
     input_env = {
         # MWI_JUPYTER_TEST env variable is used in jupyter_matlab_kernel/kernel.py
@@ -41,6 +48,7 @@ def matlab_proxy_fixture(module_monkeypatch):
         "MWI_JUPYTER_TEST": "true",
         "MWI_APP_PORT": mwi_app_port,
         "MWI_BASE_URL": mwi_base_url,
+        "MWI_LOG_FILE": str(matlab_proxy_logs_path),
     }
 
     # Get event loop to start matlab-proxy in background
