@@ -270,5 +270,7 @@ result.mimetype = {"text/html", "text/plain"};
 result.value = [sprintf("%s",text), text];
 
 % Helper function to notify browser page load finished
-function pageLoadCallback(~,~,idler)
+function pageLoadCallback(webwindow,~,idler)
 idler.stopIdling();
+% Disable alert box which is preventing running JS after certain period of time.
+webwindow.executeJS('window.alert = function(){}');
