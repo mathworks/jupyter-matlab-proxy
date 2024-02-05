@@ -1,4 +1,4 @@
-# Copyright 2023 The MathWorks, Inc.
+# Copyright 2023-2024 The MathWorks, Inc.
 
 [build-system]
 requires = ["jupyterlab>=3.1,<4.0.0", "hatchling"]
@@ -45,7 +45,6 @@ classifiers = [
 dependencies = [
     "jupyter-server-proxy",
     "simpervisor>=1.0.0",
-    "jupyter-contrib-nbextensions",
     "matlab-proxy>=0.10.0",
     "psutil",
     "requests",

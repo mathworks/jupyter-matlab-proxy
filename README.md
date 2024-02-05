@@ -104,6 +104,16 @@ This section shows you how to:
 2. [Open MATLAB in a Browser](#open-matlab-in-a-browser)
 3. [Edit MATLAB files in JupyterLab](#edit-matlab-files-in-jupyterlab)
 
+Install the Jupyter Notebook or JupyterLab based on your preference
+
+  ```bash
+  # For Jupyter Notebook
+  python -m pip install notebook
+
+  # For JupyterLab
+  python -m pip install jupyterlab
+  ```
+
 Open your Jupyter environment by starting Jupyter Notebook or JupyterLab.
 
   ```bash
@@ -190,7 +200,7 @@ This opens an untitled `.m` file where you can write MATLAB code with syntax hig
 
 ----
 
-Copyright 2021-2023 The MathWorks, Inc.
+Copyright 2021-2024 The MathWorks, Inc.
 
 ----
 
