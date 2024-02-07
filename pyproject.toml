@@ -48,6 +48,7 @@ dependencies = [
     "matlab-proxy>=0.10.0",
     "psutil",
     "requests",
+    "ipykernel"
 ]
 
 [project.urls]
