@@ -1,18 +1,21 @@
-# Copyright 2023 The MathWorks, Inc.
+# Copyright 2023-2024 The MathWorks, Inc.
 # Helper functions to communicate with matlab-proxy and MATLAB
 
 import json
 import pathlib
 
 import requests
+from jupyter_matlab_kernel import mwi_logger
 from matlab_proxy.util.mwi.embedded_connector.helpers import (
     get_data_to_eval_mcode,
     get_data_to_feval_mcode,
     get_mvm_endpoint,
 )
 
+_logger = mwi_logger.get()
 
-def fetch_matlab_proxy_status(url, headers):
+
+def fetch_matlab_proxy_status(url, headers, logger=_logger):
     """
     Sends HTTP request to /get_status endpoint of matlab-proxy and returns
     license and MATLAB status.
@@ -31,15 +34,19 @@ def fetch_matlab_proxy_status(url, headers):
     Raises:
         HTTPError: Occurs when connection to matlab-proxy cannot be established.
     """
+    logger.debug("Fetching matlab-proxy status")
     resp = requests.get(url + "/get_status", headers=headers, verify=False)
+    logger.debug(f"Received status code: {resp.status_code}")
     if resp.status_code == requests.codes.OK:
         data = resp.json()
+        logger.debug(f"Response:\n{data}")
         is_matlab_licensed = check_licensing_status(data)
 
         matlab_status = data["matlab"]["status"]
         matlab_proxy_has_error = data["error"] != None
         return is_matlab_licensed, matlab_status, matlab_proxy_has_error
     else:
+        logger.error("Error occurred during communication with matlab-proxy")
         resp.raise_for_status()
 
 
@@ -52,7 +59,7 @@ def check_licensing_status(data):
     return licensing_status
 
 
-def send_execution_request_to_matlab(url, headers, code, kernelid):
+def send_execution_request_to_matlab(url, headers, code, kernelid, logger=_logger):
     """
     Evaluate MATLAB code and capture results.
 
@@ -68,10 +75,13 @@ def send_execution_request_to_matlab(url, headers, code, kernelid):
     Raises:
         HTTPError: Occurs when connection to matlab-proxy cannot be established.
     """
-    return _send_jupyter_request_to_matlab(url, headers, "execute", [code, kernelid])
+    logger.debug("Sending execution request to MATLAB")
+    return _send_jupyter_request_to_matlab(
+        url, headers, "execute", [code, kernelid], logger
+    )
 
 
-def send_completion_request_to_matlab(url, headers, code, cursor_pos):
+def send_completion_request_to_matlab(url, headers, code, cursor_pos, logger=_logger):
     """
     Fetch Tab completion results.
 
@@ -98,10 +108,13 @@ def send_completion_request_to_matlab(url, headers, code, cursor_pos):
     Raises:
         HTTPError: Occurs when connection to matlab-proxy cannot be established.
     """
-    return _send_jupyter_request_to_matlab(url, headers, "complete", [code, cursor_pos])
+    logger.debug("Sending completion request to MATLAB")
+    return _send_jupyter_request_to_matlab(
+        url, headers, "complete", [code, cursor_pos], logger
+    )
 
 
-def send_shutdown_request_to_matlab(url, headers, kernelid):
+def send_shutdown_request_to_matlab(url, headers, kernelid, logger=_logger):
     """
     Perform cleanup tasks related to kernel shutdown.
 
@@ -113,10 +126,12 @@ def send_shutdown_request_to_matlab(url, headers, kernelid):
     Raises:
         HTTPError: Occurs when connection to matlab-proxy cannot be established.
     """
-    return _send_jupyter_request_to_matlab(url, headers, "shutdown", [kernelid])
+    logger.debug("Sending shutdown request to MATLAB")
+    return _send_jupyter_request_to_matlab(url, headers, "shutdown", [kernelid], logger)
 
 
-def send_interrupt_request_to_matlab(url, headers):
+def send_interrupt_request_to_matlab(url, headers, logger=_logger):
+    logger.debug("Sending interrupt request to MATLAB")
     req_body = {
         "messages": {
             "Interrupt": [
@@ -126,17 +141,25 @@ def send_interrupt_request_to_matlab(url, headers):
             ]
         }
     }
+    url = get_mvm_endpoint(url)
+
+    logger.debug(f"Request URL: {url}")
+    logger.debug(f"Request Headers:\n{headers}")
+    logger.debug(f"Request Body:\n{req_body}")
     resp = requests.post(
-        get_mvm_endpoint(url),
+        url,
         headers=headers,
         json=req_body,
         verify=False,
     )
+    logger.debug(f"Received status code: {resp.status_code}")
     if resp.status_code != requests.codes.OK:
+        logger.error("Error occurred during communication with matlab-proxy")
         resp.raise_for_status()
 
 
-def _send_feval_request_to_matlab(url, headers, fname, nargout, *args):
+def _send_feval_request_to_matlab(url, headers, fname, nargout, logger=_logger, *args):
+    logger.debug("Sending FEval request to MATLAB")
     # Add the MATLAB code shipped with kernel to the Path
     path = [str(pathlib.Path(__file__).parent / "matlab")]
     req_body = get_data_to_feval_mcode("addpath", *path, nargout=0)
@@ -149,14 +172,22 @@ def _send_feval_request_to_matlab(url, headers, fname, nargout, *args):
     req_body["messages"]["FEval"][0]["dequeMode"] = "non_debug_prompt"
     req_body["messages"]["FEval"][1]["dequeMode"] = "non_debug_prompt"
 
+    url = get_mvm_endpoint(url)
+
+    logger.debug(f"Request URL: {url}")
+    logger.debug(f"Request Headers:\n{headers}")
+    logger.debug(f"Request Body:\n{req_body}")
+
     resp = requests.post(
-        get_mvm_endpoint(url),
+        url,
         headers=headers,
         json=req_body,
         verify=False,
     )
+    logger.debug(f"Received status code: {resp.status_code}")
     if resp.status_code == requests.codes.OK:
         response_data = resp.json()
+        logger.debug(f"Response:\n{response_data}")
         try:
             feval_response = response_data["messages"]["FEvalResponse"][1]
         except KeyError:
@@ -164,6 +195,7 @@ def _send_feval_request_to_matlab(url, headers, fname, nargout, *args):
             # contain the expected data. In these cases most likely MATLAB has
             # gone away. Hence we raise the HTTPError to indicate MATLAB is not
             # available.
+            logger.error("Response messages doesn't contain FEvalResponse field")
             raise requests.HTTPError()
 
         # If the feval request succeeded and outputs are present, return the result.
@@ -171,6 +203,7 @@ def _send_feval_request_to_matlab(url, headers, fname, nargout, *args):
             if nargout != 0 and feval_response["results"]:
                 return feval_response["results"][0]
 
+            logger.debug("No result present in FEvalResponse")
             # Return empty list if there are no outputs in the repsonse
             return []
 
@@ -178,26 +211,38 @@ def _send_feval_request_to_matlab(url, headers, fname, nargout, *args):
         if feval_response["messageFaults"][0]["message"] == "":
             error_message = "Failed to execute. Operation may have interrupted by user."
         else:
+            logger.error(
+                f'Error during execution of FEval request in MATLAB:\n{feval_response["messageFaults"][0]["message"]}'
+            )
             error_message = "Failed to execute. Please try again."
         raise Exception(error_message)
     else:
+        logger.error("Error occurred during communication with matlab-proxy")
         raise resp.raise_for_status()
 
 
-def _send_eval_request_to_matlab(url, headers, mcode):
+def _send_eval_request_to_matlab(url, headers, mcode, logger=_logger):
+    logger.debug("Sending Eval request to MATLAB")
     # Add the MATLAB code shipped with kernel to the Path
     path = str(pathlib.Path(__file__).parent / "matlab")
     mcode = 'addpath("' + path + '")' + ";" + mcode
 
     req_body = get_data_to_eval_mcode(mcode)
+    url = get_mvm_endpoint(url)
+
+    logger.debug(f"Request URL: {url}")
+    logger.debug(f"Request Headers:\n{headers}")
+    logger.debug(f"Request Body:\n{req_body}")
     resp = requests.post(
-        get_mvm_endpoint(url),
+        url,
         headers=headers,
         json=req_body,
         verify=False,
     )
+    logger.debug(f"Received status code: {resp.status_code}")
     if resp.status_code == requests.codes.OK:
         response_data = resp.json()
+        logger.debug(f"Response:\n{response_data}")
         try:
             eval_response = response_data["messages"]["EvalResponse"][0]
         except KeyError:
@@ -205,6 +250,7 @@ def _send_eval_request_to_matlab(url, headers, mcode):
             # contain the expected data. In these cases most likely MATLAB has
             # gone away. Hence we raise the HTTPError to indicate MATLAB is not
             # available.
+            logger.error("Response messages doesn't contain EvalResponse field")
             raise requests.HTTPError()
 
         # If the eval request succeeded, return the json decoded result.
@@ -214,16 +260,20 @@ def _send_eval_request_to_matlab(url, headers, mcode):
             # If the filepath in the response is not empty, read the result from
             # file and delete the file.
             if result_filepath != "":
+                logger.debug(f"Found file with results: {result_filepath}")
+                logger.debug("Reading contents of the file")
                 with open(result_filepath, "r") as f:
                     result = f.read().strip()
-
+                logger.debug("Reading completed")
                 try:
                     import os
 
+                    logger.debug(f"Deleting file: {result_filepath}")
                     os.remove(result_filepath)
                 except Exception:
-                    pass
+                    logger.error(f"Deleting file failed")
             else:
+                logger.debug("No result in EvalResponse")
                 result = ""
 
             # If result is empty, populate dummy json
@@ -235,6 +285,9 @@ def _send_eval_request_to_matlab(url, headers, mcode):
         if eval_response["messageFaults"]:
             # This happens when "Interrupt Kernel" is issued from a different
             # kernel. There may be other cases also.
+            logger.error(
+                f'Error during execution of Eval request in MATLAB:\n{eval_response["messageFaults"][0]["message"]}'
+            )
             error_message = (
                 "Failed to execute. Operation may have been interrupted by user."
             )
@@ -244,18 +297,23 @@ def _send_eval_request_to_matlab(url, headers, mcode):
             error_message = eval_response["responseStr"].strip()
         raise Exception(error_message)
     else:
+        logger.error("Error during communication with matlab-proxy")
         raise resp.raise_for_status()
 
 
-def _send_jupyter_request_to_matlab(url, headers, request_type, inputs):
+def _send_jupyter_request_to_matlab(url, headers, request_type, inputs, logger=_logger):
     execution_request_type = "feval"
 
     inputs.insert(0, request_type)
     inputs.insert(1, execution_request_type)
 
+    logger.debug(
+        f"Using {execution_request_type} request type for communication with EC"
+    )
+
     if execution_request_type == "feval":
         resp = _send_feval_request_to_matlab(
-            url, headers, "processJupyterKernelRequest", 1, *inputs
+            url, headers, "processJupyterKernelRequest", 1, logger, *inputs
         )
     else:
         user_mcode = inputs[2]
@@ -276,6 +334,6 @@ def _send_jupyter_request_to_matlab(url, headers, request_type, inputs):
             args = args + "," + str(cursor_pos)
 
         eval_mcode = f"processJupyterKernelRequest({args})"
-        resp = _send_eval_request_to_matlab(url, headers, eval_mcode)
+        resp = _send_eval_request_to_matlab(url, headers, eval_mcode, logger)
 
     return resp

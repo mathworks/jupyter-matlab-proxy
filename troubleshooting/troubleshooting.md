@@ -5,6 +5,7 @@ We have provided a Python script, troubleshooting.py, which runs basic environme
 ## Table of Contents
 1. [Requirements](#requirements)
 2. [Running the script](#running-the-script)
+3. [Enable Logging](#enable-logging)
 
 ## Requirements
 * Python
@@ -96,8 +97,22 @@ jupyter_matlab_labextension v0.1.0 enabled OK
 $ pip install jupyter-contrib-nbextensions
 ```
 
+## Enable Logging
+
+You can use logs to assist debugging while using MATLAB Integration for Jupyter. Set the environment variable `MWI_JUPYTER_LOG_LEVEL` to one of the following: `NOTSET`, `DEBUG`, `INFO`, `WARN`, `ERROR`, or `CRITICAL`. The default value is `INFO`. For more information on Python log levels, see [Logging Levels](https://docs.python.org/3/library/logging.html#logging-levels).
+
+To set the environment variable, use the appropriate command for your environment. For example, in Linux, use the following:
+
+```bash
+# Set the logging environment variable
+$ export MWI_JUPYTER_LOG_LEVEL="DEBUG"
+
+# Start Jupyter
+$ jupyter lab
+```
+
 ----
 
-Copyright 2023 The MathWorks, Inc.
+Copyright 2023-2024 The MathWorks, Inc.
 
 ----
