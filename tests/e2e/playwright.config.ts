@@ -1,4 +1,4 @@
-// Copyright 2023 The MathWorks, Inc.
+// Copyright 2023-2024 The MathWorks, Inc.
 
 import { devices } from '@playwright/test';
 import dotenv from 'dotenv';
@@ -11,27 +11,13 @@ const BASE_DOMAIN = 'http://127.0.0.1';
 const BASE_PORT = process.env.TEST_JMP_PORT ?? '8888';
 const BASE_URL = BASE_DOMAIN + ':' + BASE_PORT;
 
-const webserverCommand =
-    'python3 -m jupyter lab ' +
-    '--ip=0.0.0.0 ' +
-    '--allow-root ' +
-    '--config ./jupyter_server_test_config.py ' +
-    '--port ' + BASE_PORT;
-
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 const config = {
-    webServer: {
-        command: webserverCommand,
-        url: BASE_URL + '/api',
-        timeout: 600 * 1000, // This value should be the same as the one we get from matlab_proxy.settings.get_process_startup_timeout()
-        reuseExistingServer: !process.env.CI
-    },
-
     globalSetup: require.resolve('./global-setup'),
     baseURL: BASE_URL,
-    testDir: './playwright-tests',
+    testDir: './tests',
     timeout: 60 * 1000,
     expect: {
         timeout: 10 * 1000

@@ -1,4 +1,4 @@
-# Copyright 2023 The MathWorks, Inc.
+# Copyright 2023-2024 The MathWorks, Inc.
 
 """
 JupyterLab Configuration
@@ -16,10 +16,17 @@ Note that 'c' below is an instance of Jupyter's configuration class. This file
 is parsed by Jupyter and the below modifications to configuration class are
 applied.
 """
-
-
+import os
 from tempfile import mkdtemp
 
+# Allow JupyterLab to be started as root user
+c.ServerApp.allow_root = True
+
+# Listen on all IP Addresses - JLab defaults to only allowing requests from localhost.
+c.ServerApp.ip = "0.0.0.0"
+
+# Set the port to serve JupyterLab on.
+c.ServerApp.port = int(os.getenv("TEST_JMP_PORT", 8888))
 
 # Disable port retries
 c.ServerApp.port_retries = 0
@@ -31,10 +38,10 @@ c.ServerApp.open_browser = False
 c.ServerApp.root_dir = mkdtemp(prefix="galata-test-")
 
 # Disable token-based authentication
-c.ServerApp.token = ""
+c.IdentityProvider.token = ""
 
 # Disable password-based authentication
-c.ServerApp.password = ""
+c.IdentityProvider.password = ""
 
 # Disable Cross-Site Request Forgery (CSRF) protection
 c.ServerApp.disable_check_xsrf = True
@@ -43,4 +50,4 @@ c.ServerApp.disable_check_xsrf = True
 c.LabApp.expose_app_in_browser = True
 
 # Set the log level to ERROR
-c.Application.log_level = "ERROR"
+c.Application.log_level = "INFO"

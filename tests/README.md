@@ -102,14 +102,62 @@ a set of helpers and fixtures for JupyterLab UI exclusively in TypeScript.
 1. MATLAB (Version >= `R2020b`) in the system path
 2. NodeJS version 18 or higher.
 3. [MATLAB Proxy](https://github.com/mathworks/matlab-proxy) requirements
-4. MATLAB Proxy should be unlicensed
-6. Jupyter MATLAB Proxy requirements
-7. Valid MathWorks Account credentials
+4. Jupyter MATLAB Proxy requirements
+5. A way to license MATLAB
 
 
-### How to run the end-to-end tests
-* Set the environment variables TEST_USERNAME and TEST_PASSWORD to be your
-  MathWorks Account user credentials
+### Run the end-to-end tests
+#### Licensing Information
+The end-to-end tests require a licensed MATLAB to function.
+
+The simplest option is to ensure the MATLAB is licensed before you start the
+JupyterLab fixture, and set the environment variable
+`MWI_USE_EXISTING_LICENSE=true` before starting it.
+
+Another option is to license the MATLAB using the jupyter-matlab-proxy interface
+manually or by using the helper methods provided.
+These helper methods license the MATLAB via the matlab-proxy interface using
+online licensing.
+This approach is suitable for automation and can be used in CI systems.
+See the GitHub Actions Workflows in this repository for an example of how to do this.
+
+#### Setup
+* From the root directory of this project, install jupyter-matlab-proxy and
+  JupyterLab:
+  ```
+  pip install ".[dev]" "jupyterlab>=3.1.0,<4.0.0"
+  ```
+  MathWorks recommends using a Python virtual environment such as venv or conda.
+* From this repository's directory `tests/e2e`, install the node packages:
+  ```
+  npm install
+  ```
+  or to use the exact package version in the package-lock.json, use the command
+  `npm ci` instead.
+* Install the Playwright browsers:
+  ```
+  npx playwright install
+  ```
+
+#### Start the JupyterLab fixture
+The steps for starting the JupyterLab fixture depend on your licensing method.
+All steps assume you run them from the `tests/e2e` directory.
+
+If you are using an already licensed MATLAB:
+- Ensure you set the environment variable `MWI_USE_EXISTING_LICENSE=true` before
+  starting the JupyterLab instance.
+- Run the command `npm start`
+- Then run the tests: `npm test`
+
+If you are going to license the MATLAB using online licensing after starting the JupyterLab instance
+- Start the JupyterLab fixture:
+  ```
+  npm start
+  ```
+- License the MATLAB manually using the JupyterLab instance via the UI or by using the
+  helper methods provided. The steps for using the helper methods is outlined:
+  - Set the environment variables `TEST_USERNAME` and `TEST_PASSWORD` to your
+    MathWorks Account user credentials
     - Using a `.env` file (recommended):
       - Create a file called `.env` at the base of this repository, with the
         following lines:
@@ -123,37 +171,29 @@ a set of helpers and fixtures for JupyterLab UI exclusively in TypeScript.
         ```
         (if you don't want to use 'export' you can pass the environment
         variables in by prepending them to the Playwright test command below)
-    - Powershell (Windows):
+    - PowerShell (Windows):
         ```powershell
         $env:TEST_USERNAME="some-username"; $env:TEST_PASSWORD="some-password"
         ```
-* From the root directory of this project, install jupyter-matlab-proxy and
-  JupyterLab with the command:
+  - Use the helper functions provided:
     ```
-    pip install ".[dev]" "jupyterlab>=3.1.0,<4.0.0"
+    python3 -m pip install pytest-playwright
+    python3 -m playwright install
+    python3 -c "from tests.utils.licensing import *; license_with_online_licensing()"
     ```
-* From this repository's directory `/tests/e2e`, install the node packages using:
+
+#### Stop the JupyterLab Fixture
+* After testing has finished, stop the JupyterLab fixture by running the command
   ```
-  npm install
+  npm stop
   ```
-  or to use the exact package version in the package-lock.json, use the command
-  `npm ci` instead.
-* Install the Playwright browsers with the command:
-  ```
-  npx playwright install
-  ```
-* Run the Playwright tests:
-  ```
-  npx playwright test
-  ```
-  If you don't want to use 'export' on your bash environment variables, you can pass in the
-  variables like this:
-  ```
-  TEST_USERNAME="some-username" TEST_PASSWORD="some-password" npx playwright test
-  ```
+  or by using the JupyterLab UI.
+
+The default behaviour is for the logs of the JupyterLab instance to be written to
+a`jupyterlab.log` file in the `tests/e2e` directory.
 
 ----
 
-Copyright 2023 The MathWorks, Inc.
+Copyright 2023-2024 The MathWorks, Inc.
 
 ----
