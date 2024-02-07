@@ -65,14 +65,9 @@ Install this Python package from the Python Package Index (PyPI) or build it fro
 ### Install from PyPI
 
 ```bash
-python3 -m pip install jupyter-matlab-proxy
+python -m pip install jupyter-matlab-proxy
 ```
 Installing this package will not install MATLAB. To execute MATLAB code in Jupyter, you must have [MATLAB installed](https://www.mathworks.com/help/install/install-products.html) separately.
-
-The package lets you execute MATLAB code in both JupyterLab 3 and JupyterLab 4, but syntax highlighting and auto indentation are currently only supported on JupyterLab 3. Install JupyterLab 3 using:
-```bash
-python3 -m pip install 'jupyterlab>=3.0.0,<4.0.0a0'
-```
 
 ### Build from Source
 
@@ -80,7 +75,7 @@ Alternatively, you can install this package by building it from the source. This
 ```bash
 git clone https://github.com/mathworks/jupyter-matlab-proxy.git
 cd jupyter-matlab-proxy
-python3 -m pip install .
+python -m pip install .
 ```
 
 ### Integration with JupyterHub
@@ -104,15 +99,17 @@ This section shows you how to:
 2. [Open MATLAB in a Browser](#open-matlab-in-a-browser)
 3. [Edit MATLAB files in JupyterLab](#edit-matlab-files-in-jupyterlab)
 
-Install the Jupyter Notebook or JupyterLab based on your preference
+Install Jupyter Notebook or JupyterLab:
 
   ```bash
   # For Jupyter Notebook
   python -m pip install notebook
 
-  # For JupyterLab
-  python -m pip install jupyterlab
+  # For JupyterLab 3
+  python -m pip install 'jupyterlab>=3.0.0,<4.0.0a0'
   ```
+
+Note: the package allows you to execute MATLAB code in both JupyterLab 3 and JupyterLab 4, but syntax highlighting and auto indentation are currently only supported on JupyterLab 3. To upgrade to JupyterLab 4, run `python -m pip install --upgrade jupyterlab`.
 
 Open your Jupyter environment by starting Jupyter Notebook or JupyterLab.
 
