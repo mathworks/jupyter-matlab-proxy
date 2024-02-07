@@ -9,9 +9,7 @@ When starting MATLAB through this integration, you are presented with a user int
   <img width="400" src="img/licensing_GUI.png">
 </p>
 
-To choose the right option, determine what MATLAB licenses you have access to.
-
-If you are an academic user, you can use [this tool](https://www.mathworks.com/academia/tah-support-program/eligibility.html) to determine if you have access to a campus-wide license through your institution. Otherwise, to see the licenses linked to your account, log in to your MathWorks account and go to [License Center](https://www.mathworks.com/licensecenter/?s_tid=hp_ff_s_license). You can link your MathWorks account with a license using [this tool](https://www.mathworks.com/licensecenter/licenses/add).
+To choose the right option, determine what MATLAB licenses you have access to. To see the licenses linked to your account, log in to your MathWorks account and go to [License Center](https://www.mathworks.com/licensecenter/?s_tid=hp_ff_s_license). You can link your MathWorks account with a license using [this tool](https://www.mathworks.com/licensecenter/licenses/add).
 
 Based on the license that you want to use, you can follow the procedures outlined in the table below to setup the MATLAB licensing for this integration.
 
