@@ -33,6 +33,7 @@ From your Jupyter notebook or JupyterLab, you can also open the MATLAB developme
   - Linux®
   - MacOS
   - Windows® (supported from [v0.6.0](https://github.com/mathworks/jupyter-matlab-proxy/releases/tag/v0.6.0)).
+  - Windows Subsystem for Linux (WSL 2) [Installation Guide](./installation/wsl2/README.md).
 
 * Python versions: 3.8 | 3.9 | 3.10 | 3.11
 
