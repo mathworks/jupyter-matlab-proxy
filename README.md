@@ -89,7 +89,7 @@ This package lets you use Simulink® programmatically by entering commands in a 
 
 ### Troubleshooting
 
-To troubleshoot package installation issues, see [Troubleshooting](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/troubleshooting.md).
+To troubleshoot package installation issues, see [Troubleshooting](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/troubleshooting/troubleshooting.md).
 
 
 ## Get Started
