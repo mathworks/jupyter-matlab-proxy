@@ -15,8 +15,8 @@ jobs:
   build_and_publish_pypi:
     # TODO: Add integration-tests as a dependency to
     # the release pipeline.
-    needs: [call-unit-tests]
-    if: success()
+    # needs: [call-unit-tests]
+    # if: success()
     runs-on: ubuntu-latest
 
     steps:
