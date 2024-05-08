@@ -1,14 +1,14 @@
-# Copyright 2020-2023 The MathWorks, Inc.
+# Copyright 2020-2024 The MathWorks, Inc.
 
 import inspect
 import os
 from pathlib import Path
 
-import matlab_proxy
-from matlab_proxy.util.mwi import environment_variables as mwi_env
-
 import jupyter_matlab_proxy
+import matlab_proxy
 from jupyter_matlab_proxy.jupyter_config import config
+from matlab_proxy.constants import MWI_AUTH_TOKEN_NAME_FOR_HTTP
+from matlab_proxy.util.mwi import environment_variables as mwi_env
 
 
 def test_get_auth_token():
@@ -79,7 +79,9 @@ def test_setup_matlab():
             "icon_path": icon_path,
         },
         "request_headers_override": {
-            "mwi_auth_token": jupyter_matlab_proxy._mwi_auth_token.get("token_hash"),
+            MWI_AUTH_TOKEN_NAME_FOR_HTTP: jupyter_matlab_proxy._mwi_auth_token.get(
+                "token_hash"
+            ),
         },
     }
 

@@ -45,7 +45,7 @@ classifiers = [
 dependencies = [
     "jupyter-server-proxy",
     "simpervisor>=1.0.0",
-    "matlab-proxy>=0.10.0",
+    "matlab-proxy>=0.16.0",
     "psutil",
     "requests",
     "ipykernel"

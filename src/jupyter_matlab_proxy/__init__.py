@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The MathWorks, Inc.
+# Copyright 2020-2024 The MathWorks, Inc.
 
 import os
 from pathlib import Path
@@ -77,6 +77,7 @@ def setup_matlab():
     """
 
     import matlab_proxy
+    from matlab_proxy.constants import MWI_AUTH_TOKEN_NAME_FOR_HTTP
     from matlab_proxy.util.mwi import logger as mwi_logger
 
     logger = mwi_logger.get(init=True)
@@ -104,7 +105,7 @@ def setup_matlab():
     # We are using token_hash instead of raw token for better security.
     if _mwi_auth_token:
         jsp_config["request_headers_override"] = {
-            "mwi_auth_token": _mwi_auth_token.get("token_hash")
+            MWI_AUTH_TOKEN_NAME_FOR_HTTP: _mwi_auth_token.get("token_hash")
         }
 
     return jsp_config
