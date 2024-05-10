@@ -15,14 +15,14 @@ jobs:
       PYTHON_VERSION: 3.8
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -39,11 +39,9 @@ jobs:
 
       - name: Set up MATLAB
         # Use MATLAB Actions to get running MATLAB in GitHub Actions
-        uses: matlab-actions/setup-matlab@v2-beta
+        uses: matlab-actions/setup-matlab@v2
         with:
           products: MATLAB Symbolic_Math_Toolbox
-
-
 
       - name: Install jupyterlab and jupyter-matlab-proxy
         working-directory: ${{ github.workspace }}
@@ -73,8 +71,8 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install pytest-playwright
-          python3 -m playwright install
-          python3 -c "from tests.utils.licensing import *; license_with_online_licensing(log_dir=\"./licensing-logs\")"
+          python3 -m playwright install --with-deps
+          (cd tests/utils && mkdir licensing-logs && python3 -c "from licensing import *; license_with_online_licensing(log_dir=\"./licensing-logs\")")
 
       - name: Run playwright tests
         env:
@@ -99,7 +97,7 @@ jobs:
 
       - name: Preserve test results after the job has finished
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: e2e_test_results
           path: ./tests/e2e/zipped-e2e-test-results.zip
