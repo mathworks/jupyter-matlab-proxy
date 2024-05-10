@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The MathWorks, Inc.
+# Copyright 2020-2024 The MathWorks, Inc.
 
 # Workflow to release MATLAB Jupyter Integration to PyPi
 name: Release to PyPI
@@ -11,19 +11,20 @@ jobs:
   call-unit-tests:
     # Runs unit tests
     uses: ./.github/workflows/run-unit-tests.yml
+    secrets: inherit
 
   build_and_publish_pypi:
     # TODO: Add integration-tests as a dependency to
     # the release pipeline.
-    # needs: [call-unit-tests]
-    # if: success()
+    needs: [call-unit-tests]
+    if: success()
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{github.sha}}
+          ref: ${{ github.sha }}
 
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
@@ -44,4 +45,4 @@ jobs:
           user: __token__
           verbose: true
           password: ${{ secrets.PYPI_TOKEN }}
-          repository_url: ${{ secrets.PYPI_REPOSITORY_URL }}
+          repository-url: ${{ secrets.PYPI_REPOSITORY_URL }}
