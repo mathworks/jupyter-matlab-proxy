@@ -110,7 +110,12 @@ Install Jupyter Notebook or JupyterLab:
   python -m pip install 'jupyterlab>=3.0.0,<4.0.0a0'
   ```
 
-Note: the package allows you to execute MATLAB code in both JupyterLab 3 and JupyterLab 4, but syntax highlighting and auto indentation are currently only supported on JupyterLab 3. To upgrade to JupyterLab 4, run `python -m pip install --upgrade jupyterlab`.
+Note: the package allows you to execute MATLAB code in both JupyterLab 3 and JupyterLab 4, but syntax highlighting and auto indentation are currently only supported on JupyterLab 3.
+
+> :warning: **Functionality being removed or changed.** </br>
+> Project Jupyter ended maintenance of JupyterLab 3 on May 15, 2024. For details, see [JupyterLab 3 End of Maintenance](https://blog.jupyter.org/jupyterlab-3-end-of-maintenance-879778927db2).
+> Starting from a future release of MATLAB Integration _for Jupyter_, editor features such as syntax highlighting and autoindentation will be removed from JupyterLab 3 and introduced for JupyterLab 4. Execution of MATLAB code will remain available with both JupyterLab 3 and JupyterLab 4.
+
 
 Open your Jupyter environment by starting Jupyter Notebook or JupyterLab.
 
