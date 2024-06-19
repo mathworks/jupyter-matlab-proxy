@@ -1,11 +1,10 @@
-# Copyright 2020-2023 The MathWorks, Inc.
+# Copyright 2023-2024 The MathWorks, Inc.
 
 # Workflow that contains jobs to test MATLAB Jupyter Integration
 name: Integration testing MATLAB Jupyter Integration
 
 on:
   # Reusable workflow
-  # Trigger on workflow call
   workflow_call:
 
 jobs:
@@ -56,15 +55,11 @@ jobs:
           TEST_USERNAME: ${{secrets.TEST_USERNAME}}
           TEST_PASSWORD: ${{secrets.TEST_PASSWORD}}
 
-      - name: Copy Log File
+      - name: Preserve test logs
         if: ${{ always() }}
-        run: |
-          cp ${{ github.workspace }}/tests/integration/integ_logs.log ${{ matrix.os }}${{ matrix.matlab-release }}${{ matrix.python-version }}.log
-
-      - name: Make logs files available for downloading
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: MATLAB Proxy Integration Test Log File
-          path: ${{ matrix.os }}${{ matrix.matlab-release }}${{ matrix.python-version }}.log
-          retention-days: 7
+          name: MATLAB Proxy Integration Test Log File ${{ matrix.os }} matlab-${{ matrix.matlab-release }} python-${{ matrix.python-version }}
+          path: |
+            tests/integration/integ_logs.log
+            licensing-screenshot-failed.png
