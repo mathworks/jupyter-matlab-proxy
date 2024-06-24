@@ -1,24 +1,28 @@
 # Copyright 2020-2024 The MathWorks, Inc.
 
-# Workflow to release MATLAB Jupyter Integration to PyPi
-name: Release to PyPI
-
+name: Publish jupyter-matlab-proxy to PyPI
 on:
   release:
     types: [created]
 
 jobs:
   call-unit-tests:
-    # Runs unit tests
+    # Only run release jobs on tags which have `jupyter-matlab-proxy` in them
+    if: ${{ contains(github.ref, 'jupyter-matlab-proxy') }}
+    # Run unit tests
     uses: ./.github/workflows/run-unit-tests.yml
     secrets: inherit
 
   build_and_publish_pypi:
-    # TODO: Add integration-tests as a dependency to
-    # the release pipeline.
     needs: [call-unit-tests]
     if: success()
     runs-on: ubuntu-latest
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+    environment:
+      name:  pypi
+      url: https://pypi.org/project/jupyter-matlab-proxy
 
     steps:
       - name: Checkout
@@ -41,8 +45,3 @@ jobs:
 
       - name: Publish to PyPI.
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          verbose: true
-          password: ${{ secrets.PYPI_TOKEN }}
-          repository-url: ${{ secrets.PYPI_REPOSITORY_URL }}

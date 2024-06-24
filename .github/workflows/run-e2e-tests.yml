@@ -1,6 +1,6 @@
 # Copyright 2023-2024 The MathWorks, Inc.
 
-name: End-to-End Tests for Jupyter Integration for MATLAB
+name: End-to-End Tests for MATLAB Integration for Jupyter
 on:
   workflow_call:
 

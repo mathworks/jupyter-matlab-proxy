@@ -1,26 +1,29 @@
-# Copyright 2020-2023 The MathWorks, Inc.
+# Copyright 2020-2024 The MathWorks, Inc.
 
-# Workflow that contains jobs to test MATLAB Jupyter Integration
-name: Testing MATLAB Jupyter Integration
+name: Testing MATLAB Integration for Jupyter
 
 on:
   workflow_dispatch:
   push:
     branches:
       - "main"
-
+    paths:
+      # Only run tests when there are changes to these folders
+      - "src/**"
+      - "tests/**"
+      - "setup.py"
 jobs:
   call-unit-tests:
-    # Runs unit tests
+    # Run unit tests
     uses: ./.github/workflows/run-unit-tests.yml
     secrets: inherit
 
   call-integration-tests:
-    # Runs integration tests
+    # Run integration tests
     uses: ./.github/workflows/run-integration-tests.yml
     secrets: inherit
 
   call-e2e-tests:
-    # Runs the end-to-end tests
+    # Run the end-to-end tests
     uses: ./.github/workflows/run-e2e-tests.yml
     secrets: inherit
