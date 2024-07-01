@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The MathWorks, Inc.
+# Copyright 2020-2024 The MathWorks, Inc.
 
 # Workflow that contains jobs to test MATLAB Jupyter Integration
 name: Unit Testing MATLAB Jupyter Integration
@@ -9,6 +9,29 @@ on:
   workflow_call:
 
 jobs:
+  matlab_unit_tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        matlab-release: [R2021b, latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MATLAB ${{ matrix.matlab-release }}
+        # Use MATLAB Actions to get running MATLAB in GitHub Actions
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          release: ${{ matrix.matlab-release }}
+
+      - name: Run tests
+        uses: matlab-actions/run-tests@v2
+        with:
+          select-by-folder: tests/matlab-tests
+
   python_unit_tests:
     env:
       code-cov-py: "3.11"

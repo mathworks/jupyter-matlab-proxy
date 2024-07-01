@@ -18,16 +18,16 @@ jobs:
 
         # The minimum matlab-release is set to 21b as 20b and 21a are not supported by matlab-actions/setup-matlab.
         # See https://github.com/matlab-actions/setup-matlab/issues/76
-        matlab-release: [R2021b, R2023a]
+        matlab-release: [R2021b, latest]
 
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up MATLAB ${{ matrix.matlab-release }}
         # Use MATLAB Actions to get running MATLAB in GitHub Actions
-        uses: matlab-actions/setup-matlab@v2-beta
+        uses: matlab-actions/setup-matlab@v2
         with:
           release: ${{ matrix.matlab-release }}
           products: MATLAB Symbolic_Math_Toolbox
