@@ -10,10 +10,11 @@ import time
 import ipykernel.kernelbase
 import psutil
 import requests
-from jupyter_matlab_kernel import mwi_comm_helpers, mwi_logger
 from matlab_proxy import settings as mwi_settings
 from matlab_proxy import util as mwi_util
 from requests.exceptions import HTTPError
+
+from jupyter_matlab_kernel import mwi_comm_helpers, mwi_logger
 
 _MATLAB_STARTUP_TIMEOUT = mwi_settings.get_process_startup_timeout()
 _logger = mwi_logger.get()
@@ -195,10 +196,13 @@ def start_matlab_proxy(logger=_logger):
             """
         )
 
-    url = "{protocol}://localhost:{port}{base_url}matlab".format(
-        protocol="https" if nb_server["secure"] else "http",
-        port=nb_server["port"],
-        base_url=nb_server["base_url"],
+    # Using nb_server["url"] to construct matlab-proxy URL as it handles the following cases
+    # 1. For normal usage of Jupyter, the URL returned by nb_server uses localhost
+    # 2. For explicitly specified IP with Jupyter, the URL returned by nb_server
+    #       a. uses FQDN hostname when specified IP is 0.0.0.0
+    #       b. uses specified IP for all other cases
+    matlab_proxy_url = "{jupyter_server_url}matlab".format(
+        jupyter_server_url=nb_server["url"]
     )
 
     available_tokens = {
@@ -213,11 +217,11 @@ def start_matlab_proxy(logger=_logger):
         else:
             headers = None
 
-        if _start_matlab_proxy_using_jupyter(url, headers, logger):
+        if _start_matlab_proxy_using_jupyter(matlab_proxy_url, headers, logger):
             logger.debug(
-                f"Started matlab-proxy using jupyter at {url} with headers: {headers}"
+                f"Started matlab-proxy using jupyter at {matlab_proxy_url} with headers: {headers}"
             )
-            return url, nb_server["base_url"], headers
+            return matlab_proxy_url, nb_server["base_url"], headers
 
     logger.error(
         f"MATLABKernel could not communicate with matlab-proxy through Jupyter server"

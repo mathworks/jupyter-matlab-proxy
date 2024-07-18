@@ -1,12 +1,11 @@
-# Copyright 2023 The MathWorks, Inc.
+# Copyright 2023-2024 The MathWorks, Inc.
 
 # This file contains tests for jupyter_matlab_kernel.kernel
 import mocks.mock_jupyter_server as MockJupyterServer
 import pytest
+from jupyter_matlab_kernel.kernel import MATLABConnectionError, start_matlab_proxy
 from jupyter_server import serverapp
 from mocks.mock_jupyter_server import MockJupyterServerFixture
-
-from jupyter_matlab_kernel.kernel import MATLABConnectionError, start_matlab_proxy
 
 
 def test_start_matlab_proxy_without_jupyter_server():
@@ -55,6 +54,8 @@ def test_start_matlab_proxy_secure(monkeypatch, MockJupyterServerFixture):
                 "secure": True,
                 "token": MockJupyterServer.TEST_TOKEN,
                 "password": MockJupyterServer.PASSWORD,
+                "hostname": MockJupyterServer.HOSTNAME,
+                "url": MockJupyterServer.SECURE_URL,
             }
         ]
 

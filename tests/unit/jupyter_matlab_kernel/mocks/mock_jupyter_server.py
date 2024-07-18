@@ -1,10 +1,9 @@
-# Copyright 2023 The MathWorks, Inc.
+# Copyright 2023-2024 The MathWorks, Inc.
 """Mocks matlab-proxy integration with Jupyter Server.
 
 This module provides a pytest fixture that mocks how matlab-proxy integrates
 with Jupyter server.
 """
-
 
 import os
 
@@ -13,13 +12,16 @@ import requests
 from jupyter_server import serverapp
 
 PID = "server 1"
-PORT = "1234/"
-BASE_URL = "server_of_nb/"
+PORT = "1234"
+BASE_URL = "/server_of_nb/"
 SECURE = False
 TEST_TOKEN = "test_token"
 LICENSING = True
 AUTHORIZED_HEADERS = {"Authorization": "token test_token"}
 PASSWORD = ""
+HOSTNAME = "localhost"
+URL = f"http://{HOSTNAME}:{PORT}{BASE_URL}"
+SECURE_URL = f"https://{HOSTNAME}:{PORT}{BASE_URL}"
 
 
 @pytest.fixture
@@ -42,6 +44,8 @@ def MockJupyterServerFixture(monkeypatch):
                 "secure": SECURE,
                 "token": TEST_TOKEN,
                 "password": PASSWORD,
+                "hostname": HOSTNAME,
+                "url": URL,
             }
         ]
 
