@@ -1,0 +1,26 @@
+# Copyright 2024 The MathWorks, Inc.
+
+name: 🚀 Feature Request
+description: Suggest a feature for this project. 
+title: "(short issue description)"
+labels: [feature-request, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        To report a bug or security vulnerability, return to [Create an Issue](https://github.com/mathworks/jupyter-matlab-proxy/issues/new/choose).
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Provide details of the feature you are proposing:
+        * A brief description 
+        * What use case or challenge would this help you overcome? For example: “Currently, it’s too time-consuming/difficult to do…” 
+        * Suggestions for implementing the request: provide a prototype, sketch, reference etc. 
+        * Any additional information: details, stack traces, related issues, links for context, etc.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Details of the feature
+

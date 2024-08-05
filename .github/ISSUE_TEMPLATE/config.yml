@@ -1,0 +1,7 @@
+# Copyright 2024 The MathWorks, Inc.
+
+blank_issues_enabled: true
+contact_links:
+  - name: Report a Security Vulnerability
+    url: https://github.com/mathworks/jupyter-matlab-proxy/security/policy
+    about: Follow these steps.

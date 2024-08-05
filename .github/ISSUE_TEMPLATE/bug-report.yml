@@ -1,0 +1,72 @@
+# Copyright 2024 The MathWorks, Inc.
+
+name: "🐞 Bug Report"
+title: "[Enter short description of bug.]"
+description: "Report a bug."
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before reporting a bug, see [Issues](https://github.com/mathworks/jupyter-matlab-proxy/issues) to check if an issue already exists for the bug you encountered. To request a feature or report a vulnerability, return to [Create an Issue](https://github.com/mathworks/jupyter-matlab-proxy/issues/new/choose).
+
+  - type: markdown
+    attributes:
+      value: |
+        ##  Provide details about the bug: 
+        * What is the problem?
+        * What behavior were you expecting? 
+        * What happened instead? 
+        * Include full errors, uncaught exceptions, stack traces, and relevant logs. 
+        * Provide a sequence of steps to reproduce the issue.
+        * Suggest a fix, if possible.
+        * Any additional information that might be relevant.
+        
+  - type: textarea
+    id: bug-summary
+    attributes:
+      label: Summary
+
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: Browser(s) used
+      multiple: true
+      options:
+        - Chrome
+        - Firefox        
+        - Safari
+        - Microsoft Edge
+
+  - type: dropdown
+    id: Feature-issue
+    attributes:
+      label: Issue found in
+      multiple: true
+      options:
+        - MATLAB Kernel
+        - MATLAB Desktop
+        - Syntax Highlighting, Auto Indentation, Tab Completion
+        - MAGIC Commands
+        - Others        
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Run the `troubleshooting.py` script and paste the output below.         
+        
+        ```bash
+        $ python ./troubleshooting/troubleshooting.py
+        ```
+        If you are collecting logs using the MWI_LOG_FILE environment variable, we recommend you provide the variable when executing the troubleshooting script:
+         ```bash
+        $ MWI_LOG_FILE="/tmp/log.file" python ./troubleshooting/troubleshooting.py
+        ```
+        For more information about the `MWI_LOG_FILE` environment variable, see [Advanced-Usage.md](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/Advanced-Usage.md)
+        For more information about the troubleshooting script, see [Troubleshooting](https://github.com/mathworks/jupyter-matlab-proxy/tree/main/troubleshooting)
+        
+
+  - type: textarea
+    id: troubleshooting-script-output
+    attributes:
+      label: Script output
