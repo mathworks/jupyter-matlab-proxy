@@ -17,3 +17,6 @@ test-results
 jupyterlab.log
 jlab.pid
 licensing-logs
+.yarn
+src/jupyter_matlab_labextension/src/lezer-matlab/src/parser.js
+src/jupyter_matlab_labextension/src/lezer-matlab/src/parser.terms.js

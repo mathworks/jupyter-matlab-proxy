@@ -48,7 +48,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install ".[dev]"
-          python3 -m pip install "jupyterlab>3.1.0,<4.0.0"
+          python3 -m pip install "jupyterlab>4.0.0,<5.0.0"
 
       - name: Install playwright browsers
         run: npx playwright install --with-deps

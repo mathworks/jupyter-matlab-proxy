@@ -78,6 +78,32 @@ jobs:
           path: ./coverage.xml
           retention-days: 5
 
+  lezer_unit_tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: src/jupyter_matlab_labextension/src/lezer-matlab/test/
+    env:
+      NODE_VERSION: 18
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install node dependencies and build parser
+        run: npm install
+
+      - name: Run Lezer tests
+        run: npm test
+
   upload_code_coverage:
     name: "Upload Code Coverage using codecov"
     needs: [python_unit_tests]

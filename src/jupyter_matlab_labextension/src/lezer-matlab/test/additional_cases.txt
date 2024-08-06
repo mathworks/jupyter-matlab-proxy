@@ -1,0 +1,42 @@
+# Multiline comment closes
+
+%{
+  Test multiline comment
+%}
+"Not a comment"
+
+==>
+ 
+Script(MultilineComment,String)
+
+# Invalid multiline comment delimiters give line comments
+
+%{ Invalid as followed by non-whitespace.
+"Not a comment"
+%} Invalid as followed by non-whitespace.
+"Not a comment"
+ver %{ Invalid as preceded by non-whitespace.
+"Not a comment"
+%{
+  Test valid multiline comment
+%}
+
+==>
+ 
+Script(LineComment,String,LineComment,String,VariableName,LineComment,String,MultilineComment)
+
+# Transpose is not a string delimiter
+
+A1' + A2' + B1
+
+==>
+
+Script(VariableName,Symbol,VariableName,Symbol,VariableName)
+
+# Character vectors can be preceded by non whitespace
+
+A1" + A2" + B1
+
+==>
+
+Script(VariableName,String,Symbol,VariableName)

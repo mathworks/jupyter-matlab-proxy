@@ -17,7 +17,9 @@ is parsed by Jupyter and the below modifications to configuration class are
 applied.
 """
 import os
+from pathlib import Path
 from tempfile import mkdtemp
+import jupyterlab
 
 # Allow JupyterLab to be started as root user
 c.ServerApp.allow_root = True
@@ -36,6 +38,9 @@ c.ServerApp.open_browser = False
 
 # Set the root directory for the Jupyter server to a temporary directory
 c.ServerApp.root_dir = mkdtemp(prefix="galata-test-")
+
+# Enabling Galata for JupyterLab 4
+c.LabApp.extra_labextensions_path = str(Path(jupyterlab.__file__).parent / "galata")
 
 # Disable token-based authentication
 c.IdentityProvider.token = ""

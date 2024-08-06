@@ -1,0 +1,70 @@
+# Keyword in VariableName
+
+forest
+
+==>
+
+Script(VariableName)
+
+# String in comment
+
+% Test comment "test string"
+
+%{
+  "Comment body"
+%}
+
+==>
+
+Script(LineComment,MultilineComment)
+
+# Comment in string
+
+"% Test string"
+
+==>
+
+Script(String)
+
+# Nested multiline comments
+
+%{
+  depth 1
+%{
+  depth 2
+%}
+  depth 1
+%}
+
+==>
+
+Script(MultilineComment)
+
+# Comment in system command
+
+!echo Hello World % This is also part of the system command
+
+==>
+
+Script(SystemCommand)
+
+# System command in comment
+
+% !echo test
+%{
+!echo test
+  !echo test
+%}
+
+==>
+
+Script(LineComment,MultilineComment)
+
+# System command in string
+
+"!echo test";
+'!echo test';
+
+==>
+
+Script(String,Symbol,String,Symbol)

@@ -38,10 +38,6 @@ export async function waitForKernelToBeIdle (page: Page) {
  * @param {Page} page - The Playwright page object.
  */
 export async function waitUntilEditorReady (page: Page) {
-    const firstLine = page.locator('.CodeMirror-lines').first();
-    await expect(firstLine).toBeVisible();
-    await expect(firstLine).toBeEditable();
-
     // Get the text box area to interact with.
     const notebookContent = page.getByRole(
         'region',

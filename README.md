@@ -107,15 +107,11 @@ Install Jupyter Notebook or JupyterLab:
   # For Jupyter Notebook
   python -m pip install notebook
 
-  # For JupyterLab 3
-  python -m pip install 'jupyterlab>=3.0.0,<4.0.0a0'
+  # For JupyterLab 4
+  python -m pip install jupyterlab
   ```
 
-Note: the package allows you to execute MATLAB code in both JupyterLab 3 and JupyterLab 4, but syntax highlighting and auto indentation are currently only supported on JupyterLab 3.
-
-> :warning: **Functionality being removed or changed.** </br>
-> Project Jupyter ended maintenance of JupyterLab 3 on May 15, 2024. For details, see [JupyterLab 3 End of Maintenance](https://blog.jupyter.org/jupyterlab-3-end-of-maintenance-879778927db2).
-> Starting from a future release of MATLAB Integration _for Jupyter_, editor features such as syntax highlighting and autoindentation will be removed from JupyterLab 3 and introduced for JupyterLab 4. Execution of MATLAB code will remain available with both JupyterLab 3 and JupyterLab 4.
+Note: you can use this package to execute MATLAB code in both JupyterLab 3 and 4, but syntax highlighting is only supported on JupyterLab 4.
 
 
 Open your Jupyter environment by starting Jupyter Notebook or JupyterLab.
@@ -186,7 +182,7 @@ You can also edit MATLAB `.m` files in JupyterLab. Click the `MATLAB File` butto
 
 <p align="center"><img width="300" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/matlabfile-icon.png"></p>
 
-This opens an untitled `.m` file where you can write MATLAB code with syntax highlighting and auto indentation.
+This opens an untitled `.m` file where you can write MATLAB code with syntax highlighting.
 
 <p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/new-matlab-file.png"></p>
 

@@ -1,0 +1,65 @@
+# Test empty script
+
+==>
+
+Script()
+
+# Line comment
+
+% Line comment
+  % Line comment indented with spaces
+	% Line comment indented with a tab
+
+==>
+
+Script(LineComment,LineComment,LineComment)
+
+# Keywords
+
+break enumeration properties while
+
+==>
+
+Script(Keyword,Keyword,Keyword,Keyword)
+
+# Character vector
+
+'Test character vector.'
+
+==>
+ 
+Script(String)
+
+# String array
+
+"Test string array."
+
+==>
+ 
+Script(String)
+
+# Multiline comment
+
+%{
+  Test multiline comment
+%}
+
+==>
+ 
+Script(MultilineComment)
+
+# Transpose
+
+A1'
+
+==>
+
+Script(VariableName)
+
+# Symbol
+
+A + B
+
+==>
+
+Script(VariableName,Symbol,VariableName)

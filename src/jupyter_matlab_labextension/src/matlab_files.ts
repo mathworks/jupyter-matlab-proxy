@@ -1,4 +1,4 @@
-// Copyright 2023 The MathWorks, Inc.
+// Copyright 2023-2024 The MathWorks, Inc.
 
 // Create a command to open a new .m file.
 // Add this command to the Launcher (under "Other"),
@@ -44,7 +44,7 @@ function registerMFiles (app: JupyterFrontEnd, launcher: ILauncher | null, palet
     commands.addCommand(command, {
         label: (args) => (args.isPalette ? 'New MATLAB File' : 'MATLAB File'),
         caption: 'Create a new MATLAB file',
-        icon: (args) => (args.isPalette ? '' : newMFileIcon),
+        icon: (args) => (args.isPalette ? undefined : newMFileIcon),
         execute: createNewMatlabFile
     });
 

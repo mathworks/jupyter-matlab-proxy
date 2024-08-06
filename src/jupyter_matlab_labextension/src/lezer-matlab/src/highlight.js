@@ -1,0 +1,16 @@
+// Copyright 2024 The MathWorks, Inc.
+
+import { styleTags, tags as t } from '@lezer/highlight';
+
+// Associate nodes in the Lezer tree with styles.
+// https://lezer.codemirror.net/docs/ref/#highlight.styleTags
+export const matlabHighlighting = styleTags({
+    Keyword: t.keyword,
+    VariableName: t.variableName,
+    LineComment: t.comment,
+    MultilineComment: t.comment,
+    String: t.string,
+    '( )': t.paren,
+    '[ ]': t.squareBracket,
+    '{ }': t.brace
+});
