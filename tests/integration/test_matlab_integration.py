@@ -1,4 +1,4 @@
-# Copyright 2023 The MathWorks, Inc.
+# Copyright 2023-2024 The MathWorks, Inc.
 # Integration tests with real MATLAB in the loop
 
 import os
@@ -102,6 +102,16 @@ class MATLABKernelTests(jupyter_kernel_test.KernelTests):
             output_msgs[-1]["content"]["data"],
             "No figure was generated in output",
         )
+
+    def test_magics(self):
+        """Validates if  '%%lsmagic' commands lists the available magics in the cell output"""
+        _, output_msgs = self._run_code(code="%%lsmagic")
+        output_text = self._get_output_text(output_msgs)
+        self.assertIn("Available magic commands:", output_text)
+        self.assertIn("%%lsmagic", output_text)
+        self.assertIn("%%file", output_text)
+        self.assertIn("%%time", output_text)
+        self.assertIn("%%help", output_text)
 
     # ---- Utility Functions ----
     def _run_code(self, code, timeout=30):

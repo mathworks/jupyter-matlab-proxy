@@ -6,32 +6,24 @@ import os
 import sys
 import time
 
-# Import Dependencies
+# Import Third-Party Dependencies
 import ipykernel.kernelbase
 import psutil
 import requests
-from matlab_proxy import settings as mwi_settings
-from matlab_proxy import util as mwi_util
 from requests.exceptions import HTTPError
 
+# Import Dependencies
 from jupyter_matlab_kernel import mwi_comm_helpers, mwi_logger
+from jupyter_matlab_kernel.magic_execution_engine import (
+    MagicExecutionEngine,
+    get_completion_result_for_magics,
+)
+from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
+from matlab_proxy import settings as mwi_settings
+from matlab_proxy import util as mwi_util
 
 _MATLAB_STARTUP_TIMEOUT = mwi_settings.get_process_startup_timeout()
 _logger = mwi_logger.get()
-
-
-class MATLABConnectionError(Exception):
-    """
-    A connection error occurred while connecting to MATLAB.
-
-    Args:
-        message (string): Error message to be displayed
-    """
-
-    def __init__(self, message=None):
-        if message is None:
-            message = 'Error connecting to MATLAB. Check the status of MATLAB by clicking the "Open MATLAB" button. Retry after ensuring MATLAB is running successfully'
-        super().__init__(message)
 
 
 def is_jupyter_testing_enabled():
@@ -174,7 +166,7 @@ def start_matlab_proxy(logger=_logger):
             break
 
     # Error out if the server is not found!
-    if found_nb_server == False:
+    if not found_nb_server:
         logger.error("Jupyter server associated with this MATLABKernel not found.")
         raise MATLABConnectionError(
             """
@@ -224,7 +216,7 @@ def start_matlab_proxy(logger=_logger):
             return matlab_proxy_url, nb_server["base_url"], headers
 
     logger.error(
-        f"MATLABKernel could not communicate with matlab-proxy through Jupyter server"
+        "MATLABKernel could not communicate with matlab-proxy through Jupyter server"
     )
     logger.error(f"Jupyter server:\n{nb_server}")
     raise MATLABConnectionError(
@@ -267,6 +259,8 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         # multiple kernels which are running simultaneously
         self.log.debug(f"Initializing kernel with id: {self.ident}")
         self.log = self.log.getChild(f"{self.ident}")
+        # Initialize the Magic Execution Engine.
+        self.magic_engine = MagicExecutionEngine(self.log)
 
         try:
             # Start matlab-proxy using the jupyter-matlab-proxy registered endpoint.
@@ -312,6 +306,29 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
 
         self.session.send(stream, "interrupt_reply", content, parent, ident=ident)
 
+    def modify_kernel(self, states_to_modify):
+        """
+        Used to modify MATLAB Kernel state
+        Args:
+            states_to_modify (dict): A key value pair of all the states to be modified.
+
+        """
+        self.log.debug(f"Modifying the kernel with {states_to_modify}")
+        for key, value in states_to_modify.items():
+            if hasattr(self, key):
+                self.log.debug(f"set the value of {key} to {value}")
+                setattr(self, key, value)
+
+    def handle_magic_output(self, output, outputs=None):
+        if output["type"] == "modify_kernel":
+            self.modify_kernel(output)
+        else:
+            self.display_output(output)
+            if outputs is not None and not self.startup_checks_completed:
+                # Outputs are cleared after startup_check.
+                # Storing the magic outputs to display them after startup_check completes.
+                outputs.append(output)
+
     def do_execute(
         self,
         code,
@@ -328,44 +345,71 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         """
         self.log.debug(f"Received execution request from Jupyter with code:\n{code}")
         try:
+            accumulated_magic_outputs = []
+            performed_startup_checks = False
+
+            for output in self.magic_engine.process_before_cell_execution(
+                code, self.execution_count
+            ):
+                self.handle_magic_output(output, accumulated_magic_outputs)
+
+            skip_cell_execution = self.magic_engine.skip_cell_execution()
+            self.log.debug(f"Skipping cell execution is set to {skip_cell_execution}")
+
             # Complete one-time startup checks before sending request to MATLAB.
             # Blocking call, returns after MATLAB is started.
-            if not self.startup_checks_completed:
-                self.perform_startup_checks()
-                self.display_output(
-                    {
-                        "type": "stream",
-                        "content": {
-                            "name": "stdout",
-                            "text": "Executing ...",
-                        },
-                    }
+            if not skip_cell_execution:
+                if not self.startup_checks_completed:
+                    self.perform_startup_checks()
+                    self.display_output(
+                        {
+                            "type": "stream",
+                            "content": {
+                                "name": "stdout",
+                                "text": "Executing ...",
+                            },
+                        }
+                    )
+                    if accumulated_magic_outputs:
+                        self.display_output(
+                            {"type": "clear_output", "content": {"wait": False}}
+                        )
+                    performed_startup_checks = True
+                    self.startup_checks_completed = True
+
+                if performed_startup_checks and accumulated_magic_outputs:
+                    for output in accumulated_magic_outputs:
+                        self.display_output(output)
+
+                # Perform execution and categorization of outputs in MATLAB. Blocks
+                # until execution results are received from MATLAB.
+                outputs = mwi_comm_helpers.send_execution_request_to_matlab(
+                    self.murl, self.headers, code, self.ident, self.log
                 )
-                self.startup_checks_completed = True
 
-            # Perform execution and categorization of outputs in MATLAB. Blocks
-            # until execution results are received from MATLAB.
-            outputs = mwi_comm_helpers.send_execution_request_to_matlab(
-                self.murl, self.headers, code, self.ident, self.log
-            )
+                if performed_startup_checks and not accumulated_magic_outputs:
+                    self.display_output(
+                        {"type": "clear_output", "content": {"wait": False}}
+                    )
 
-            self.log.debug(
-                "Received outputs after execution in MATLAB. Clearing output area"
-            )
+                self.log.debug(
+                    "Received outputs after execution in MATLAB. Clearing output area"
+                )
 
-            # Clear the output area of the current cell. This removes any previous
-            # outputs before publishing new outputs.
-            self.display_output({"type": "clear_output", "content": {"wait": False}})
+                # Display all the outputs produced during the execution of code.
+                for idx in range(len(outputs)):
+                    data = outputs[idx]
+                    self.log.debug(f"Displaying output {idx+1}:\n{data}")
 
-            # Display all the outputs produced during the execution of code.
-            for idx in range(len(outputs)):
-                data = outputs[idx]
-                self.log.debug(f"Displaying output {idx+1}:\n{data}")
+                    # Ignore empty values returned from MATLAB.
+                    if not data:
+                        continue
+                    self.display_output(data)
 
-                # Ignore empty values returned from MATLAB.
-                if not data:
-                    continue
-                self.display_output(data)
+            # Execute post execution of MAGICs
+            for output in self.magic_engine.process_after_cell_execution():
+                self.handle_magic_output(output)
+
         except Exception as e:
             self.log.error(
                 f"Exception occurred while processing execution request:\n{e}"
@@ -380,8 +424,12 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
                 # checks for subsequent execution requests
                 self.startup_checks_completed = False
 
+            # Clearing lingering message "Executing..." before displaying the error message
+            if performed_startup_checks and not accumulated_magic_outputs:
+                self.display_output(
+                    {"type": "clear_output", "content": {"wait": False}}
+                )
             # Send the exception message to the user.
-            self.display_output({"type": "clear_output", "content": {"wait": False}})
             self.display_output(
                 {
                     "type": "stream",
@@ -421,18 +469,30 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
 
         # Fetch tab completion results. Blocks untils either tab completion
         # results are received from MATLAB or communication with MATLAB fails.
-        try:
-            completion_results = mwi_comm_helpers.send_completion_request_to_matlab(
-                self.murl, self.headers, code, cursor_pos, self.log
-            )
-        except (MATLABConnectionError, HTTPError) as e:
-            self.log.error(
-                f"Exception occurred while sending shutdown request to MATLAB:\n{e}"
-            )
+
+        magic_completion_results = get_completion_result_for_magics(
+            code, cursor_pos, self.log
+        )
 
         self.log.debug(
-            f"Received completion results from MATLAB:\n{completion_results}"
+            f"Received Completion results from MAGIC:\n{magic_completion_results}"
         )
+
+        if magic_completion_results:
+            completion_results = magic_completion_results
+        else:
+            try:
+                completion_results = mwi_comm_helpers.send_completion_request_to_matlab(
+                    self.murl, self.headers, code, cursor_pos, self.log
+                )
+            except (MATLABConnectionError, HTTPError) as e:
+                self.log.error(
+                    f"Exception occurred while sending shutdown request to MATLAB:\n{e}"
+                )
+
+            self.log.debug(
+                f"Received completion results from MATLAB:\n{completion_results}"
+            )
 
         return {
             "status": "ok",
@@ -551,7 +611,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
                             "type": "stream",
                             "content": {
                                 "name": "stdout",
-                                "text": f"Starting MATLAB ...\n",
+                                "text": "Starting MATLAB ...\n",
                             },
                         }
                     )

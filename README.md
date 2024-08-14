@@ -1,6 +1,6 @@
 # MATLAB Integration _for Jupyter_
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mathworks/jupyter-matlab-proxy/run-tests.yml?branch=main&logo=github)](https://github.com/mathworks/jupyter-matlab-proxy/actions) [![PyPI badge](https://img.shields.io/pypi/v/jupyter-matlab-proxy.svg?logo=pypi)](https://pypi.python.org/pypi/jupyter-matlab-proxy) [![codecov](https://codecov.io/gh/mathworks/jupyter-matlab-proxy/branch/main/graph/badge.svg?token=ZW3SESKCSS)](https://codecov.io/gh/mathworks/jupyter-matlab-proxy) [![Downloads](https://static.pepy.tech/personalized-badge/jupyter-matlab-proxy?period=month&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20downloads/month)](https://pepy.tech/project/jupyter-matlab-proxy)
+[![PyPI badge](https://img.shields.io/pypi/v/jupyter-matlab-proxy.svg?logo=pypi)](https://pypi.python.org/pypi/jupyter-matlab-proxy) [![codecov](https://codecov.io/gh/mathworks/jupyter-matlab-proxy/branch/main/graph/badge.svg?token=ZW3SESKCSS)](https://codecov.io/gh/mathworks/jupyter-matlab-proxy) [![Downloads](https://static.pepy.tech/personalized-badge/jupyter-matlab-proxy?period=month&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20downloads/month)](https://pepy.tech/project/jupyter-matlab-proxy)
 
 
 
@@ -34,7 +34,7 @@ From your Jupyter notebook or JupyterLab, you can also open the MATLAB developme
   - Linux®
   - MacOS
   - Windows® (supported from [v0.6.0](https://github.com/mathworks/jupyter-matlab-proxy/releases/tag/v0.6.0)).
-  - Windows Subsystem for Linux (WSL 2) [Installation Guide](./install_guides/wsl2/README.md).
+  - Windows Subsystem for Linux (WSL 2) [Installation Guide](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/install_guides/wsl2/README.md).
 
 * Python versions: 3.8 | 3.9 | 3.10 | 3.11
 
@@ -148,11 +148,16 @@ This opens a Jupyter notebook that supports MATLAB.
 <p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/jupyterlab-notebook.png"></p>
 
 
-- When you execute MATLAB code in a notebook for the first time, enter your MATLAB license information in the dialog box that appears. See [Licensing](https://github.com/mathworks/matlab-proxy/blob/main/MATLAB-Licensing-Info.md) for details. The MATLAB session can take a few minutes to start.
-- Multiple notebooks running on a Jupyter server share the underlying MATLAB process, so executing code in one notebook affects the workspace in others. If you work in several notebooks simultaneously, be aware that they share a workspace.
-- With MATLAB R2022b and later, you can define a local function at the end of the cell where you want to call it:
+### Notes
+
+- **Licensing:** When you execute MATLAB code in a notebook for the first time, enter your MATLAB license information in the dialog box that appears. For details, see [Licensing](https://github.com/mathworks/matlab-proxy/blob/main/MATLAB-Licensing-Info.md). The MATLAB session can take a few minutes to start.
+- **Multiple notebooks:** Multiple notebooks running on a Jupyter server share the underlying MATLAB process, so executing code in one notebook affects the workspace in others. If you work in several notebooks simultaneously, be aware that they share a workspace.
+- **Local functions:** with MATLAB R2022b and later, you can define a local function at the end of the cell where you want to call it:
     <p><img width="350" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/local_functions.png"></p>
-For technical details about how the MATLAB kernel works, see [MATLAB Kernel for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/README.md).
+
+- **Magic Commands:** You can use predefined magic commands in a Jupyter notebook with the MATLAB kernel, and you can also implement your own. To see a list of predefined magic commands, run `%%lsmagic`. For details about using magic commands, see [Magic Commands for MATLAB Kernel](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/magics/README.md).
+
+- **Kernel:** For technical details about the MATLAB kernel, see [MATLAB Kernel for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/README.md).
 
 ## Open MATLAB in a Browser
 
@@ -188,8 +193,6 @@ This opens an untitled `.m` file where you can write MATLAB code with syntax hig
 
 * Currently, this package allows you to edit MATLAB `.m` files but not to execute them.
 * To open a new MATLAB `.m` file, you can also use the JupyterLab command palette. Press `CTRL+SHIFT+C`, then type `New MATLAB File` and press `Enter`.
-
-
 
 ## Limitations
 
