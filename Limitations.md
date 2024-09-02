@@ -1,6 +1,6 @@
 ## Limitations
 
-This package has some constraints and limitations: 
+This package has some constraints and limitations:
 
 * Notebooks running on the same server share the same MATLAB process and workspace. It is currently not possible to have separate workspaces for each notebook.
 
@@ -16,7 +16,7 @@ This package has some constraints and limitations:
 
     * Commands that create animations. For example: `movie`.
 
-    * **For MATLAB R2022a and earlier,** `lasterr` and `lasterror` do not capture MATLAB errors from execution in notebooks. 
+    * **For MATLAB R2022a and earlier,** `lasterr` and `lasterror` do not capture MATLAB errors from execution in notebooks.
 
 * Notebook results are truncated when there are more than 10 rows or 30 columns of results from MATLAB. This is represented by a `...` at the end of the result. For example:
     |![truncation-issue](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/truncation-issue.png)|
@@ -47,6 +47,6 @@ This package has some constraints and limitations:
 
 ----
 
-Copyright 2023 The MathWorks, Inc.
+Copyright 2023-2024 The MathWorks, Inc.
 
 ----

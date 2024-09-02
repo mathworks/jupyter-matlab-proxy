@@ -48,7 +48,7 @@ From your Jupyter notebook or JupyterLab, you can also open the MATLAB developme
 * System dependencies required to run MATLAB:
   - The [MATLAB Dependencies](https://github.com/mathworks-ref-arch/container-images/tree/master/matlab-deps) repository contains `base-dependencies.txt` files that list the libraries required to run each release of MATLAB on a given operating system. To see how to use these files, refer to the Dockerfiles in the same folder.
 
-* Linux based systems also require `X Virtual Frame Buffer (Xvfb)`, which you can install with: 
+* Linux based systems also require `X Virtual Frame Buffer (Xvfb)`, which you can install with:
 
   ```bash
   # On a Debian/Ubuntu based system:
@@ -86,7 +86,7 @@ To use MATLAB with JupyterHub, install the `jupyter-matlab-proxy` Python package
 
 ### Using Simulink
 
-This package lets you use Simulink® programmatically by entering commands in a Jupyter notebook. To view a model or use other Simulink features that require the Simulink UI, you can use a VNC to connect your Jupyter environment to a Linux desktop where you have MATLAB and Simulink installed. For instructions, see [MATLAB Jupyter VNC Solution](https://github.com/mathworks/jupyter-matlab-vnc-proxy).     
+This package lets you use Simulink® programmatically by entering commands in a Jupyter notebook. To view a model or use other Simulink features that require the Simulink UI, you can use a VNC to connect your Jupyter environment to a Linux desktop where you have MATLAB and Simulink installed. For instructions, see [MATLAB Jupyter VNC Solution](https://github.com/mathworks/jupyter-matlab-vnc-proxy).
 
 ### Troubleshooting
 
@@ -196,7 +196,7 @@ This opens an untitled `.m` file where you can write MATLAB code with syntax hig
 
 ## Limitations
 
-* This package has limitations. For example, it does not support certain MATLAB commands. For details, see [Limitations](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/limitations.md).
+* This package has limitations. For example, it does not support certain MATLAB commands. For details, see [Limitations](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/Limitations.md).
 
 * To discuss a technical issue or submit an enhancement request, [create a GitHub issue](https://github.com/mathworks/jupyter-matlab-proxy/issues), or send an email to `jupyter-support@mathworks.com`.
 
