@@ -61,10 +61,7 @@ In a notebook cell you can define MATLAB functions that are scoped to that cell.
     disp(addition)
     ```
 
-Note: to use your function in MATLAB, remember to set your MATLAB search path to the folder containing your notebook. For more information on setting the search path, see [Change Folders on Search Path](https://www.mathworks.com/help/matlab/matlab_env/add-remove-or-reorder-folders-on-the-search-path.html).
-
-
-
+Note: to use your function in MATLAB, remember to add the Jupyter notebook folder to the MATLAB path.
 
 ---
 
