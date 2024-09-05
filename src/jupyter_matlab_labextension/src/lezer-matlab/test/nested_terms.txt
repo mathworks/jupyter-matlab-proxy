@@ -1,10 +1,10 @@
-# Keyword in VariableName
+# Keyword in Identifier
 
 forest
 
 ==>
 
-Script(VariableName)
+Script(Identifier)
 
 # String in comment
 

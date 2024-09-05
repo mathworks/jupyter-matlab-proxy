@@ -6,6 +6,7 @@ on:
   # Reusable workflow
   # Trigger on workflow call
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   matlab_unit_tests:

@@ -5,13 +5,13 @@ import {fileTests} from "@lezer/generator/dist/test"
 
 let N = 10000
 
-let long_file_spec = `Script(${"Keyword,VariableName,Symbol,VariableName,Symbol,VariableName,VariableName,Symbol,VariableName,Symbol,Symbol,Keyword,".repeat(N)}LineComment)`
+let long_file_spec = `Script(${"Keyword,Identifier,Symbol,Identifier,Symbol,Identifier,Identifier,Symbol,Identifier,Symbol,Symbol,Keyword,".repeat(N)}LineComment)`
 let long_file_input = `
 	  ${"for c = 1:100\n\tdisp(c);\nend\n".repeat(N)}
       % Long file
 	`
 
-let long_line_spec = `Script(${"Keyword,VariableName,Symbol,VariableName,Symbol,VariableName,Symbol,VariableName,Symbol,VariableName,Symbol,Symbol,Keyword,Symbol,".repeat(N)}LineComment)`
+let long_line_spec = `Script(${"Keyword,Identifier,Symbol,Identifier,Symbol,Identifier,Symbol,Identifier,Symbol,Identifier,Symbol,Symbol,Keyword,Symbol,".repeat(N)}LineComment)`
 let long_line_input = `
 	  ${"for c = 1:100;\tdisp(c);end;".repeat(N)}
       % Long line

@@ -23,7 +23,7 @@ ver %{ Invalid as preceded by non-whitespace.
 
 ==>
  
-Script(LineComment,String,LineComment,String,VariableName,LineComment,String,MultilineComment)
+Script(LineComment,String,LineComment,String,Identifier,LineComment,String,MultilineComment)
 
 # Transpose is not a string delimiter
 
@@ -31,7 +31,7 @@ A1' + A2' + B1
 
 ==>
 
-Script(VariableName,Symbol,VariableName,Symbol,VariableName)
+Script(Identifier,Symbol,Identifier,Symbol,Identifier)
 
 # Character vectors can be preceded by non whitespace
 
@@ -39,4 +39,20 @@ A1" + A2" + B1
 
 ==>
 
-Script(VariableName,String,Symbol,VariableName)
+Script(Identifier,String,Symbol,Identifier)
+
+# Transposed transpose
+
+A'' + B'
+
+==>
+
+Script(Identifier,Symbol,Identifier)
+
+# System command with no preceding whitespace
+
+test!test
+
+==>
+
+Script(Identifier,SystemCommand)

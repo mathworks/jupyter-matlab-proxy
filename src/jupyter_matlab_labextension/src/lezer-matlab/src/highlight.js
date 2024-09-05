@@ -6,9 +6,10 @@ import { styleTags, tags as t } from '@lezer/highlight';
 // https://lezer.codemirror.net/docs/ref/#highlight.styleTags
 export const matlabHighlighting = styleTags({
     Keyword: t.keyword,
-    VariableName: t.variableName,
+    Identifier: t.variableName,
     LineComment: t.comment,
     MultilineComment: t.comment,
+    SystemCommand: t.meta,
     String: t.string,
     '( )': t.paren,
     '[ ]': t.squareBracket,

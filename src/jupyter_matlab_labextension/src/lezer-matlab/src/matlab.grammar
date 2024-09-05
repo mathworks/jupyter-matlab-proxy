@@ -3,7 +3,7 @@
 @top Script { expression* }
 
 expression {
-  VariableName |
+  Identifier |
   String |
   MultilineComment |
   keyword |
@@ -14,26 +14,26 @@ expression {
 // See https://lezer.codemirror.net/docs/guide/ for documentation on syntax
 // specific to @tokens blocks, and how it differs from regular expression syntax.
 @tokens {
-  VariableName { $[a-zA-Z0-9_]+ $[a-zA-Z0-9_']? }
+  Identifier { $[a-zA-Z0-9_]+ $[a-zA-Z0-9_']* }
   charVector { '"' (!["\n])* '"' }
   stringArray { "'" (!['\n])* "'" }
   SystemCommand { "!" (![\n])* }
   Symbol { "+" | "-" | "*" | "=" | ";" | ":" | "(" | ")" | "{" | "}" | "[" | "]" }
   space { @whitespace+ }
-  @precedence { SystemCommand, VariableName }
+  @precedence { SystemCommand, Identifier }
   @precedence { SystemCommand, space }
-  @precedence { VariableName, charVector }
-  @precedence { VariableName, stringArray }
+  @precedence { Identifier, charVector }
+  @precedence { Identifier, stringArray }
 }
 
 String { charVector | stringArray }
 
-// Once a string has been parsed and found to be a VariableName, it will then
+// Once a string has been parsed and found to be a Identifier, it will then
 // be tested against its specialize table, to test if it is a keyword.
 // The keyword node name is "Keyword".
 // https://lezer.codemirror.net/docs/guide/#token-specialization
 keyword {
-  @specialize[@name=Keyword]<VariableName, "break" | "case" | "classdef" | "continue" | "global" | "otherwise" | "persistent" | "return" | "spmd" | "arguments" | "enumeration" | "events" | "for" | "function" | "if" | "methods" | "parfor" | "properties" | "try" | "while" | "elseif" | "else" | "end" | "switch" | "catch">
+  @specialize[@name=Keyword]<Identifier, "break" | "case" | "classdef" | "continue" | "global" | "otherwise" | "persistent" | "return" | "spmd" | "arguments" | "enumeration" | "events" | "for" | "function" | "if" | "methods" | "parfor" | "properties" | "try" | "while" | "elseif" | "else" | "end" | "switch" | "catch">
 }
 
 @skip { space | LineComment }

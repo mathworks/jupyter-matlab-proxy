@@ -54,7 +54,7 @@ A1'
 
 ==>
 
-Script(VariableName)
+Script(Identifier)
 
 # Symbol
 
@@ -62,4 +62,12 @@ A + B
 
 ==>
 
-Script(VariableName,Symbol,VariableName)
+Script(Identifier,Symbol,Identifier)
+
+# System command
+
+test ! echo "Test system command"
+
+==>
+
+Script(Identifier,SystemCommand)

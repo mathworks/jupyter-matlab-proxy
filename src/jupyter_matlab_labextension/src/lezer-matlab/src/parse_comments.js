@@ -11,11 +11,10 @@ const fileStart = -1;
 const fileEnd = -1;
 const newline = '\n'.charCodeAt(0);
 const carriageReturn = '\r'.charCodeAt(0);
-const space = ' '.charCodeAt(0);
-const tab = '\t'.charCodeAt(0);
 
-const whitespaceArray = [tab, space];
 const lineEndArray = [newline, carriageReturn, fileEnd, fileStart];
+
+const isWhitespace = (char) => /\s/.test(char);
 
 const precededByWhitespaceOnly = (input) => {
     // Scan from current position to start of line.
@@ -24,7 +23,7 @@ const precededByWhitespaceOnly = (input) => {
     const startPos = input.pos;
     let onlyWhitespace = true;
     while (!lineEndArray.includes(input.peek(-1))) {
-        if (whitespaceArray.includes(input.peek(-1))) {
+        if (isWhitespace(input.peek(-1))) {
             input.advance(-1);
         } else {
             onlyWhitespace = false;
@@ -42,7 +41,7 @@ const followedByWhitespaceOnly = (input) => {
     const startPos = input.pos;
     let onlyWhitespace = true;
     while (!lineEndArray.includes(input.peek(0))) {
-        if (whitespaceArray.includes(input.peek(0))) {
+        if (isWhitespace(input.peek(0))) {
             input.advance(1);
         } else {
             onlyWhitespace = false;

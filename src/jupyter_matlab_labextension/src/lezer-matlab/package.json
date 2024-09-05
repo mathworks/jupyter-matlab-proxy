@@ -1,4 +1,3 @@
-
 {
   "name": "@lezer/matlab",
   "version": "1.0.0",
@@ -18,19 +17,19 @@
   "license": "SEE LICENSE IN LICENSE.md",
   "devDependencies": {
     "@lezer/generator": "^1.0.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
     "mocha": "^10.2.0",
-    "rollup": "^2.52.2",
-    "@rollup/plugin-node-resolve": "^9.0.0"
+    "rollup": "^2.52.2"
   },
   "dependencies": {
     "@lezer/common": "^1.2.0",
-    "@lezer/lr": "^1.0.0",
-    "@lezer/highlight": "^1.0.0"
+    "@lezer/highlight": "^1.0.0",
+    "@lezer/lr": "^1.0.0"
   },
   "scripts": {
     "build": "lezer-generator src/matlab.grammar -o src/parser && rollup -c && npm run copy-lezer-files-to-build-on-windows",
     "build-debug": "lezer-generator src/matlab.grammar --names -o src/parser && rollup -c && npm run copy-lezer-files-to-build-on-windows",
-    "copy-lezer-files-to-build-on-windows": "cp src/*.js dist/",
+    "copy-lezer-files-to-build-on-windows": "copy src\\*.js dist\\ || true",
     "prepare": "npm run build",
     "test": "mocha test/test-*.js"
   }
