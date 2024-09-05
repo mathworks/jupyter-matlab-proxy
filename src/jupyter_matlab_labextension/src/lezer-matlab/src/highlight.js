@@ -11,6 +11,7 @@ export const matlabHighlighting = styleTags({
     MultilineComment: t.comment,
     SystemCommand: t.meta,
     String: t.string,
+    Magic: t.monospace,
     '( )': t.paren,
     '[ ]': t.squareBracket,
     '{ }': t.brace

@@ -8,8 +8,14 @@ expression {
   MultilineComment |
   keyword |
   Symbol |
-  SystemCommand
+  SystemCommand |
+  Magic
 }
+
+@external propSource matlabHighlighting from "./highlight"
+
+// Call out to comment parser. Since this is above the tokens block in this grammar, it takes precedence.
+@external tokens parseComments from "./parse_comments" { MultilineComment, LineComment, Magic }
 
 // See https://lezer.codemirror.net/docs/guide/ for documentation on syntax
 // specific to @tokens blocks, and how it differs from regular expression syntax.
@@ -37,10 +43,5 @@ keyword {
 }
 
 @skip { space | LineComment }
-
-@external propSource matlabHighlighting from "./highlight"
-
-// Call out to comment parser.
-@external tokens parseComments from "./parse_comments" { MultilineComment, LineComment }
 
 @detectDelim

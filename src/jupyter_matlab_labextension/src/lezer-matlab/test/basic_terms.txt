@@ -71,3 +71,11 @@ test ! echo "Test system command"
 ==>
 
 Script(Identifier,SystemCommand)
+
+# Magic command
+
+%%magic command
+
+==>
+
+Script(Magic)

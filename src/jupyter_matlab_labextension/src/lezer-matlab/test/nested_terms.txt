@@ -68,3 +68,14 @@ Script(LineComment,MultilineComment)
 ==>
 
 Script(String,Symbol,String,Symbol)
+
+# Nested Magic commands
+
+%%magic command 1
+%%magic command 2
+
+%%magic command 3
+
+==>
+
+Script(Magic, Magic, Magic)

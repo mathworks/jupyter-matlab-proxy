@@ -56,3 +56,34 @@ test!test
 ==>
 
 Script(Identifier,SystemCommand)
+
+# Magic command after a Line Comment is treated as a Line Comment
+
+%%magic command
+% A comment
+%%magic now treated as comment
+
+==>
+
+Script(Magic, LineComment, LineComment)
+
+# Magic command after a MultilineComment is treated as a LineComment
+
+%{
+A MultilineComment
+%}
+%%magic now treated as comment
+
+==>
+
+Script(MultilineComment, LineComment)
+
+# Magic command after a MATLAB Code should be treated as a Line Comment
+
+%%magic command1
+peaks
+%%magic command2
+
+==>
+
+Script(Magic, Identifier, LineComment)
