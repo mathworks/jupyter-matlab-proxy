@@ -108,7 +108,7 @@ export const parseComments = new ExternalTokenizer((input) => {
         // If the line starts with anything other than a percentage then it is MATLAB Code.
         // If the input.input.string exists then check it's length otherwise ignore the keys by returning true.
         if (
-            input.peek(0) !== fileStart && input.peek(0) !== newline &&
+            !lineEndArray.includes(input.peek(0)) &&
             (
                 !('input' in input) ||
                 !('string' in input.input) ||
