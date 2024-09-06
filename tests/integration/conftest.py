@@ -4,11 +4,10 @@ import asyncio
 import os
 import shutil
 
-import psutil
 import integration_test_utils
+import psutil
 import pytest
-import requests
-
+import requests.exceptions
 from matlab_proxy import settings as mwi_settings
 
 _MATLAB_STARTUP_TIMEOUT = mwi_settings.get_process_startup_timeout()
@@ -76,7 +75,9 @@ def matlab_proxy_fixture(module_monkeypatch):
     integration_test_utils.license_matlab_proxy(matlab_proxy_url)
 
     # Wait for matlab-proxy to be up and running
-    integration_test_utils.wait_matlab_proxy_ready(matlab_proxy_url)
+    loop.run_until_complete(
+        integration_test_utils.wait_matlab_proxy_ready(matlab_proxy_url)
+    )
 
     # Update the OS environment variables such as app port, base url etc.
     # so that they can be used by MATLAB Kernel to obtain MATLAB

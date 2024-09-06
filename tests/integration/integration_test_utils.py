@@ -7,7 +7,6 @@ import socket
 import time
 
 import requests
-
 from matlab_proxy.settings import get_process_startup_timeout
 
 MATLAB_STARTUP_TIMEOUT = get_process_startup_timeout()
@@ -77,7 +76,7 @@ async def start_matlab_proxy_app(input_env={}):
     return proc
 
 
-def wait_matlab_proxy_ready(matlab_proxy_url):
+async def wait_matlab_proxy_ready(matlab_proxy_url):
     """
     Wait for matlab-proxy to be up and running
 
@@ -85,13 +84,15 @@ def wait_matlab_proxy_ready(matlab_proxy_url):
         matlab_proxy_url (string): URL to access matlab-proxy
     """
 
-    from matlab_proxy.util import system
-
-    from jupyter_matlab_kernel import mwi_comm_helpers
+    from jupyter_matlab_kernel.mwi_comm_helpers import MWICommHelper
 
     is_matlab_licensed = False
     matlab_status = "down"
     start_time = time.time()
+
+    loop = asyncio.get_event_loop()
+    matlab_proxy = MWICommHelper("", matlab_proxy_url, loop, loop, {})
+    await matlab_proxy.connect()
 
     # Poll for matlab-proxy to be up
     while matlab_status in ["down", "starting"] and (
@@ -103,18 +104,17 @@ def wait_matlab_proxy_ready(matlab_proxy_url):
                 is_matlab_licensed,
                 matlab_status,
                 _,
-            ) = mwi_comm_helpers.fetch_matlab_proxy_status(
-                url=matlab_proxy_url, headers={}
-            )
-        except:
+            ) = await matlab_proxy.fetch_matlab_proxy_status()
+        except Exception:
             # The network connection can be flaky while the
             # matlab-proxy server is booting. There can also be some
             # intermediate connection errors
             pass
-    assert is_matlab_licensed == True, "MATLAB is not licensed"
+    assert is_matlab_licensed is True, "MATLAB is not licensed"
     assert (
         matlab_status == "up"
     ), f"matlab-proxy process did not start successfully\nMATLAB Status is '{matlab_status}'"
+    await matlab_proxy.disconnect()
 
 
 def get_random_free_port() -> str:
@@ -140,7 +140,7 @@ def license_matlab_proxy(matlab_proxy_url):
     Args:
         matlab_proxy_url (string): URL to access matlab-proxy
     """
-    from playwright.sync_api import sync_playwright, expect
+    from playwright.sync_api import expect, sync_playwright
 
     # These are MathWorks Account credentials to license MATLAB
     # Throws 'KeyError' if the following environment variables are not set
@@ -214,17 +214,19 @@ def unlicense_matlab_proxy(matlab_proxy_url):
         error = None
         try:
             resp = requests.delete(
-                matlab_proxy_url + "/set_licensing_info", headers={}, verify=False
+                matlab_proxy_url + "/set_licensing_info",
+                headers={},
+                verify=False,
             )
             if resp.status_code == requests.codes.OK:
                 data = resp.json()
-                assert data["licensing"] == None, "matlab-proxy licensing is not unset"
+                assert data["licensing"] is None, "matlab-proxy licensing is not unset"
                 assert (
                     data["matlab"]["status"] == "down"
                 ), "matlab-proxy is not in 'stopped' state"
 
                 # Throw warning if matlab-proxy is unlicensed but with some error
-                if data["error"] != None:
+                if data["error"] is not None:
                     warnings.warn(
                         f"matlab-proxy is unlicensed but with error: {data['error']}",
                         UserWarning,

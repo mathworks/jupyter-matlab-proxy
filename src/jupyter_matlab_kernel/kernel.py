@@ -2,25 +2,28 @@
 # Implementation of MATLAB Kernel
 
 # Import Python Standard Library
+import asyncio
+import http
 import os
 import sys
 import time
 
-# Import Third-Party Dependencies
+# Import Dependencies
+import aiohttp
+import aiohttp.client_exceptions
 import ipykernel.kernelbase
 import psutil
 import requests
-from requests.exceptions import HTTPError
+from matlab_proxy import settings as mwi_settings
+from matlab_proxy import util as mwi_util
 
-# Import Dependencies
-from jupyter_matlab_kernel import mwi_comm_helpers, mwi_logger
+from jupyter_matlab_kernel import mwi_logger
 from jupyter_matlab_kernel.magic_execution_engine import (
     MagicExecutionEngine,
     get_completion_result_for_magics,
 )
+from jupyter_matlab_kernel.mwi_comm_helpers import MWICommHelper
 from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
-from matlab_proxy import settings as mwi_settings
-from matlab_proxy import util as mwi_util
 
 _MATLAB_STARTUP_TIMEOUT = mwi_settings.get_process_startup_timeout()
 _logger = mwi_logger.get()
@@ -101,7 +104,7 @@ def _start_matlab_proxy_using_jupyter(url, headers, logger=_logger):
     logger.debug(f"Received status code: {resp.status_code}")
 
     return (
-        resp.status_code == requests.codes.OK
+        resp.status_code == http.HTTPStatus.OK
         and matlab_proxy_index_page_identifier in resp.text
     )
 
@@ -223,7 +226,7 @@ def start_matlab_proxy(logger=_logger):
         """
                 Error: MATLAB Kernel could not communicate with MATLAB.
                 Reason: Possibly due to invalid jupyter security tokens.
-                """
+        """
     )
 
 
@@ -242,12 +245,8 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
     }
 
     # MATLAB Kernel state
-    murl = ""
-    is_matlab_licensed: bool = False
-    matlab_status = ""
-    matlab_proxy_has_error: bool = False
+    kernel_id = ""
     server_base_url = ""
-    headers = dict()
     startup_error = None
     startup_checks_completed: bool = False
 
@@ -257,21 +256,26 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
 
         # Update log instance with kernel id. This helps in identifying logs from
         # multiple kernels which are running simultaneously
-        self.log.debug(f"Initializing kernel with id: {self.ident}")
-        self.log = self.log.getChild(f"{self.ident}")
+        self.kernel_id = self.ident
+        self.log.debug(f"Initializing kernel with id: {self.kernel_id}")
+        self.log = self.log.getChild(f"{self.kernel_id}")
+
         # Initialize the Magic Execution Engine.
         self.magic_engine = MagicExecutionEngine(self.log)
 
         try:
             # Start matlab-proxy using the jupyter-matlab-proxy registered endpoint.
-            self.murl, self.server_base_url, self.headers = start_matlab_proxy(self.log)
-            (
-                self.is_matlab_licensed,
-                self.matlab_status,
-                self.matlab_proxy_has_error,
-            ) = mwi_comm_helpers.fetch_matlab_proxy_status(
-                self.murl, self.headers, self.log
+            murl, self.server_base_url, headers = start_matlab_proxy(self.log)
+
+            # Using asyncio.get_event_loop for shell_loop as io_loop variable is
+            # not yet initialized because start() is called after the __init__
+            # is completed.
+            shell_loop = asyncio.get_event_loop()
+            control_loop = self.control_thread.io_loop.asyncio_loop
+            self.mwi_comm_helper = MWICommHelper(
+                self.kernel_id, murl, shell_loop, control_loop, headers, self.log
             )
+            shell_loop.run_until_complete(self.mwi_comm_helper.connect())
         except MATLABConnectionError as err:
             self.startup_error = err
 
@@ -286,9 +290,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         self.log.debug("Received interrupt request from Jupyter")
         try:
             # Send interrupt request to MATLAB
-            mwi_comm_helpers.send_interrupt_request_to_matlab(
-                self.murl, self.headers, self.log
-            )
+            await self.mwi_comm_helper.send_interrupt_request_to_matlab()
 
             # Set the response to interrupt request.
             content = {"status": "ok"}
@@ -329,7 +331,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
                 # Storing the magic outputs to display them after startup_check completes.
                 outputs.append(output)
 
-    def do_execute(
+    async def do_execute(
         self,
         code,
         silent,
@@ -360,7 +362,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             # Blocking call, returns after MATLAB is started.
             if not skip_cell_execution:
                 if not self.startup_checks_completed:
-                    self.perform_startup_checks()
+                    await self.perform_startup_checks()
                     self.display_output(
                         {
                             "type": "stream",
@@ -383,8 +385,8 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
 
                 # Perform execution and categorization of outputs in MATLAB. Blocks
                 # until execution results are received from MATLAB.
-                outputs = mwi_comm_helpers.send_execution_request_to_matlab(
-                    self.murl, self.headers, code, self.ident, self.log
+                outputs = await self.mwi_comm_helper.send_execution_request_to_matlab(
+                    code
                 )
 
                 if performed_startup_checks and not accumulated_magic_outputs:
@@ -414,9 +416,12 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             self.log.error(
                 f"Exception occurred while processing execution request:\n{e}"
             )
-            if isinstance(e, HTTPError):
-                # If exception is an HTTPError, it means MATLAB is unavailable.
-                # Replace the HTTPError with MATLABConnectionError to give
+            if isinstance(e, aiohttp.client_exceptions.ClientError):
+                # Log the ClientError for debugging
+                self.log.error(e)
+
+                # If exception is an ClientError, it means MATLAB is unavailable.
+                # Replace the ClientError with MATLABConnectionError to give
                 # meaningful error message to the user
                 e = MATLABConnectionError()
 
@@ -446,7 +451,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             "user_expressions": {},
         }
 
-    def do_complete(self, code, cursor_pos):
+    async def do_complete(self, code, cursor_pos):
         """
         Used by ipykernel infrastructure for tab completion. For more info, look
         at https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion
@@ -482,12 +487,17 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             completion_results = magic_completion_results
         else:
             try:
-                completion_results = mwi_comm_helpers.send_completion_request_to_matlab(
-                    self.murl, self.headers, code, cursor_pos, self.log
+                completion_results = (
+                    await self.mwi_comm_helper.send_completion_request_to_matlab(
+                        code, cursor_pos
+                    )
                 )
-            except (MATLABConnectionError, HTTPError) as e:
+            except (
+                MATLABConnectionError,
+                aiohttp.client_exceptions.ClientResponseError,
+            ) as e:
                 self.log.error(
-                    f"Exception occurred while sending shutdown request to MATLAB:\n{e}"
+                    f"Exception occurred while sending completion request to MATLAB:\n{e}"
                 )
 
             self.log.debug(
@@ -504,15 +514,15 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             },
         }
 
-    def do_is_complete(self, code):
+    async def do_is_complete(self, code):
         # TODO: Seems like indentation rules. https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness
         return super().do_is_complete(code)
 
-    def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=...):
+    async def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=...):
         # TODO: Implement Shift+Tab functionality. Can be used to provide any contextual information.
         return super().do_inspect(code, cursor_pos, detail_level, omit_sections)
 
-    def do_history(
+    async def do_history(
         self,
         hist_access_type,
         output,
@@ -530,13 +540,15 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             hist_access_type, output, raw, session, start, stop, n, pattern, unique
         )
 
-    def do_shutdown(self, restart):
+    async def do_shutdown(self, restart):
         self.log.debug("Received shutdown request from Jupyter")
         try:
-            mwi_comm_helpers.send_shutdown_request_to_matlab(
-                self.murl, self.headers, self.ident, self.log
-            )
-        except (MATLABConnectionError, HTTPError) as e:
+            await self.mwi_comm_helper.send_shutdown_request_to_matlab()
+            await self.mwi_comm_helper.disconnect()
+        except (
+            MATLABConnectionError,
+            aiohttp.client_exceptions.ClientResponseError,
+        ) as e:
             self.log.error(
                 f"Exception occurred while sending shutdown request to MATLAB:\n{e}"
             )
@@ -545,13 +557,13 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
 
     # Helper functions
 
-    def perform_startup_checks(self):
+    async def perform_startup_checks(self):
         """
         One time checks triggered during the first execution request. Displays
         login window if matlab is not licensed using matlab-proxy.
 
         Raises:
-            HTTPError, MATLABConnectionError: Occurs when matlab-proxy is not started or kernel cannot
+            ClientError, MATLABConnectionError: Occurs when matlab-proxy is not started or kernel cannot
                                               communicate with MATLAB.
         """
         self.log.debug("Performing startup checks")
@@ -561,10 +573,10 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             raise self.startup_error
 
         (
-            self.is_matlab_licensed,
-            self.matlab_status,
-            self.matlab_proxy_has_error,
-        ) = mwi_comm_helpers.fetch_matlab_proxy_status(self.murl, self.headers)
+            is_matlab_licensed,
+            matlab_status,
+            matlab_proxy_has_error,
+        ) = await self.mwi_comm_helper.fetch_matlab_proxy_status()
 
         # Display iframe containing matlab-proxy to show login window if MATLAB
         # is not licensed using matlab-proxy. The iframe is removed after MATLAB
@@ -576,7 +588,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         # as other browser based Jupyter clients.
         #
         # TODO: Find a workaround for users to be able to use our Jupyter kernel in VS Code.
-        if not self.is_matlab_licensed:
+        if not is_matlab_licensed:
             self.log.debug(
                 "MATLAB is not licensed. Displaying HTML output to enable licensing."
             )
@@ -596,11 +608,11 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         self.log.debug("Waiting until MATLAB is started")
         timeout = 0
         while (
-            self.matlab_status != "up"
+            matlab_status != "up"
             and timeout != _MATLAB_STARTUP_TIMEOUT
-            and not self.matlab_proxy_has_error
+            and not matlab_proxy_has_error
         ):
-            if self.is_matlab_licensed:
+            if is_matlab_licensed:
                 if timeout == 0:
                     self.log.debug("Licensing completed. Clearing output area")
                     self.display_output(
@@ -618,10 +630,10 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
                 timeout += 1
             time.sleep(1)
             (
-                self.is_matlab_licensed,
-                self.matlab_status,
-                self.matlab_proxy_has_error,
-            ) = mwi_comm_helpers.fetch_matlab_proxy_status(self.murl, self.headers)
+                is_matlab_licensed,
+                matlab_status,
+                matlab_proxy_has_error,
+            ) = await self.mwi_comm_helper.fetch_matlab_proxy_status()
 
         # If MATLAB is not available after 15 seconds of licensing information
         # being available either through user input or through matlab-proxy cache,
@@ -632,7 +644,7 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             )
             raise MATLABConnectionError
 
-        if self.matlab_proxy_has_error:
+        if matlab_proxy_has_error:
             self.log.error("matlab-proxy encountered error.")
             raise MATLABConnectionError
 

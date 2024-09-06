@@ -1,4 +1,5 @@
 # Copyright 2024 The MathWorks, Inc.
+# Custom Exceptions used in MATLAB Kernel
 
 
 class MagicError(Exception):

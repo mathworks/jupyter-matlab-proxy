@@ -5,6 +5,7 @@ This module provides a pytest fixture that mocks how matlab-proxy integrates
 with Jupyter server.
 """
 
+import http
 import os
 
 import pytest
@@ -51,7 +52,7 @@ def MockJupyterServerFixture(monkeypatch):
 
     class MockResponse:
         def __init__(
-            self, status_code=requests.codes.ok, text="MWI_MATLAB_PROXY_IDENTIFIER"
+            self, status_code=http.HTTPStatus.OK, text="MWI_MATLAB_PROXY_IDENTIFIER"
         ) -> None:
             self.status_code = status_code
             self.text = text
@@ -70,7 +71,7 @@ def MockJupyterServerFixture(monkeypatch):
         if "headers" in kwargs and kwargs["headers"]:
             return MockResponse()
         else:
-            return MockResponse(status_code=requests.codes.unavailable)
+            return MockResponse(status_code=http.HTTPStatus.SERVICE_UNAVAILABLE)
 
     monkeypatch.setattr(serverapp, "list_running_servers", fake_list_running_servers)
     monkeypatch.setattr(os, "getppid", fake_getppid)

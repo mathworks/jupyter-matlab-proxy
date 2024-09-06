@@ -1,8 +1,9 @@
-# Copyright 2023 The MathWorks, Inc.
+# Copyright 2023-2024 The MathWorks, Inc.
 """Mock matlab-proxy HTTP Responses."""
 
-import requests
-from requests.exceptions import HTTPError
+import http
+
+import aiohttp.client_exceptions
 
 
 class MockUnauthorisedRequestResponse:
@@ -14,11 +15,11 @@ class MockUnauthorisedRequestResponse:
     """
 
     exception_msg = "Mock exception thrown due to unauthorized request status."
-    status_code = requests.codes.unauthorized
+    status = http.HTTPStatus.UNAUTHORIZED
 
     def raise_for_status(self):
         """Raise a HTTPError with unauthorised request message."""
-        raise HTTPError(self.exception_msg)
+        raise aiohttp.client_exceptions.ClientError(self.exception_msg)
 
 
 class MockMatlabProxyStatusResponse:
@@ -32,12 +33,11 @@ class MockMatlabProxyStatusResponse:
             matlab_status (string): indicates the MATLAB status, i.e. is it "starting", "running" etc.
             has_error (bool): indicates if there is an error with MATLAB
         """
-
         self.licensed = self.process_license_type(lic_type)
         self.matlab_status = matlab_status
         self.error = MockError("An example error") if has_error else None
 
-    status_code = requests.codes.ok
+    status = http.HTTPStatus.OK
 
     @staticmethod
     def handle_entitled_mhlm():
@@ -90,7 +90,7 @@ class MockMatlabProxyStatusResponse:
         }
         return types.get(lic_type, self.default)()
 
-    def json(self):
+    async def json(self):
         """Return a matlab-proxy status JSON object."""
         return {
             "licensing": self.licensed,
@@ -102,10 +102,10 @@ class MockMatlabProxyStatusResponse:
 class MockSimpleOkResponse:
     """A mock of a successful http request that returns empty json."""
 
-    status_code = requests.codes.ok
+    status = http.HTTPStatus.OK
 
     @staticmethod
-    def json():
+    async def json():
         """Return an empty JSON struct."""
         return {}
 
@@ -121,11 +121,11 @@ class MockSimpleBadResponse:
         """
         self.error_message = error_message
 
-    status_code = requests.codes.bad
+    status = http.HTTPStatus.BAD_REQUEST
 
     def raise_for_status(self):
         """Raise a HTTPError with custom error message."""
-        raise HTTPError(self.error_message)
+        raise aiohttp.client_exceptions.ClientError(self.error_message)
 
 
 class MockError(Exception):
