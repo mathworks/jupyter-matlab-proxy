@@ -80,7 +80,7 @@ cd jupyter-matlab-proxy
 python -m pip install .
 ```
 
-### Integration with JupyterHub
+### Using JupyterHub
 
 To use MATLAB with JupyterHub, install the `jupyter-matlab-proxy` Python package in the Jupyter environment launched by your JupyterHub platform. For example, if your JupyterHub platform launches Docker containers, install this package in the Docker image used to launch those containers, using the instructions for [Using MATLAB Integration _for Jupyter_ in a Docker Container](https://github.com/mathworks-ref-arch/matlab-integration-for-jupyter/tree/main/matlab).
 
@@ -151,13 +151,23 @@ This opens a Jupyter notebook that supports MATLAB.
 ### Notes
 
 - **Licensing:** When you execute MATLAB code in a notebook for the first time, enter your MATLAB license information in the dialog box that appears. For details, see [Licensing](https://github.com/mathworks/matlab-proxy/blob/main/MATLAB-Licensing-Info.md). The MATLAB session can take a few minutes to start.
-- **Multiple notebooks:** Multiple notebooks running on a Jupyter server share the underlying MATLAB process, so executing code in one notebook affects the workspace in others. If you work in several notebooks simultaneously, be aware that they share a workspace.
-- **Local functions:** with MATLAB R2022b and later, you can define a local function at the end of the cell where you want to call it:
+
+- **MATLAB Kernel:** The MATLAB kernel supports tab completion and rich outputs:
+  * Inline static plot images
+  * LaTeX representation for symbolic expressions
+  * Tables formatted using HTML instead of ASCII, in MATLAB R2024a and later:
+    | Before R2024a | After R2024a |
+    |--|--|
+    |<p align="center"><img width="450" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/tables_before_r2024a.png"></p> | <p align="center"><img width="400" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/tables_after_r2024a.png"></p> |
+
+  For a technical overview of the MATLAB kernel, see [MATLAB Kernel for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/README.md).
+
+- **Multiple notebooks:** Multiple notebooks running on a Jupyter server share the underlying MATLAB process, so executing code in one notebook affects the workspace in others. If you work in several notebooks simultaneously, be aware they share a workspace. For details, see [MATLAB Kernel for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/README.md).
+- **Local functions:** With MATLAB R2022b and later, you can define a local function at the end of the cell where you want to call it:
     <p><img width="350" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/local_functions.png"></p>
 
 - **Magic Commands:** You can use predefined magic commands in a Jupyter notebook with the MATLAB kernel, and you can also implement your own. To see a list of predefined magic commands, run `%%lsmagic`. For details about using magic commands, see [Magic Commands for MATLAB Kernel](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/magics/README.md).
 
-- **Kernel:** For technical details about the MATLAB kernel, see [MATLAB Kernel for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/README.md).
 
 ## Open MATLAB in a Browser
 
