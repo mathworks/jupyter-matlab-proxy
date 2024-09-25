@@ -17,9 +17,9 @@
   "license": "SEE LICENSE IN LICENSE.md",
   "devDependencies": {
     "@lezer/generator": "^1.0.0",
-    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
     "mocha": "^10.2.0",
-    "rollup": "^2.52.2"
+    "rollup": "^4.22.4"
   },
   "dependencies": {
     "@lezer/common": "^1.2.0",

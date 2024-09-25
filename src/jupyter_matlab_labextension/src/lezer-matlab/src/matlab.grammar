@@ -12,10 +12,10 @@ expression {
   Magic
 }
 
-@external propSource matlabHighlighting from "./highlight"
+@external propSource matlabHighlighting from "./highlight.js"
 
 // Call out to comment parser. Since this is above the tokens block in this grammar, it takes precedence.
-@external tokens parseComments from "./parse_comments" { MultilineComment, LineComment, Magic }
+@external tokens parseComments from "./parse_comments.js" { MultilineComment, LineComment, Magic }
 
 // See https://lezer.codemirror.net/docs/guide/ for documentation on syntax
 // specific to @tokens blocks, and how it differs from regular expression syntax.
