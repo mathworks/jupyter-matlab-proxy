@@ -6,7 +6,7 @@
 function result = complete(code, cursorPosition)
 % COMPLETE A helper function to provide tab completion results
 
-% Copyright 2023 The MathWorks, Inc.
+% Copyright 2023-2024 The MathWorks, Inc.
 
 % Get tab completion data for matlab code. Using evalin('base',..) so that the
 % function workspace does not affect the results.
@@ -117,4 +117,6 @@ elseif strcmp(inputType, "property")
     type = "property";
 elseif strcmp(inputType, "variable")
     type = "variable";
+else
+    type = "function";
 end
