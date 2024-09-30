@@ -1,139 +1,52 @@
 # Copyright 2023-2024 The MathWorks, Inc.
-# Implementation of MATLAB Kernel
 
-# Import Python Standard Library
-import asyncio
-import http
+"""
+This module serves as the base class for various MATLAB Kernels.
+Examples of supported Kernels can be:
+1. MATLAB Kernels that are based on Jupyter Server and Jupyter Server proxy to start
+backend MATLAB proxy servers.
+2. MATLAB Kernels that uses proxy manager to start backend matlab proxy servers
+"""
+
 import os
 import sys
 import time
+from logging import Logger
+from pathlib import Path
+from typing import Optional
 
-# Import Dependencies
 import aiohttp
 import aiohttp.client_exceptions
 import ipykernel.kernelbase
 import psutil
-import requests
 from matlab_proxy import settings as mwi_settings
 from matlab_proxy import util as mwi_util
 
-from jupyter_matlab_kernel import mwi_logger
 from jupyter_matlab_kernel.magic_execution_engine import (
     MagicExecutionEngine,
     get_completion_result_for_magics,
 )
-from jupyter_matlab_kernel.mwi_comm_helpers import MWICommHelper
 from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
 
 _MATLAB_STARTUP_TIMEOUT = mwi_settings.get_process_startup_timeout()
-_logger = mwi_logger.get()
 
 
-def is_jupyter_testing_enabled():
+def _fetch_jupyter_base_url(parent_pid: str, logger: Logger) -> Optional[str]:
     """
-    Checks if testing mode is enabled
+    Fetches information about the running Jupyter server associated with the MATLAB kernel.
 
-    Returns:
-        bool: True if MWI_JUPYTER_TEST environment variable is set to 'true'
-        else False
-    """
-
-    return os.environ.get("MWI_JUPYTER_TEST", "false").lower() == "true"
-
-
-def start_matlab_proxy_for_testing(logger=_logger):
-    """
-    Only used for testing purposes. Gets the matlab-proxy server configuration
-    from environment variables and mocks the 'start_matlab_proxy' function
-
-    Returns:
-        Tuple (string, string, dict):
-            url (string): Complete URL to send HTTP requests to matlab-proxy
-            base_url (string): Complete base url for matlab-proxy obtained from tests
-            headers (dict): Empty dictionary
-    """
-
-    import matlab_proxy.util.mwi.environment_variables as mwi_env
-
-    # These environment variables are being set by tests, using dictionary lookup
-    # instead of '.getenv' to make sure that the following line fails with the
-    # Exception 'KeyError' in case the environment variables are not set
-    matlab_proxy_base_url = os.environ[mwi_env.get_env_name_base_url()]
-    matlab_proxy_app_port = os.environ[mwi_env.get_env_name_app_port()]
-
-    logger.debug("Creating matlab-proxy URL for MATLABKernel testing.")
-
-    # '127.0.0.1' is used instead 'localhost' for testing since Windows machines consume
-    # some time to resolve 'localhost' hostname
-    url = "{protocol}://127.0.0.1:{port}{base_url}".format(
-        protocol="http",
-        port=matlab_proxy_app_port,
-        base_url=matlab_proxy_base_url,
-    )
-    headers = {}
-
-    logger.debug(f"matlab-proxy URL: {url}")
-    logger.debug(f"headers: {headers}")
-
-    return url, matlab_proxy_base_url, headers
-
-
-def _start_matlab_proxy_using_jupyter(url, headers, logger=_logger):
-    """
-    Start matlab-proxy using jupyter server which started the current kernel
-    process by sending HTTP request to the endpoint registered through
-    jupyter-matlab-proxy.
+    This function attempts to retrieve the list of running Jupyter servers and identify the
+    server associated with the current MATLAB kernel based on its parent process ID. If the
+    Jupyter server is found, it attempts to fetch the base URL of that Jupyter Server.
 
     Args:
-        url (string): URL to send HTTP request
-        headers (dict): HTTP headers required for the request
+        parent_pid: process ID (PID) of the Kernel's parent process.
+        logger (Logger): The logger instance for logging debug information.
 
     Returns:
-        bool: True if jupyter server has successfully started matlab-proxy else False.
+        base_url (str): The base URL of the Jupyter server, if found.
     """
-    # This is content that is present in the matlab-proxy index.html page which
-    # can be used to validate a proper response.
-    matlab_proxy_index_page_identifier = "MWI_MATLAB_PROXY_IDENTIFIER"
-
-    logger.debug(
-        f"Sending request to jupyter to start matlab-proxy at {url} with headers: {headers}"
-    )
-    # send request to the matlab-proxy endpoint to make sure it is available.
-    # If matlab-proxy is not started, jupyter-server starts it at this point.
-    resp = requests.get(url, headers=headers, verify=False)
-    logger.debug(f"Received status code: {resp.status_code}")
-
-    return (
-        resp.status_code == http.HTTPStatus.OK
-        and matlab_proxy_index_page_identifier in resp.text
-    )
-
-
-def start_matlab_proxy(logger=_logger):
-    """
-    Start matlab-proxy registered with the jupyter server which started the
-    current kernel process.
-
-    Raises:
-        MATLABConnectionError: Occurs when kernel is not started by jupyter server.
-
-    Returns:
-        Tuple (string, string, dict):
-            url (string): Complete URL to send HTTP requests to matlab-proxy
-            base_url (string): Complete base url for matlab-proxy provided by jupyter server
-            headers (dict): HTTP headers required while sending HTTP requests to matlab-proxy
-    """
-
-    # If jupyter testing is enabled, then a standalone matlab-proxy server would be
-    # launched by the tests and kernel would expect the configurations of this matlab-proxy
-    # server which is provided through environment variables to 'start_matlab_proxy_for_testing'
-    if is_jupyter_testing_enabled():
-        return start_matlab_proxy_for_testing(logger)
-
     nb_server_list = []
-
-    # The matlab-proxy server, if running, could have been started by either
-    # "jupyter_server" or "notebook" package.
     try:
         from jupyter_server import serverapp
 
@@ -145,92 +58,46 @@ def start_matlab_proxy(logger=_logger):
     except ImportError:
         pass
 
-    # Use parent process id of the kernel to filter Jupyter Server from the list.
-    jupyter_server_pid = os.getppid()
-
-    # On Windows platforms using venv/virtualenv an intermediate python process spaws the kernel.
-    # jupyter_server ---spawns---> intermediate_process ---spawns---> jupyter_matlab_kernel
-    # Thus we need to go one level higher to acquire the process id of the jupyter server.
-    # Note: conda environments do not require this, and for these environments sys.prefix == sys.base_prefix
-    is_virtual_env = sys.prefix != sys.base_prefix
-    if mwi_util.system.is_windows() and is_virtual_env:
-        jupyter_server_pid = psutil.Process(jupyter_server_pid).ppid()
-
-    logger.debug(f"Resolved jupyter server pid: {jupyter_server_pid}")
-
-    nb_server = dict()
+    nb_server = {}
     found_nb_server = False
     for server in nb_server_list:
-        if server["pid"] == jupyter_server_pid:
-            logger.debug("Jupyter server associated with this MATLAB Kernel found.")
+        if server["pid"] == parent_pid:
             found_nb_server = True
             nb_server = server
             # Stop iterating over the server list
-            break
+            return nb_server["base_url"]
 
-    # Error out if the server is not found!
+    # log and return None if the server is not found
     if not found_nb_server:
-        logger.error("Jupyter server associated with this MATLABKernel not found.")
-        raise MATLABConnectionError(
-            """
-            Error: MATLAB Kernel for Jupyter was unable to find the notebook server from which it was spawned!\n
-            Resolution: Please relaunch kernel from JupyterLab or Classic Jupyter Notebook.
-            """
+        logger.debug(
+            "Jupyter server associated with this MATLAB Kernel not found, might a non-jupyter based MATLAB Kernel"
         )
-
-    # Verify that Password is disabled
-    if nb_server["password"] is True:
-        logger.error("Jupyter server uses password for authentication.")
-        # TODO: To support passwords, we either need to acquire it from Jupyter or ask the user?
-        raise MATLABConnectionError(
-            """
-            Error: MATLAB Kernel could not communicate with MATLAB.\n
-            Reason: There is a password set to access the Jupyter server.\n
-            Resolution: Delete the cached Notebook password file, and restart the kernel.\n
-            See https://jupyter-notebook.readthedocs.io/en/stable/public_server.html#securing-a-notebook-server for more information.
-            """
-        )
-
-    # Using nb_server["url"] to construct matlab-proxy URL as it handles the following cases
-    # 1. For normal usage of Jupyter, the URL returned by nb_server uses localhost
-    # 2. For explicitly specified IP with Jupyter, the URL returned by nb_server
-    #       a. uses FQDN hostname when specified IP is 0.0.0.0
-    #       b. uses specified IP for all other cases
-    matlab_proxy_url = "{jupyter_server_url}matlab".format(
-        jupyter_server_url=nb_server["url"]
-    )
-
-    available_tokens = {
-        "jupyter_server": nb_server.get("token"),
-        "jupyterhub": os.getenv("JUPYTERHUB_API_TOKEN"),
-        "default": None,
-    }
-
-    for token in available_tokens.values():
-        if token:
-            headers = {"Authorization": f"token {token}"}
-        else:
-            headers = None
-
-        if _start_matlab_proxy_using_jupyter(matlab_proxy_url, headers, logger):
-            logger.debug(
-                f"Started matlab-proxy using jupyter at {matlab_proxy_url} with headers: {headers}"
-            )
-            return matlab_proxy_url, nb_server["base_url"], headers
-
-    logger.error(
-        "MATLABKernel could not communicate with matlab-proxy through Jupyter server"
-    )
-    logger.error(f"Jupyter server:\n{nb_server}")
-    raise MATLABConnectionError(
-        """
-                Error: MATLAB Kernel could not communicate with MATLAB.
-                Reason: Possibly due to invalid jupyter security tokens.
-        """
-    )
+        return None
 
 
-class MATLABKernel(ipykernel.kernelbase.Kernel):
+def _get_parent_pid() -> str:
+    """
+    Retrieves the parent process ID (PID) of the Kernel process.
+
+    This function determines the process ID of the parent (Jupyter/VSCode) that spawned the
+    current kernel. On Windows platforms using virtual environments, it accounts for an
+    intermediate process that may spawn the kernel, by going one level higher in the process
+    hierarchy to obtain the correct parent PID.
+
+    Returns:
+        str: The PID of the Jupyter server.
+    """
+    parent_pid = os.getppid()
+
+    # Note: conda environments do not require this, and for these environments
+    # sys.prefix == sys.base_prefix
+    is_virtual_env = sys.prefix != sys.base_prefix
+    if mwi_util.system.is_windows() and is_virtual_env:
+        parent_pid = psutil.Process(parent_pid).ppid()
+    return parent_pid
+
+
+class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
     # Required variables for Jupyter Kernel to function
     # banner is shown only for Jupyter Console.
     banner = "MATLAB"
@@ -244,40 +111,35 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
         "file_extension": ".m",
     }
 
-    # MATLAB Kernel state
-    kernel_id = ""
-    server_base_url = ""
-    startup_error = None
-    startup_checks_completed: bool = False
-
     def __init__(self, *args, **kwargs):
         # Call superclass constructor to initialize ipykernel infrastructure
-        super(MATLABKernel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-        # Update log instance with kernel id. This helps in identifying logs from
-        # multiple kernels which are running simultaneously
-        self.kernel_id = self.ident
+        # Kernel identifier which is used to setup loggers as well as to track the
+        # mapping between this kernel and the backend MATLAB proxy process when proxy-manager
+        # is used as the MATLAB proxy provisioner.
+        self.kernel_id = self._extract_kernel_id_from_sys_args(sys.argv)
+
+        # Provides the base_url for the matlab-proxy which is assigned to this Kernel instance
+        self.matlab_proxy_base_url = ""
+
+        # Used to track if there was any errors during MATLAB proxy startup
+        self.startup_error = None
+
+        # base_url field for Jupyter Server, required for performing licensing
+        self.jupyter_base_url = None
+
+        # Keeps track of whether the startup checks were completed or not
+        self.startup_checks_completed: bool = False
+
         self.log.debug(f"Initializing kernel with id: {self.kernel_id}")
         self.log = self.log.getChild(f"{self.kernel_id}")
 
         # Initialize the Magic Execution Engine.
         self.magic_engine = MagicExecutionEngine(self.log)
 
-        try:
-            # Start matlab-proxy using the jupyter-matlab-proxy registered endpoint.
-            murl, self.server_base_url, headers = start_matlab_proxy(self.log)
-
-            # Using asyncio.get_event_loop for shell_loop as io_loop variable is
-            # not yet initialized because start() is called after the __init__
-            # is completed.
-            shell_loop = asyncio.get_event_loop()
-            control_loop = self.control_thread.io_loop.asyncio_loop
-            self.mwi_comm_helper = MWICommHelper(
-                self.kernel_id, murl, shell_loop, control_loop, headers, self.log
-            )
-            shell_loop.run_until_complete(self.mwi_comm_helper.connect())
-        except MATLABConnectionError as err:
-            self.startup_error = err
+        # Communication helper for interaction with backend MATLAB proxy
+        self.mwi_comm_helper = None
 
     # ipykernel Interface API
     # https://ipython.readthedocs.io/en/stable/development/wrapperkernels.html
@@ -540,34 +402,56 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             hist_access_type, output, raw, session, start, stop, n, pattern, unique
         )
 
-    async def do_shutdown(self, restart):
-        self.log.debug("Received shutdown request from Jupyter")
-        try:
-            await self.mwi_comm_helper.send_shutdown_request_to_matlab()
-            await self.mwi_comm_helper.disconnect()
-        except (
-            MATLABConnectionError,
-            aiohttp.client_exceptions.ClientResponseError,
-        ) as e:
-            self.log.error(
-                f"Exception occurred while sending shutdown request to MATLAB:\n{e}"
-            )
-
-        return super().do_shutdown(restart)
-
     # Helper functions
 
-    async def perform_startup_checks(self):
+    def display_output(self, out):
+        """
+        Common function to send execution outputs to Jupyter UI.
+        For more information, look at https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-iopub-pub-sub-channel
+
+        Input Example:
+        1.  Execution Output:
+            out = {
+                "type": "execute_result",
+                "mimetype": ["text/plain","text/html"],
+                "value": ["Hello","<html><body>Hello</body></html>"]
+            }
+        2.  For all other message types:
+            out = {
+                "type": "stream",
+                "content": {
+                    "name": "stderr",
+                    "text": "An error occurred"
+                }
+            }
+
+        Args:
+            out (dict): A dictionary containing the type of output and the content of the output.
+        """
+        msg_type = out["type"]
+        if msg_type == "execute_result":
+            assert len(out["mimetype"]) == len(out["value"])
+            response = {
+                # Use zip to create a tuple of KV pair of mimetype and value.
+                "data": dict(zip(out["mimetype"], out["value"])),
+                "metadata": {},
+                "execution_count": self.execution_count,
+            }
+        else:
+            response = out["content"]
+        self.send_response(self.iopub_socket, msg_type, response)
+
+    async def perform_startup_checks(self, iframe_src: str = None):
         """
         One time checks triggered during the first execution request. Displays
         login window if matlab is not licensed using matlab-proxy.
 
         Raises:
-            ClientError, MATLABConnectionError: Occurs when matlab-proxy is not started or kernel cannot
-                                              communicate with MATLAB.
+            ClientError, MATLABConnectionError: Occurs when matlab-proxy is not started or
+                                              kernel cannot communicate with MATLAB.
         """
         self.log.debug("Performing startup checks")
-        # Incase an error occurred while kernel initialization, display it to the user.
+        # In case an error occurred while kernel initialization, display it to the user.
         if self.startup_error is not None:
             self.log.error(f"Found a startup error: {self.startup_error}")
             raise self.startup_error
@@ -592,12 +476,13 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             self.log.debug(
                 "MATLAB is not licensed. Displaying HTML output to enable licensing."
             )
+            self.log.debug(f"{iframe_src=}")
             self.display_output(
                 {
                     "type": "display_data",
                     "content": {
                         "data": {
-                            "text/html": f'<iframe src={self.server_base_url + "matlab"} width=700 height=600"></iframe>'
+                            "text/html": f'<iframe src={iframe_src} width=700 height=600"></iframe>'
                         },
                         "metadata": {},
                     },
@@ -605,6 +490,28 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
             )
 
         # Wait until MATLAB is started before sending requests.
+        await self.poll_for_matlab_startup(
+            is_matlab_licensed, matlab_status, matlab_proxy_has_error
+        )
+
+    async def poll_for_matlab_startup(
+        self, is_matlab_licensed, matlab_status, matlab_proxy_has_error
+    ):
+        """Wait until MATLAB has started or time has run out"
+
+        Args:
+        is_matlab_licensed (bool): A flag indicating whether MATLAB is
+            licensed and eligible to start.
+        matlab_status (str): A string representing the current status
+            of the MATLAB startup process.
+        matlab_proxy_has_error (bool): A flag indicating whether there
+            is an error in the MATLAB proxy process during startup.
+
+        Raises:
+            MATLABConnectionError: If an error occurs while attempting to
+            connect to the MATLAB backend, or if MATLAB fails to start
+            within the expected timeframe.
+        """
         self.log.debug("Waiting until MATLAB is started")
         timeout = 0
         while (
@@ -650,39 +557,44 @@ class MATLABKernel(ipykernel.kernelbase.Kernel):
 
         self.log.debug("MATLAB is running, startup checks completed.")
 
-    def display_output(self, out):
+    def _extract_kernel_id_from_sys_args(self, args) -> str:
         """
-        Common function to send execution outputs to Jupyter UI.
-        For more information, look at https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-iopub-pub-sub-channel
+        Extracts the kernel ID from the system arguments.
 
-        Input Example:
-        1.  Execution Output:
-            out = {
-                "type": "execute_result",
-                "mimetype": ["text/plain","text/html"],
-                "value": ["Hello","<html><body>Hello</body></html>"]
-            }
-        2.  For all other message types:
-            out = {
-                "type": "stream",
-                "content": {
-                    "name": "stderr",
-                    "text": "An error occurred"
-                }
-            }
+        This function parses the system arguments to extract the kernel ID from the Jupyter
+        kernel connection file path. The expected format of the arguments is:
+        ['/path/to/jupyter_matlab_kernel/__main__.py', '-f', '/path/to/kernel-<kernel_id>.json'].
+        If the extraction fails, it logs a debug message and returns another identifier (self.ident)
+        from the kernel base class.
 
         Args:
-            out (dict): A dictionary containing the type of output and the content of the output.
+            args (list): The list of system arguments.
+
+        Returns:
+            str: The extracted kernel ID if successful, otherwise `self.ident`.
+
+        Notes:
+            self.ident is another random UUID and is not as same as kernel id which we are using
+            for logs correlation as well as mapping the backend MATLAB proxy to a MATLAB Kernel
+            at proxy manager layer. Users will not be able to route to their corresponding MATLAB
+            when they click "Open MATLAB" button from their notebook interface, for isolated MATLAB.
+            As of now, connection file name is the only source of truth that supplies the kernel id
+            correctly. The issue of not being able to route to corresponding MATLAB is only specific
+            to Jupyter (via Jupyter Server Proxy) and specifically in isolated MATLAB workflows and
+            won't have impact on VSCode or other clients (e.g. test client).
+
         """
-        msg_type = out["type"]
-        if msg_type == "execute_result":
-            assert len(out["mimetype"]) == len(out["value"])
-            response = {
-                # Use zip to create a tuple of KV pair of mimetype and value.
-                "data": dict(zip(out["mimetype"], out["value"])),
-                "metadata": {},
-                "execution_count": self.execution_count,
-            }
-        else:
-            response = out["content"]
-        self.send_response(self.iopub_socket, msg_type, response)
+        try:
+            connection_file_path: Path = Path(args[2])
+
+            # Get the final component of the path without the suffix
+            kernel_file_name = connection_file_path.stem
+
+            # Jupyter kernel connection file naming scheme -> kernel-a8623c0a-574e-4f3d-a03a-ccb8c3f21165.json
+            # VSCode kernel connection file naming scheme -> kernel-v2-3030095VYYhRYlRs0Eu.json
+            return kernel_file_name.split("kernel-")[1]
+        except Exception as e:
+            self.log.debug(
+                f"Unable to extract kernel id from the sys args with ex: {e}"
+            )
+            return self.ident

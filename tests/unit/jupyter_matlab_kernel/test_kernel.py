@@ -3,7 +3,7 @@
 # This file contains tests for jupyter_matlab_kernel.kernel
 import mocks.mock_jupyter_server as MockJupyterServer
 import pytest
-from jupyter_matlab_kernel.kernel import start_matlab_proxy
+from jupyter_matlab_kernel.jsp_kernel import start_matlab_proxy
 from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
 from jupyter_server import serverapp
 from mocks.mock_jupyter_server import MockJupyterServerFixture
