@@ -63,7 +63,8 @@ dev = [
     "pytest-aiohttp",
     "pytest-asyncio",
     "pytest-cov",
-    "pytest-playwright"
+    "pytest-mock",
+    "pytest-playwright",
 ]
 
 [project.entry-points.jupyter_serverproxy_servers]

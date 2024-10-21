@@ -3,10 +3,11 @@
 # This file contains tests for jupyter_matlab_kernel.kernel
 import mocks.mock_jupyter_server as MockJupyterServer
 import pytest
-from jupyter_matlab_kernel.jsp_kernel import start_matlab_proxy
-from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
 from jupyter_server import serverapp
 from mocks.mock_jupyter_server import MockJupyterServerFixture
+
+from jupyter_matlab_kernel.jsp_kernel import start_matlab_proxy
+from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
 
 
 def test_start_matlab_proxy_without_jupyter_server():
@@ -18,7 +19,7 @@ def test_start_matlab_proxy_without_jupyter_server():
         start_matlab_proxy()
 
     assert (
-        "MATLAB Kernel for Jupyter was unable to find the notebook server from which it was spawned!"
+        "MATLAB Kernel for Jupyter was unable to find the notebook server from which it was spawned"
         in str(exceptionInfo.value)
     )
 
