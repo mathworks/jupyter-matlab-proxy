@@ -92,10 +92,9 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
 
     async def perform_startup_checks(self):
         """Overriding base function to provide a different iframe source"""
-        iframe_src: str = (
-            f'{self.jupyter_base_url}{self.matlab_proxy_base_url.lstrip("/")}/'
+        await super().perform_startup_checks(
+            self.jupyter_base_url, f'{self.matlab_proxy_base_url.lstrip("/")}/'
         )
-        await super().perform_startup_checks(iframe_src)
 
     # Helper functions
 

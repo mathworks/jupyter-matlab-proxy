@@ -441,7 +441,9 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
             response = out["content"]
         self.send_response(self.iopub_socket, msg_type, response)
 
-    async def perform_startup_checks(self, iframe_src: str = None):
+    async def perform_startup_checks(
+        self, jupyter_base_url: str = None, matlab_proxy_base_url: str = None
+    ):
         """
         One time checks triggered during the first execution request. Displays
         login window if matlab is not licensed using matlab-proxy.
@@ -470,19 +472,32 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
         # as src for iframe to avoid hardcoding any hostname/domain information. This is done to
         # ensure the kernel works in Jupyter deployments. VS Code however does not work the same way
         # as other browser based Jupyter clients.
-        #
-        # TODO: Find a workaround for users to be able to use our Jupyter kernel in VS Code.
         if not is_matlab_licensed:
+            if not jupyter_base_url:
+                # happens for non-jupyter environments (like VSCode), we expect licensing to
+                # be completed before hand
+                self.log.debug(
+                    "MATLAB is not licensed and is in a non-jupyter environment. licensing via other means required."
+                )
+                raise MATLABConnectionError(
+                    """
+                    Error: Cannot start MATLAB as no licensing information was found. 
+                    Resolution: Set the environment variable MLM_LICENSE_FILE to provide a network license manager, 
+                    or set MWI_USE_EXISTING_LICENSE to True if the installed MATLAB is already licensed. 
+                    See https://github.com/mathworks/matlab-proxy/blob/main/Advanced-Usage.md for more information.
+                    To use Online licensing, start a MATLAB Kernel in a Jupyter notebook and login using the web interface 
+                    shown upon execution of any code.
+                    """
+                )
             self.log.debug(
                 "MATLAB is not licensed. Displaying HTML output to enable licensing."
             )
-            self.log.debug(f"{iframe_src=}")
             self.display_output(
                 {
                     "type": "display_data",
                     "content": {
                         "data": {
-                            "text/html": f'<iframe src={iframe_src} width=700 height=600"></iframe>'
+                            "text/html": f'<iframe src={jupyter_base_url}{matlab_proxy_base_url} width=700 height=600"></iframe>'
                         },
                         "metadata": {},
                     },

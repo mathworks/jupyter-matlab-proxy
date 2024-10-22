@@ -201,5 +201,4 @@ class MATLABKernelUsingJSP(base.BaseMATLABKernel):
 
     async def perform_startup_checks(self):
         """Overriding base function to provide a different iframe source"""
-        iframe_src: str = f'{self.jupyter_base_url + "matlab"}'
-        await super().perform_startup_checks(iframe_src)
+        await super().perform_startup_checks(self.jupyter_base_url, "matlab")
