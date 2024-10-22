@@ -1,11 +1,10 @@
 # Copyright 2023-2024 The MathWorks, Inc.
 
-import asyncio
 import os
 import shutil
 
 import integration_test_utils
-import psutil
+import matlab_proxy.util.event_loop as mwi_event_loop
 import pytest
 import requests.exceptions
 from matlab_proxy import settings as mwi_settings
@@ -24,7 +23,6 @@ def matlab_proxy_fixture(module_monkeypatch):
         monkeypatch_module_scope (fixture): returns a MonkeyPatch object
         available in module scope
     """
-    import matlab_proxy.util
 
     integration_test_utils.perform_basic_checks()
 
@@ -51,14 +49,15 @@ def matlab_proxy_fixture(module_monkeypatch):
         "MWI_APP_PORT": mwi_app_port,
         "MWI_BASE_URL": mwi_base_url,
         "MWI_LOG_FILE": str(matlab_proxy_logs_path),
+        "MWI_JUPYTER_LOG_LEVEL": "WARN",
         "MWI_ENABLE_TOKEN_AUTH": "false",
     }
 
     # Get event loop to start matlab-proxy in background
-    loop = matlab_proxy.util.get_event_loop()
+    loop = mwi_event_loop.get_event_loop()
 
     # Run matlab-proxy in the background in an event loop
-    proc = loop.run_until_complete(
+    matlab_proxy_process = loop.run_until_complete(
         integration_test_utils.start_matlab_proxy_app(input_env=input_env)
     )
     # Poll for matlab-proxy URL to respond
@@ -87,21 +86,15 @@ def matlab_proxy_fixture(module_monkeypatch):
     # Run the jupyter kernel tests
     yield
 
-    # Terminate matlab-proxy
-    timeout = 120
-    child_process = psutil.Process(proc.pid).children(recursive=True)
-    for process in child_process:
-        try:
-            process.terminate()
-            process.wait()
-        except Exception:
-            pass
-
+    # Request timeouts
+    timeout = 120  # seconds
+    # Send shutdown_integration request to MATLAB Proxy
+    shutdown_url = f"{matlab_proxy_url}/shutdown_integration"
     try:
-        proc.terminate()
-        loop.run_until_complete(asyncio.wait_for(proc.wait(), timeout=timeout))
-    except Exception:
-        proc.kill()
+        requests.delete(shutdown_url, timeout=timeout)
+    except requests.exceptions.Timeout:
+        print("Timed out waiting for matlab-proxy to shutdown, killing process.")
+        matlab_proxy_process.kill()
 
 
 @pytest.fixture(scope="module", autouse=True)

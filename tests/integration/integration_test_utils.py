@@ -70,8 +70,6 @@ async def start_matlab_proxy_app(input_env={}):
     proc = await asyncio.create_subprocess_exec(
         *cmd,
         env=matlab_proxy_env,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
     )
     return proc
 
