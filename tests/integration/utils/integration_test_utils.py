@@ -5,7 +5,6 @@ import asyncio
 import os
 import socket
 import time
-
 import requests
 from matlab_proxy.settings import get_process_startup_timeout
 

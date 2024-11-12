@@ -48,11 +48,19 @@ jobs:
       - name: Ensure browsers are installed for playwright
         run: python3 -m playwright install --with-deps
 
-      - name: Integration test with pytest
-        run: python3 -m pytest tests/integration -vs
+      - name: License MATLAB Proxy
         env:
-          TEST_USERNAME: ${{secrets.TEST_USERNAME}}
-          TEST_PASSWORD: ${{secrets.TEST_PASSWORD}}
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+        run: |
+          python3 -c "from tests.integration.utils import licensing; licensing.start_and_license_matlab_proxy_using_jsp()"
+
+      - name: Integration test with pytest
+        env:
+          MWI_LOG_LEVEL: "DEBUG"
+          MWI_LOG_FILE: ${{github.workspace}}/tests/integration/integ_logs.log
+
+        run: python3 -m pytest tests/integration -vs
 
       - name: Preserve test logs
         if: ${{ always() }}
