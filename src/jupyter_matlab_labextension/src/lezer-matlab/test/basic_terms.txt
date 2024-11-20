@@ -41,12 +41,19 @@ Script(String)
 # Multiline comment
 
 %{
-  Test multiline comment
+  Test multiline comment.
+%}
+%{
+  Test multiline comment with whitespace before ending delimiter.
+  The whitespace could be a space or a tab, and can be before or
+  after either delimiter without invalidating the multiline comment.
+    %}
+not_a_comment % Line below is a LineComment
 %}
 
 ==>
  
-Script(MultilineComment)
+Script(MultilineComment,MultilineComment,Identifier,LineComment,LineComment)
 
 # Transpose
 

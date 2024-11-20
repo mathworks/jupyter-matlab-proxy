@@ -16,7 +16,7 @@ const isAlphabetical = (char) => /^[a-zA-Z]$/.test(String.fromCharCode(char));
 
 const lineEndArray = [newline, carriageReturn, fileEnd, fileStart];
 
-const isWhitespace = (char) => /\s/.test(char);
+const isWhitespace = (char) => /\s/.test(String.fromCharCode(char));
 
 const precededByWhitespaceOnly = (input) => {
     // Scan from current position to start of line.
