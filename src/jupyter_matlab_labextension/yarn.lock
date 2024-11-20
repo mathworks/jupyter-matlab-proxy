@@ -1514,9 +1514,9 @@ __metadata:
   linkType: hard
 
 "@types/lodash@npm:*":
-  version: 4.17.9
-  resolution: "@types/lodash@npm:4.17.9"
-  checksum: 6d1bf3e77f0a54d97532755a74260d402d8972259c5451b74612c16cb983b73e0760e5bfe4f9e68ab15051511c867812b40715a01f9805afe6bc36c7dd676378
+  version: 4.17.13
+  resolution: "@types/lodash@npm:4.17.13"
+  checksum: d0bf8fbd950be71946e0076b30fd40d492293baea75f05931b6b5b906fd62583708c6229abdb95b30205ad24ce1ed2f48bc9d419364f682320edd03405cc0c7e
   languageName: node
   linkType: hard
 
@@ -2359,7 +2359,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^12.0.0":
+"commander@npm:^12.1.0":
   version: 12.1.0
   resolution: "commander@npm:12.1.0"
   checksum: 68e9818b00fc1ed9cdab9eb16905551c2b768a317ae69a5e3c43924c2b20ac9bb65b27e1cab36aeda7b6496376d4da908996ba2c0b5d79463e0fb1e77935d514
@@ -2456,13 +2456,13 @@ __metadata:
   linkType: hard
 
 "cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.3":
-  version: 7.0.3
-  resolution: "cross-spawn@npm:7.0.3"
+  version: 7.0.5
+  resolution: "cross-spawn@npm:7.0.5"
   dependencies:
     path-key: ^3.1.0
     shebang-command: ^2.0.0
     which: ^2.0.1
-  checksum: 671cc7c7288c3a8406f3c69a3ae2fc85555c04169e9d611def9a675635472614f1c0ed0ef80955d5b6d4e724f6ced67f0ad1bb006c2ea643488fcfef994d7f52
+  checksum: 55c50004cb6bbea3649784caac6e7b8ddd03fa8c1e14dbd5a1f15896708378006eb7526a52a0f48770c768c9b8aed48a5888eb8e785ff59ff7749e74f66cd96b
   languageName: node
   linkType: hard
 
@@ -4139,7 +4139,7 @@ __metadata:
     semver: ">=5.7.2"
     typescript: ~5.0.2
     ws: ^7.5.10
-    yarn-audit-fix: ^10.0.1
+    yarn-audit-fix: ^10.1.0
     yarn-deduplicate: ^6.0.2
   languageName: unknown
   linkType: soft
@@ -6197,9 +6197,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yarn-audit-fix@npm:^10.0.1":
-  version: 10.0.9
-  resolution: "yarn-audit-fix@npm:10.0.9"
+"yarn-audit-fix@npm:^10.1.0":
+  version: 10.1.0
+  resolution: "yarn-audit-fix@npm:10.1.0"
   dependencies:
     "@types/fs-extra": ^11.0.4
     "@types/lodash-es": ^4.17.12
@@ -6207,7 +6207,7 @@ __metadata:
     "@types/yarnpkg__lockfile": ^1.1.9
     "@yarnpkg/lockfile": ^1.1.0
     chalk: ^5.3.0
-    commander: ^12.0.0
+    commander: ^12.1.0
     fast-glob: ^3.3.2
     fs-extra: ^11.2.0
     js-yaml: ^4.1.0
@@ -6216,7 +6216,7 @@ __metadata:
     synp: ^1.9.13
   bin:
     yarn-audit-fix: target/esm/cli.mjs
-  checksum: 2d35a33142269953f737b41382e2df4deb6a85b3215c020ae5f7f5c48000a894803b9e85b26cc9eb6846b22722ac7a133b93dcc8ac6cb784d21615a0171fe3eb
+  checksum: d61997bfac7a45ceeb83234ef340de28be74ccf64e9314bf46facd8b6fc0da56a7f77b6c526624c2deb906d908c3d237d5c129c1b0345a842904b49d7723163d
   languageName: node
   linkType: hard
 

@@ -80,7 +80,7 @@
     "semver": ">=5.7.2",
     "typescript": "~5.0.2",
     "ws": "^7.5.10",
-    "yarn-audit-fix": "^10.0.1",
+    "yarn-audit-fix": "^10.1.0",
     "yarn-deduplicate": "^6.0.2"
   },
   "sideEffects": [
