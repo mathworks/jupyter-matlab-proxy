@@ -67,6 +67,14 @@ dev = [
     "pytest-playwright",
 ]
 
+[tool.hatch.envs.hatch-test]
+features = [
+    "dev",
+]
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
 [project.entry-points.jupyter_serverproxy_servers]
 matlab = "jupyter_matlab_proxy:setup_matlab"
 
