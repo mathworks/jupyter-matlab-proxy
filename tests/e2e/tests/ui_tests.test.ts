@@ -1,25 +1,20 @@
 // Copyright 2023-2024 The MathWorks, Inc.
 
 import { expect, test } from '@jupyterlab/galata';
+import { Locator } from '@playwright/test';
 
 test.describe('MATLAB File button', () => {
+    let MATLABFileButton: Locator;
     test.beforeEach(async ({ page }) => {
-        await page.waitForLoadState();
+        await page.launcher.waitFor({ state: 'visible' });
+        MATLABFileButton = page.getByText('MATLAB File', { exact: true });
     });
 
     test('is visible on Launcher', async ({ page }) => {
-        const MATLABFileButton = page.getByRole(
-            'region',
-            { name: 'notebook content' })
-            .getByText('MATLAB File');
         await expect(MATLABFileButton).toBeVisible();
     });
 
     test('takes you to .m file', async ({ page }) => {
-        const MATLABFileButton = page.getByRole(
-            'region',
-            { name: 'notebook content' })
-            .getByText('MATLAB File');
         await MATLABFileButton.click();
 
         // Expect a new untitled file ending in .m to be made, with optional

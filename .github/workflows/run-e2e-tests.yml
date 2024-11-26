@@ -71,8 +71,8 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install pytest-playwright
-          python3 -m playwright install --with-deps
-          (cd tests/utils && mkdir licensing-logs && python3 -c "from licensing import *; license_with_online_licensing(log_dir=\"./licensing-logs\")")
+          python3 -m playwright install chromium --with-deps
+          (cd tests/utils && python3 -c "from licensing import *; license_with_online_licensing(log_dir=\"./licensing-logs\")")
 
       - name: Run playwright tests
         env:
