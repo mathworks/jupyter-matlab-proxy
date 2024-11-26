@@ -8,14 +8,23 @@ Run MATLAB® code in Jupyter® environments such as Jupyter notebooks, JupyterLa
 
 
 ## Table of Contents
-1. [Features of MATLAB Integration _for Jupyter_](#features-of-matlab-integration-for-jupyter)
-2. [Requirements](#requirements)
-3. [Install](#install)
-4. [Get Started](#get-started)
-    1. [Run MATLAB Code in a Jupyter Notebook](#run-matlab-code-in-a-jupyter-notebook)
-    2. [Open MATLAB in a Browser](#open-matlab-in-a-browser)
-    3. [Edit MATLAB Files in JupyterLab](#edit-matlab-files-in-jupyterlab)
-5. [Limitations](#limitations)
+- [MATLAB Integration _for Jupyter_](#matlab-integration-for-jupyter)
+  - [Table of Contents](#table-of-contents)
+  - [Features of MATLAB Integration _for Jupyter_](#features-of-matlab-integration-for-jupyter)
+  - [Requirements](#requirements)
+  - [Install](#install)
+    - [Install from PyPI](#install-from-pypi)
+    - [Build from Source](#build-from-source)
+    - [Using JupyterHub](#using-jupyterhub)
+    - [Using JupyterHub and The Littlest JupyterHub](#using-jupyterhub-and-the-littlest-jupyterhub)
+    - [Using Simulink](#using-simulink)
+    - [Troubleshooting](#troubleshooting)
+  - [Get Started](#get-started)
+  - [Run MATLAB Code in a Jupyter Notebook](#run-matlab-code-in-a-jupyter-notebook)
+    - [Notes](#notes)
+  - [Open MATLAB in a Browser](#open-matlab-in-a-browser)
+  - [Edit MATLAB Files in JupyterLab](#edit-matlab-files-in-jupyterlab)
+  - [Limitations](#limitations)
 
 
 ## Features of MATLAB Integration _for Jupyter_
@@ -81,8 +90,11 @@ python -m pip install .
 ```
 
 ### Using JupyterHub
+### Using JupyterHub and The Littlest JupyterHub
 
 To use MATLAB with JupyterHub, install the `jupyter-matlab-proxy` Python package in the Jupyter environment launched by your JupyterHub platform. For example, if your JupyterHub platform launches Docker containers, install this package in the Docker image used to launch those containers, using the instructions for [Using MATLAB Integration _for Jupyter_ in a Docker Container](https://github.com/mathworks-ref-arch/matlab-integration-for-jupyter/tree/main/matlab).
+
+To use MATLAB with [The Littlest JupyterHub (TLJH)](https://tljh.jupyter.org/en/stable/index.html#), see [MATLAB Integration for Jupyter on The Littlest JupyterHub](https://github.com/mathworks/jupyter-matlab-proxy/jupyter-matlab-proxy/install_guides/the-littlest-jupyterhub/README.md). You might use this if you want to set up JupyterHub on a single server for a small number of users, such as students in a class.
 
 ### Using Simulink
 

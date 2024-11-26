@@ -12,6 +12,7 @@ on:
       - "src/**"
       - "tests/**"
       - "setup.py"
+
 jobs:
   call-unit-tests:
     # Run unit tests
