@@ -36,7 +36,12 @@ Execute the [start-container-with-tljh-matlab.sh](./start-container-with-tljh-ma
 
 Once initialized, your JupyterHub server will be accessible for notebook hosting at **http://Your-FQDN:12000**. You can view it in your browser via **http://localhost:12000/**.
 
-To tailor the MATLAB release or to install different MATLAB toolboxes within the TLJH instance, adjust the environment variables in the [.matlab_env](./.matlab_env) file accordingly.
+![JupyterHub Login Page](https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/tljh.png)
+
+Access JupyterHub using the default credentials: the username is `admin` and the password is `password`.
+You can update these default values either, in the [start-container-with-tljh-matlab.sh](./start-container-with-tljh-matlab.sh) script, or from the Jupyter Admin UI.
+
+To install a different release of MATLAB or to install different MATLAB toolboxes within the TLJH instance, adjust the environment variables in the [.matlab_env](./.matlab_env) file accordingly and re-run `start-container-with-tljh-matlab.sh`.
 
 ## Learn More
 
