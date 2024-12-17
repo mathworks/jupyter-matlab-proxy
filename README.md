@@ -55,7 +55,7 @@ From your Jupyter notebook or JupyterLab, you can also open the MATLAB developme
   Note: You only need MATLAB installed if you want to execute MATLAB code. You can open Jupyter notebooks containing MATLAB code without having MATLAB installed.
 
 * System dependencies required to run MATLAB:
-  - The [MATLAB Dependencies](https://github.com/mathworks-ref-arch/container-images/tree/master/matlab-deps) repository contains `base-dependencies.txt` files that list the libraries required to run each release of MATLAB on a given operating system. To see how to use these files, refer to the Dockerfiles in the same folder.
+  - The [MATLAB Dependencies](https://github.com/mathworks-ref-arch/container-images/tree/main/matlab-deps) repository contains `base-dependencies.txt` files that list the libraries required to run each release of MATLAB on a given operating system. To see how to use these files, refer to the Dockerfiles in the same folder.
 
 * Linux based systems also require `X Virtual Frame Buffer (Xvfb)`, which you can install with:
 
@@ -92,7 +92,7 @@ python -m pip install .
 ### Using JupyterHub
 ### Using JupyterHub and The Littlest JupyterHub
 
-To use MATLAB with JupyterHub, install the `jupyter-matlab-proxy` Python package in the Jupyter environment launched by your JupyterHub platform. For example, if your JupyterHub platform launches Docker containers, install this package in the Docker image used to launch those containers, using the instructions for [Using MATLAB Integration _for Jupyter_ in a Docker Container](https://github.com/mathworks-ref-arch/matlab-integration-for-jupyter/tree/main/matlab).
+To use MATLAB with JupyterHub, install the `jupyter-matlab-proxy` Python package in the Jupyter environment launched by your JupyterHub platform. For example, if your JupyterHub platform launches Docker containers, install this package in the Docker image used to launch those containers, using the instructions for [Using MATLAB Integration _for Jupyter_ in a Docker Container](https://github.com/mathworks-ref-arch/matlab-integration-for-jupyter).
 
 To use MATLAB with [The Littlest JupyterHub (TLJH)](https://tljh.jupyter.org/en/stable/index.html#), see [MATLAB Integration for Jupyter on The Littlest JupyterHub](https://github.com/mathworks/jupyter-matlab-proxy/jupyter-matlab-proxy/install_guides/the-littlest-jupyterhub/README.md). You might use this if you want to set up JupyterHub on a single server for a small number of users, such as students in a class.
 
