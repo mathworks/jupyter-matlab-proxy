@@ -21,11 +21,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up virtual display on Ubuntu
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          # Function to check if a display port is free
+          is_display_free() {
+            xvfb-run --auto-servernum --server-num=$1 true 2>/dev/null
+          }
+
+          # Find the first free display port
+          DISPLAY_PORT=""
+          for num in $(seq 99 -1 0); do
+            if is_display_free $num; then
+              DISPLAY_PORT=$num
+              break
+            fi
+          done
+          # Start Xvfb with the free port
+          Xvfb :$DISPLAY_PORT -ac &
+          # Set the DISPLAY environment variable
+          echo "DISPLAY=:$DISPLAY_PORT" >> $GITHUB_ENV
+          # Print the chosen display port for debugging
+          echo "Using display port :$DISPLAY_PORT"
+
       - name: Set up MATLAB ${{ matrix.matlab-release }}
         # Use MATLAB Actions to get running MATLAB in GitHub Actions
         uses: matlab-actions/setup-matlab@v2
         with:
           release: ${{ matrix.matlab-release }}
+          products: >
+            Symbolic_Math_Toolbox
 
       - name: Run tests
         uses: matlab-actions/run-tests@v2
