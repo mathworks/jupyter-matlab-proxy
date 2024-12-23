@@ -137,7 +137,7 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
             response = await mpm_lib.start_matlab_proxy_for_kernel(
                 caller_id=self.kernel_id,
                 parent_id=self.parent_pid,
-                is_isolated_matlab=False,
+                is_shared_matlab=True,
             )
             return (
                 response.get("absolute_url"),
