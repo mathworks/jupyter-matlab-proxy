@@ -1,4 +1,4 @@
-# Copyright 2024 The MathWorks, Inc.
+# Copyright 2024-2025 The MathWorks, Inc.
 
 import os
 from typing import Union
@@ -25,7 +25,7 @@ class KernelFactory:
         """
 
         # Get the env var toggle
-        use_fallback_kernel = os.getenv("MWI_USE_FALLBACK_KERNEL", "TRUE")
+        use_fallback_kernel = os.getenv("MWI_USE_FALLBACK_KERNEL", "FALSE")
         return use_fallback_kernel.lower().strip() == "true"
 
     @staticmethod

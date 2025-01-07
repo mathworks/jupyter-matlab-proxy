@@ -1,4 +1,4 @@
-# Copyright 2023-2024 The MathWorks, Inc.
+# Copyright 2023-2025 The MathWorks, Inc.
 
 """
 This module serves as the base class for various MATLAB Kernels.
@@ -72,10 +72,10 @@ def _fetch_jupyter_base_url(parent_pid: str, logger: Logger) -> Optional[str]:
         logger.debug(
             "Jupyter server associated with this MATLAB Kernel not found, might a non-jupyter based MATLAB Kernel"
         )
-        return None
+    return None
 
 
-def _get_parent_pid() -> str:
+def _get_parent_pid() -> int:
     """
     Retrieves the parent process ID (PID) of the Kernel process.
 

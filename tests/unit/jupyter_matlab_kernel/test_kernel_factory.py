@@ -1,4 +1,4 @@
-# Copyright 2024 The MathWorks, Inc.
+# Copyright 2024-2025 The MathWorks, Inc.
 
 import pytest
 
@@ -47,4 +47,4 @@ def test_correct_kernel_type_is_returned_when_env_var_unset(monkeypatch):
     """
     monkeypatch.delenv("MWI_USE_FALLBACK_KERNEL", raising=False)
     kernel_class = KernelFactory.get_kernel_class()
-    assert kernel_class is MATLABKernelUsingJSP
+    assert kernel_class is MATLABKernelUsingMPM

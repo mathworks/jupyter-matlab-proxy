@@ -1,4 +1,4 @@
-# Copyright 2020-2024 The MathWorks, Inc.
+# Copyright 2020-2025 The MathWorks, Inc.
 
 import os
 import secrets
@@ -15,7 +15,7 @@ from jupyter_matlab_proxy.jupyter_config import config
 _MPM_AUTH_TOKEN: str = secrets.token_hex(32)
 _JUPYTER_SERVER_PID: str = str(os.getpid())
 _USE_FALLBACK_KERNEL: bool = (
-    os.getenv("MWI_USE_FALLBACK_KERNEL", "TRUE").lower().strip() == "true"
+    os.getenv("MWI_USE_FALLBACK_KERNEL", "FALSE").lower().strip() == "true"
 )
 
 
