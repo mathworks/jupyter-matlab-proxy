@@ -15,7 +15,6 @@ Run MATLAB® code in Jupyter® environments such as Jupyter notebooks, JupyterLa
   - [Install](#install)
     - [Install from PyPI](#install-from-pypi)
     - [Build from Source](#build-from-source)
-    - [Using JupyterHub](#using-jupyterhub)
     - [Using JupyterHub and The Littlest JupyterHub](#using-jupyterhub-and-the-littlest-jupyterhub)
     - [Using Simulink](#using-simulink)
     - [Troubleshooting](#troubleshooting)
@@ -77,7 +76,10 @@ Install this Python package from the Python Package Index (PyPI) or build it fro
 
 ```bash
 python -m pip install jupyter-matlab-proxy
+install-matlab-kernelspec
 ```
+For more information on `install-matlab-kernelspec`, see [Jupyter Kernelspec Installation Utility](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/troubleshooting/troubleshooting.md#jupyter-kernelspec-installation-utility).
+
 Installing this package will not install MATLAB. To execute MATLAB code in Jupyter, you must have [MATLAB installed](https://www.mathworks.com/help/install/install-products.html) separately.
 
 ### Build from Source
@@ -87,9 +89,9 @@ Alternatively, you can install this package by building it from the source. This
 git clone https://github.com/mathworks/jupyter-matlab-proxy.git
 cd jupyter-matlab-proxy
 python -m pip install .
+install-matlab-kernelspec
 ```
 
-### Using JupyterHub
 ### Using JupyterHub and The Littlest JupyterHub
 
 To use MATLAB with JupyterHub, install the `jupyter-matlab-proxy` Python package in the Jupyter environment launched by your JupyterHub platform. For example, if your JupyterHub platform launches Docker containers, install this package in the Docker image used to launch those containers, using the instructions for [Using MATLAB Integration _for Jupyter_ in a Docker Container](https://github.com/mathworks-ref-arch/matlab-integration-for-jupyter).
@@ -225,7 +227,7 @@ This opens an untitled `.m` file where you can write MATLAB code with syntax hig
 
 ----
 
-Copyright 2021-2024 The MathWorks, Inc.
+Copyright 2021-2025 The MathWorks, Inc.
 
 ----
 

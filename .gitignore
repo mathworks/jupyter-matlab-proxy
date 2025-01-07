@@ -22,3 +22,4 @@ src/jupyter_matlab_labextension/src/lezer-matlab/src/parser.js
 src/jupyter_matlab_labextension/src/lezer-matlab/src/parser.terms.js
 integ-tests.log
 tests/integration/integ_logs.log
+src/jupyter_matlab_kernel/kernelspec/kernel.json

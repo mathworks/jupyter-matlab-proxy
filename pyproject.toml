@@ -1,4 +1,4 @@
-# Copyright 2023-2024 The MathWorks, Inc.
+# Copyright 2023-2025 The MathWorks, Inc.
 
 [build-system]
 requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0,<5", "hatch-nodejs-version>=0.3.2"]
@@ -38,18 +38,14 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 
-# Note: Simpervisor v1.0.0 is required to support jupyter-matlab-proxy on Windows.
-# While fresh installs of juptyer-server-proxy will download v1.0.0 of simpervisor,
-# Existing installations where jupyter-matlab-proxy is being deployed would not get this update.
-# It is safe to update simpervisor to v1.0.0 while keeping jupyter-server-proxy at its existing level.
 dependencies = [
     "aiohttp",
-    "jupyter-server-proxy",
-    "simpervisor>=1.0.0",
+    "ipykernel",
+    "jupyter-client",
+    "jupyter-server-proxy>=4.1.0",
     "matlab-proxy>=0.16.0",
     "psutil",
     "requests",
-    "ipykernel"
 ]
 
 [project.urls]
@@ -66,6 +62,11 @@ dev = [
     "pytest-mock",
     "pytest-playwright",
 ]
+
+[project.scripts]
+# Note: If the following name of the script is updated, it should also be updated
+# in main function of kernelspec.py
+install-matlab-kernelspec = "jupyter_matlab_kernel.kernelspec:main"
 
 [tool.hatch.envs.hatch-test]
 features = [
@@ -93,12 +94,13 @@ artifacts = [
 ]
 exclude = [".github"]
 
+# Used to call hatch_build.py
+[tool.hatch.build.hooks.custom]
+
 [tool.hatch.build.targets.wheel.shared-data]
 "src/jupyter_matlab_labextension/jupyter_matlab_labextension/labextension" = "share/jupyter/labextensions/jupyter_matlab_labextension"
 "src/jupyter_matlab_labextension/install.json" = "share/jupyter/labextensions/jupyter_matlab_labextension/install.json"
-"src/jupyter_matlab_kernel/kernel.json" = "share/jupyter/kernels/jupyter_matlab_kernel/kernel.json"
-"img/logo-64x64.png" = "share/jupyter/kernels/jupyter_matlab_kernel/logo-64x64.png"
-"img/logo-svg.svg" = "share/jupyter/kernels/jupyter_matlab_kernel/logo-svg.svg"
+"src/jupyter_matlab_kernel/kernelspec" = "share/jupyter/kernels/jupyter_matlab_kernel"
 
 [tool.hatch.build.hooks.jupyter-builder]
 dependencies = ["hatch-jupyter-builder>=0.8.1"]

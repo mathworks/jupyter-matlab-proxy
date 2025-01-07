@@ -7,6 +7,7 @@ This folder contains `troubleshooting.py`, a Python script that checks your envi
 1. [Requirements](#requirements)
 2. [Run Troubleshooting Script](#run-troubleshooting-script)
 3. [Enable Logging](#enable-logging)
+4. [Jupyter Kernelspec Installation Utility](#jupyter-kernelspec-installation-utility)
 
 ## Requirements
 - Python
@@ -41,8 +42,32 @@ $ export MWI_JUPYTER_LOG_LEVEL="DEBUG"
 $ jupyter lab
 ```
 
+## Jupyter Kernelspec Installation Utility
+
+The MATLAB Integration _for Jupyter_ package in this repository includes a [kernelspec installation utility](/jupyter-matlab-proxy/src/jupyter_matlab_kernel/kernelspec.py). When you install the package, the default kernelspec uses the Python executable it finds on your system PATH. However, this executable might be different from the one in the Python environment where you install the package. To correct this, the kernelspec utility modifies the kernelspec to match the correct Python executable. 
+
+To use the kernelspec installation utility, run the following command in the terminal:
+
+```bash
+install-matlab-kernelspec
+```
+
+The kernelspec installation utility also allows you to revert changes to the original kernelspec, or to preview the changes without actually modifying the kernelspec. For more information about using the utility, use the `--help` option.
+
+```bash
+install-matlab-kernelspec --help
+usage: install-matlab-kernelspec [-h] [--reset] [--preview]
+
+Install or Reset Jupyter kernelspec for MATLAB Kernel
+
+options:
+  -h, --help  show this help message and exit
+  --reset     Reset kernelspec to the default configuration
+  --preview   Preview changes to kernelspec
+```
+
 ----
 
-Copyright 2023-2024 The MathWorks, Inc.
+Copyright 2023-2025 The MathWorks, Inc.
 
 ----
