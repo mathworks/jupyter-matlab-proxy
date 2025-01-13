@@ -67,6 +67,7 @@
     "@jupyterlab/builder": ">=4.0.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
+    "cross-spawn": "^6.0.6",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-config-standard-with-typescript": "^22.0.0",
@@ -80,8 +81,7 @@
     "semver": ">=5.7.2",
     "typescript": "~5.0.2",
     "ws": "^7.5.10",
-    "yarn-audit-fix": "^10.1.0",
-    "yarn-deduplicate": "^6.0.2"
+    "yarn-audit-fix": "^10.1.1"
   },
   "sideEffects": [
     "style/*.css",
