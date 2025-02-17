@@ -84,7 +84,7 @@ Installing this package will not install MATLAB. To execute MATLAB code in Jupyt
 
 ### Build from Source
 
-Alternatively, you can install this package by building it from the source. This requires Node.js® version 16 or higher. To install Node.js, see [Node.js Downloads](https://nodejs.org/en/download/).
+Alternatively, you can install this package by building it from the source. This requires Node.js® version 18 or higher. To install Node.js, see [Node.js Downloads](https://nodejs.org/en/download/).
 ```bash
 git clone https://github.com/mathworks/jupyter-matlab-proxy.git
 cd jupyter-matlab-proxy
