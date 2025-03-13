@@ -40,7 +40,7 @@ classifiers = [
 
 dependencies = [
     "aiohttp",
-    "ipykernel",
+    "ipykernel>=6.0.3",
     "jupyter-client",
     "jupyter-server-proxy>=4.1.0",
     "matlab-proxy>=0.23.3",
