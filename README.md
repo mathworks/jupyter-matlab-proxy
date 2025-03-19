@@ -15,6 +15,7 @@ Run MATLAB® code in Jupyter® environments such as Jupyter notebooks, JupyterLa
   - [Install](#install)
     - [Install from PyPI](#install-from-pypi)
     - [Build from Source](#build-from-source)
+    - [Using VS Code](#using-vs-code)
     - [Using JupyterHub and The Littlest JupyterHub](#using-jupyterhub-and-the-littlest-jupyterhub)
     - [Using Simulink](#using-simulink)
     - [Troubleshooting](#troubleshooting)
@@ -92,11 +93,15 @@ python -m pip install .
 install-matlab-kernelspec
 ```
 
+### Using VS Code
+
+You can use this package to run MATLAB in Jupyter notebooks using VS Code. For instructions, see [Run MATLAB in Jupyter Notebooks Using VS Code](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/install_guides/vscode/README.md).
+
 ### Using JupyterHub and The Littlest JupyterHub
 
 To use MATLAB with JupyterHub, install the `jupyter-matlab-proxy` Python package in the Jupyter environment launched by your JupyterHub platform. For example, if your JupyterHub platform launches Docker containers, install this package in the Docker image used to launch those containers, using the instructions for [Using MATLAB Integration _for Jupyter_ in a Docker Container](https://github.com/mathworks-ref-arch/matlab-integration-for-jupyter).
 
-To use MATLAB with [The Littlest JupyterHub (TLJH)](https://tljh.jupyter.org/en/stable/index.html#), see [MATLAB Integration for Jupyter on The Littlest JupyterHub](https://github.com/mathworks/jupyter-matlab-proxy/jupyter-matlab-proxy/install_guides/the-littlest-jupyterhub/README.md). You might use this if you want to set up JupyterHub on a single server for a small number of users, such as students in a class.
+To use MATLAB with [The Littlest JupyterHub (TLJH)](https://tljh.jupyter.org/en/stable/index.html#), see [MATLAB Integration for Jupyter on The Littlest JupyterHub](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/install_guides/the-littlest-jupyterhub/README.md). You might use this if you want to set up JupyterHub on a single server for a small number of users, such as students in a class.
 
 ### Using Simulink
 
