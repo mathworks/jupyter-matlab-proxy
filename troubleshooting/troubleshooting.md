@@ -44,7 +44,7 @@ $ jupyter lab
 
 ## Jupyter Kernelspec Installation Utility
 
-The MATLAB Integration _for Jupyter_ package in this repository includes a [kernelspec installation utility](/jupyter-matlab-proxy/src/jupyter_matlab_kernel/kernelspec.py). When you install the package, the default kernelspec uses the Python executable it finds on your system PATH. However, this executable might be different from the one in the Python environment where you install the package. To correct this, the kernelspec utility modifies the kernelspec to match the correct Python executable. 
+The MATLAB Integration _for Jupyter_ package in this repository includes a [kernelspec installation utility](/src/jupyter_matlab_kernel/kernelspec.py). When you install the package, the default kernelspec uses the Python executable it finds on your system PATH. However, this executable might be different from the one in the Python environment where you install the package. To correct this, the kernelspec utility modifies the kernelspec to match the correct Python executable. 
 
 To use the kernelspec installation utility, run the following command in the terminal:
 
