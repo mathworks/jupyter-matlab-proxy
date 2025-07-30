@@ -138,6 +138,7 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
                 caller_id=self.kernel_id,
                 parent_id=self.parent_pid,
                 is_shared_matlab=True,
+                base_url_prefix=self.jupyter_base_url,
             )
             err = response.get("errors")
             if err:

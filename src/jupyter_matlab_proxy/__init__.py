@@ -85,6 +85,7 @@ def _get_env(port, base_url):
             mpm_env.get_env_name_mwi_mpm_port(): str(port),
             mpm_env.get_env_name_mwi_mpm_auth_token(): _MPM_AUTH_TOKEN,
             mpm_env.get_env_name_mwi_mpm_parent_pid(): _JUPYTER_SERVER_PID,
+            mpm_env.get_env_name_base_url_prefix(): f"{base_url}",
         }
     return env
 
