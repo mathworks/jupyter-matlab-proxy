@@ -1,4 +1,4 @@
-# Copyright 2024 The MathWorks, Inc.
+# Copyright 2024-2025 The MathWorks, Inc.
 
 """This module contains derived class implementation of MATLABKernel that uses
 MATLAB Proxy Manager to manage interactions with matlab-proxy & MATLAB.
@@ -93,7 +93,7 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
     async def perform_startup_checks(self):
         """Overriding base function to provide a different iframe source"""
         await super().perform_startup_checks(
-            self.jupyter_base_url, f'{self.matlab_proxy_base_url.lstrip("/")}/'
+            self.jupyter_base_url, f"{self.matlab_proxy_base_url.lstrip('/')}/"
         )
 
     # Helper functions
@@ -139,6 +139,9 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
                 parent_id=self.parent_pid,
                 is_shared_matlab=True,
             )
+            err = response.get("errors")
+            if err:
+                raise MATLABConnectionError(err)
             return (
                 response.get("absolute_url"),
                 response.get("mwi_base_url"),
@@ -146,12 +149,13 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
                 response.get("mpm_auth_token"),
             )
         except Exception as e:
-            _logger.error(
-                f"MATLAB Kernel could not start matlab-proxy using proxy manager with error: {e}"
-            )
+            _logger.error(f"MATLAB Kernel could not start matlab-proxy, Reason: {e}")
             raise MATLABConnectionError(
-                """
-                Error: MATLAB Kernel could not start the MATLAB proxy process via proxy manager.
+                f"""
+                Error: MATLAB Kernel could not start the MATLAB proxy process.
+                Reason: {e}
+                Resolution: Run the troubleshooting script described in the file `troubleshooting.md`.
+                If the issue persists, create an issue on Github: https://github.com/mathworks/jupyter-matlab-proxy/issues.
                 """
             ) from e
 

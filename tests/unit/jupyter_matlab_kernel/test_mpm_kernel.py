@@ -1,4 +1,4 @@
-# Copyright 2024 The MathWorks, Inc.
+# Copyright 2024-2025 The MathWorks, Inc.
 
 import uuid
 
@@ -59,10 +59,7 @@ async def test_initialize_matlab_proxy_with_mpm_exception(mocker, mpm_kernel_ins
         await mpm_kernel_instance._initialize_matlab_proxy_with_mpm(
             mpm_kernel_instance.log
         )
-    assert (
-        "Error: MATLAB Kernel could not start the MATLAB proxy process via proxy manager."
-        in str(exc_info.value)
-    )
+    assert "Simulated failure" in str(exc_info.value)
 
 
 async def test_initialize_mwi_comm_helper(mocker, mpm_kernel_instance):
