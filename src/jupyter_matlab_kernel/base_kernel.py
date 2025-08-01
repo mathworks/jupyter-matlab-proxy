@@ -31,7 +31,7 @@ from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
 _MATLAB_STARTUP_TIMEOUT = mwi_settings.get_process_startup_timeout()
 
 
-def _fetch_jupyter_base_url(parent_pid: str, logger: Logger) -> Optional[str]:
+def _fetch_jupyter_base_url(parent_pid: str, logger: Logger) -> str:
     """
     Fetches information about the running Jupyter server associated with the MATLAB kernel.
 
@@ -67,12 +67,12 @@ def _fetch_jupyter_base_url(parent_pid: str, logger: Logger) -> Optional[str]:
             # Stop iterating over the server list
             return nb_server["base_url"]
 
-    # log and return None if the server is not found
+    # log and return empty string if the server is not found
     if not found_nb_server:
         logger.debug(
             "Jupyter server associated with this MATLAB Kernel not found, might a non-jupyter based MATLAB Kernel"
         )
-    return None
+    return ""
 
 
 def _get_parent_pid() -> int:
@@ -442,7 +442,7 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
         self.send_response(self.iopub_socket, msg_type, response)
 
     async def perform_startup_checks(
-        self, jupyter_base_url: str = None, matlab_proxy_base_url: str = None
+        self, jupyter_base_url="", matlab_proxy_base_url=""
     ):
         """
         One time checks triggered during the first execution request. Displays
@@ -497,7 +497,7 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
                     "type": "display_data",
                     "content": {
                         "data": {
-                            "text/html": f'<iframe src={jupyter_base_url}{matlab_proxy_base_url} width=700 height=600"></iframe>'
+                            "text/html": f'<iframe src={matlab_proxy_base_url} width=700 height=600"></iframe>'
                         },
                         "metadata": {},
                     },
