@@ -12,7 +12,7 @@ function result = execute(code, kernelId)
 % of a unique Live Script. Hence, each execution request can be considered as
 % creating and running a new Live Script file.
 
-% Copyright 2023-2024 The MathWorks, Inc.
+% Copyright 2023-2025 The MathWorks, Inc.
 
 % Embed user MATLAB code in a try-catch block for MATLAB versions less than R2022b.
 % This is will disable inbuilt ErrorRecovery mechanism. Any exceptions created in
@@ -46,6 +46,13 @@ request = updateRequest(request, code);
 % in Jupyter notebooks.
 hotlinksPreviousState = feature('hotlinks','off');
 hotlinksCleanupObj = onCleanup(@() feature('hotlinks', hotlinksPreviousState));
+
+% Figures hang in MATLAB versions >= R2025a for certain workflows. The following
+% workaround fixes the issue in MATLAB versions >= R2025b.
+if ~isMATLABReleaseOlderThan("R2025b")
+    forceIndependentlyHostedFiguresProp = addprop(groot, "ForceIndependentlyHostedFigures");
+    propCleanupObj = onCleanup(@() delete(forceIndependentlyHostedFiguresProp));
+end
 
 % Use the Live editor API for execution of MATLAB code and capturing the outputs
 resp = jsondecode(matlab.internal.editor.evaluateSynchronousRequest(request));
