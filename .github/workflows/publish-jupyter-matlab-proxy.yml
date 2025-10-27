@@ -1,4 +1,4 @@
-# Copyright 2020-2024 The MathWorks, Inc.
+# Copyright 2020-2025 The MathWorks, Inc.
 
 name: Publish jupyter-matlab-proxy to PyPI
 on:
@@ -38,10 +38,11 @@ jobs:
       - name: Install Python build dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install wheel hatch
+          python3 -m pip install --upgrade build hatch wheel
 
-      - name: Build Source and Binary wheel distributions
-        run: python3 -m hatch build -t wheel
+      - name: Build Source and Binary wheel distributions (using recommended tooling)
+        # https://packaging.python.org/en/latest/guides/tool-recommendations/#building-distributions
+        run: python3 -m build
 
       - name: Publish to PyPI.
         uses: pypa/gh-action-pypi-publish@release/v1
