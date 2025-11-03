@@ -106,7 +106,7 @@ def setup_matlab():
 
 
 def _get_jsp_config(logger):
-    icon_path = Path(__file__).parent / "icon_open_matlab.svg"
+    icon_path = str(Path(__file__).parent / "icon_open_matlab.svg")
     logger.debug("Icon_path: %s", icon_path)
     jsp_config = {}
 
