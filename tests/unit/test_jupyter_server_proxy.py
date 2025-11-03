@@ -1,4 +1,4 @@
-# Copyright 2020-2024 The MathWorks, Inc.
+# Copyright 2020-2025 The MathWorks, Inc.
 
 import inspect
 import os
@@ -88,7 +88,7 @@ def test_setup_matlab(set_mwi_use_fallback_kernel):
     """
     # Setup
     package_path = Path(inspect.getfile(jupyter_matlab_proxy)).parent
-    icon_path = package_path / "icon_open_matlab.svg"
+    icon_path = str(package_path / "icon_open_matlab.svg")
 
     expected_matlab_setup = {
         "command": [
@@ -128,7 +128,7 @@ def test_setup_matlab_with_proxy_manager(monkeypatch):
     monkeypatch.setattr("jupyter_matlab_proxy._MPM_AUTH_TOKEN", "secret")
     monkeypatch.setattr("jupyter_matlab_proxy._JUPYTER_SERVER_PID", "123")
     package_path = Path(inspect.getfile(jupyter_matlab_proxy)).parent
-    icon_path = package_path / "icon_open_matlab.svg"
+    icon_path = str(package_path / "icon_open_matlab.svg")
 
     expected_matlab_setup = {
         "command": [matlab_proxy_manager.get_executable_name()],
@@ -161,7 +161,7 @@ def test_setup_matlab_with_token_auth_disabled(
     """
     # Setup
     package_path = Path(inspect.getfile(jupyter_matlab_proxy)).parent
-    icon_path = package_path / "icon_open_matlab.svg"
+    icon_path = str(package_path / "icon_open_matlab.svg")
     monkeypatch.setattr(jupyter_matlab_proxy, "_mwi_auth_token", None)
 
     expected_matlab_setup = {
