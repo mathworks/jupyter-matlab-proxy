@@ -145,6 +145,11 @@ def get_magics_from_cell(cell_code):
             params = magic_dict["params"].strip()
             if params:
                 magic_dict["params"] = re.split("\s+", params)
+                # transform ? parameter into a help magic, such that %%file? becomes %%help file
+                if params.startswith("?"):
+                    # Ignore additional parameters after the ? parameter
+                    magic_dict["params"] = [magic_dict.get("name", "")]
+                    magic_dict["name"] = "help"
             else:
                 magic_dict["params"] = []
             magic_dict["line_number"] = line_number

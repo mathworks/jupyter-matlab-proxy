@@ -1,24 +1,22 @@
 # Magic Commands for MATLAB Kernel
 
-You can use magic commands with the MATLAB kernel. You can use the predefined magic commands in this folder, and you can implement your own by following the steps below. 
+This guide shows how to use magic commands with the MATLAB kernel for added functionality. 
 
 ## Get Started
 
-Magic commands for the MATLAB kernel are prefixed with two percentage symbols `%%` without whitespaces. For example, to list available magic commands, run `%%lsmagic`
+Magic commands for the MATLAB kernel are prefixed with two percentage symbols `%%` without whitespaces. For example, to list available magic commands, run `%%lsmagic`. To read the documentation of a magic command, use the help command `?` or `help`, for example `%%lsmagic?` or `%%help lsmagic`.
 
-Note that magic commands will only work at the beginning of cells, and will not work with MATLAB variables.
-
-The magic commands `help` and `file` accept additional parameters. For example, to display information about a magic command, run `%%help` followed by the name of the magic as an argument: `%%help time`
+Note that magic commands only work at the beginning of cells.
 
 This table lists the predefined magic commands you can use: 
 
 
 |Name|Description|Additional Parameters|Constraints|Example command|
 |---|---|---|---|---|
-|lsmagic|List predefined magic commands.|||`%%lsmagic`|
-|help|Display information about provided magic command. | Name of magic command.|| `%%help file`|
-|time|Display time taken to execute a cell.|||`%%time`|
-|file|Save contents of cell as a file in the notebook folder. You can use this command to define and save new functions. For details, see the section below on how to [Create New Functions Using the %%file Magic Command](#create-new-functions-using-the-the-file-magic-command)|Name of saved file|The file magic command will save the contents of the cell, but not execute them in MATLAB|`%%file myfile.m`|
+|`?` and `help`| Display documentation of given magic command.|Name of magic command.||`%%lsmagic?` or `%%help lsmagic`|
+|`lsmagic`|List predefined magic commands.|||`%%lsmagic`|
+|`time`|Display time taken to execute a cell.|||`%%time`|
+|`file`|Save contents of cell as a file in the notebook folder. You can use this command to define and save new functions. For details, see the section below on how to [Create New Functions Using the %%file Magic Command](#create-new-functions-using-the-the-file-magic-command)|Name of saved file.|The file magic command will save the contents of the cell, but not execute them in MATLAB.|`%%file myfile.m`|
 
 
 To request a new magic command, [create an issue](https://github.com/mathworks/jupyter-matlab-proxy/issues/new/choose).
