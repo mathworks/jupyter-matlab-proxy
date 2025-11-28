@@ -1,4 +1,4 @@
-# Copyright 2023-2024 The MathWorks, Inc.
+# Copyright 2023-2025 The MathWorks, Inc.
 
 name: End-to-End Tests for MATLAB Integration for Jupyter
 on:
@@ -6,6 +6,7 @@ on:
 
 jobs:
   playwright_e2e_tests:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     defaults:
       run:

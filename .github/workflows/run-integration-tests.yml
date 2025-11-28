@@ -1,4 +1,4 @@
-# Copyright 2023-2024 The MathWorks, Inc.
+# Copyright 2023-2025 The MathWorks, Inc.
 
 name: Integration testing MATLAB Integration for Jupyter
 
@@ -8,10 +8,10 @@ on:
 
 jobs:
   python_integration_tests:
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        #TODO: Add test coverage for macOs
         os: [ubuntu-latest, windows-latest]
         python-version: ["3.8", "3.11"]
 
