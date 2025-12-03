@@ -1,0 +1,29 @@
+{
+    "name": "Only build Jupyter MATLAB Proxy",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".",
+        "args": {
+            "PYTHON_VERSION" : "3.11",
+            "NVM_VERSION" : "0.40.3",
+            "NODE_VERSION" : "24"
+        }
+    },
+    "containerEnv": {
+        "NPM_CONFIG_REGISTRY": "${localEnv:NPM_CONFIG_REGISTRY}"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python"
+            ],
+            "settings": {
+                "python.terminal.activateEnvInCurrentTerminal": true,
+                "python.defaultInterpreterPath": ".venv/bin/python"
+            }
+        }
+    },
+    "postCreateCommand": "uv venv --clear && . .venv/bin/activate && uv pip install . --cache-dir ./__uvcache__",
+    "waitFor": "postCreateCommand"
+    
+}
