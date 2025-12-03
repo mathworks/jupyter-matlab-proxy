@@ -214,7 +214,12 @@ persistent webwindow;
 persistent idler;
 
 if isempty(webwindow)
-    url = 'toolbox/matlab/codetools/liveeditor/index.html';
+    % Use liveeditor index.html in older MATLAB versions
+    if isMATLABReleaseOlderThan("R2026a")
+        url = 'toolbox/matlab/codetools/liveeditor/index.html';
+    else
+        url = 'toolbox/matlab/editor/application/index.html';
+    end
     
     % MATLAB versions R2020b and R2021a requires specifying the base url.
     % Not doing so results in the URL not being loaded with the error
