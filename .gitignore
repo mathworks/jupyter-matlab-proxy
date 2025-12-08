@@ -1,6 +1,9 @@
 *.egg-info
 .eggs
 __pycache__
+__uvcache__
+.ipynb_checkpoints/
+*.ipynb
 build
 dist
 .venv

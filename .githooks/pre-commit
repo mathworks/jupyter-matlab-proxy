@@ -1,0 +1,37 @@
+#!/bin/sh
+# Copyright 2025 The MathWorks, Inc.
+# Pre-commit hook to run all scripts in the scripts folder
+# Called by "git commit" with no arguments.
+
+# Path to the scripts directory
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+
+# Check if the scripts directory exists
+if [ ! -d "$SCRIPTS_DIR" ]; then
+	echo "Error: Scripts directory not found at $SCRIPTS_DIR"
+	exit 1
+fi
+
+echo "Running pre-commit scripts from $SCRIPTS_DIR"
+
+# Find all executable scripts in the scripts directory and sort them alphabetically
+for script in $(find "$SCRIPTS_DIR" -type f -executable | sort); do
+	script_name=$(basename "$script")
+	echo "Running $script_name..."
+	
+    # Execute the script
+    sh "$script"
+    
+    # Check the exit code
+    if [ $? -ne 0 ]; then
+        echo "Error: $script_name failed. Commit aborted."
+        exit 1
+    fi
+    
+    echo "$script_name completed successfully."
+done
+
+echo "All pre-commit scripts completed successfully."
+exit 0
