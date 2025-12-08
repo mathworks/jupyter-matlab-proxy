@@ -1,4 +1,4 @@
-# Copyright 2024 The MathWorks, Inc.
+# Copyright 2024-2025 The MathWorks, Inc.
 
 import importlib
 import re
@@ -144,7 +144,7 @@ def get_magics_from_cell(cell_code):
             magic_dict = magic_matches.groupdict()
             params = magic_dict["params"].strip()
             if params:
-                magic_dict["params"] = re.split("\s+", params)
+                magic_dict["params"] = re.split(r"\s+", params)
                 # transform ? parameter into a help magic, such that %%file? becomes %%help file
                 if params.startswith("?"):
                     # Ignore additional parameters after the ? parameter
