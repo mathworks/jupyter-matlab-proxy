@@ -52,8 +52,10 @@ To report any issues or suggestions, see the [Feedback](https://github.com/mathw
   | Help | Open a help pop-up for a detailed description of the options.|
 
 ## Limitations
-This package supports the same subset of MATLAB features and commands as MATLAB® Online, except there is no support for Simulink® Online.
-[Click here for a full list of Specifications and Limitations for MATLAB Online](https://www.mathworks.com/products/matlab-online/limitations.html). 
+This package supports the same set of MATLAB features and commands as MATLAB® Online. For the full list, see 
+[Specifications and Limitations for MATLAB Online](https://www.mathworks.com/products/matlab-online/limitations.html). 
+
+Simulink Online is supported exclusively on Linux platforms starting from MATLAB R2024b.
 
 If you need to use functionality that is not yet supported, or for versions of MATLAB earlier than R2020b, you can use the alternative [MATLAB Integration for Jupyter using VNC](https://github.com/mathworks/jupyter-matlab-vnc-proxy).
 

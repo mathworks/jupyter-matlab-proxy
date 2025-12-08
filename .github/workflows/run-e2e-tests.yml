@@ -12,7 +12,7 @@ jobs:
         working-directory: tests/e2e
     env:
       NODE_VERSION: 18
-      PYTHON_VERSION: 3.8
+      PYTHON_VERSION: 3.10
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -28,7 +28,7 @@ def test_get_kernel_spec_custom_executable():
     """
     Test that get_kernel_spec() uses a custom executable when provided.
     """
-    custom_executable = "/usr/bin/python3.9"
+    custom_executable = "/usr/bin/python3.10"
     kernelspec = get_kernel_spec(executable=custom_executable)
     assert kernelspec["argv"][0] == custom_executable
 

@@ -13,7 +13,7 @@ jobs:
       matrix:
         #TODO: Add test coverage for macOs
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.8", "3.11"]
+        python-version: ["3.10", "3.13"]
 
         # The minimum matlab-release is set to 21b as 20b and 21a are not supported by matlab-actions/setup-matlab.
         # See https://github.com/matlab-actions/setup-matlab/issues/76
