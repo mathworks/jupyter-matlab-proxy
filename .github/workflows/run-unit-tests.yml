@@ -63,7 +63,7 @@ jobs:
   python_unit_tests:
     timeout-minutes: 15
     env:
-      code-cov-py: "3.11"
+      code-cov-py: "3.13"
       code-cov-os: "ubuntu-latest"
     strategy:
       fail-fast: false
