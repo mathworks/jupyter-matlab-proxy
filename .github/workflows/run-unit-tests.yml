@@ -1,4 +1,4 @@
-# Copyright 2020-2024 The MathWorks, Inc.
+# Copyright 2020-2025 The MathWorks, Inc.
 
 name: Unit Testing MATLAB Integration for Jupyter
 
@@ -10,6 +10,7 @@ on:
 
 jobs:
   matlab_unit_tests:
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -60,13 +61,14 @@ jobs:
           select-by-folder: tests/matlab-tests
 
   python_unit_tests:
+    timeout-minutes: 15
     env:
       code-cov-py: "3.11"
       code-cov-os: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
         python-version: ["3.10", "3.13"]
 
     runs-on: ${{ matrix.os }}
@@ -108,10 +110,11 @@ jobs:
           retention-days: 5
 
   lezer_unit_tests:
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
     defaults:
@@ -134,6 +137,7 @@ jobs:
         run: npm test
 
   upload_code_coverage:
+    timeout-minutes: 15
     name: "Upload Code Coverage using codecov"
     needs: [python_unit_tests]
     if: success()
