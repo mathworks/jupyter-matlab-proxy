@@ -1,4 +1,4 @@
-# Copyright 2023-2024 The MathWorks, Inc.
+# Copyright 2023-2025 The MathWorks, Inc.
 # Use ipykernel infrastructure to launch the MATLAB Kernel.
 
 if __name__ == "__main__":

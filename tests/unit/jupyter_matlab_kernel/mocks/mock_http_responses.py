@@ -1,4 +1,4 @@
-# Copyright 2023-2024 The MathWorks, Inc.
+# Copyright 2023-2025 The MathWorks, Inc.
 """Mock matlab-proxy HTTP Responses."""
 
 import http
@@ -136,3 +136,50 @@ class MockError(Exception):
     """
 
     pass
+
+
+class MockEvalResponse:
+    """A mock of a successful eval response from matlab-proxy."""
+
+    def __init__(self, is_error=False, response_str="", message_faults=None):
+        """Construct a mock eval response.
+
+        Args:
+            is_error (bool): indicates if the eval had an error.
+            response_str (str): the response string or file path.
+            message_faults (list): list of message faults if any.
+        """
+        self.is_error = is_error
+        self.response_str = response_str
+        self.message_faults = message_faults or []
+
+    status = http.HTTPStatus.OK
+
+    async def json(self):
+        """Return a matlab-proxy eval JSON response."""
+        return {
+            "messages": {
+                "EvalResponse": [
+                    {
+                        "isError": self.is_error,
+                        "responseStr": self.response_str,
+                        "messageFaults": self.message_faults,
+                    }
+                ]
+            }
+        }
+
+
+class MockEvalResponseMissingData:
+    """A mock of an eval response missing EvalResponse data."""
+
+    status = http.HTTPStatus.OK
+
+    def raise_for_status(self):
+        """Raise a HTTPError for missing data."""
+        raise aiohttp.client_exceptions.ClientError("Mock exception")
+
+    @staticmethod
+    async def json():
+        """Return a matlab-proxy response missing EvalResponse."""
+        return {"messages": {}}

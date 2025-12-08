@@ -1,8 +1,11 @@
-# Copyright 2023-2024 The MathWorks, Inc.
+# Copyright 2023-2025 The MathWorks, Inc.
 # This file contains tests for jupyter_matlab_kernel.mwi_comm_helpers
 
 import asyncio
 import http
+import json
+import tempfile
+import os
 
 import aiohttp
 import aiohttp.client_exceptions
@@ -11,6 +14,8 @@ from mocks.mock_http_responses import (
     MockMatlabProxyStatusResponse,
     MockSimpleBadResponse,
     MockUnauthorisedRequestResponse,
+    MockEvalResponse,
+    MockEvalResponseMissingData,
 )
 
 from jupyter_matlab_kernel.mwi_comm_helpers import MWICommHelper
@@ -225,3 +230,282 @@ async def test_execution_success(monkeypatch, matlab_proxy_fixture):
         pytest.fail("Unexpected failured in execution request")
 
     assert "Mock results from feval" in outputs
+
+
+# Testing send_eval_request_to_matlab
+async def test_send_eval_request_to_matlab_success(monkeypatch, matlab_proxy_fixture):
+    """Test that send_eval_request_to_matlab returns eval response correctly."""
+
+    # Arrange
+    async def mock_post(*args, **kwargs):
+        return MockEvalResponse(is_error=False, response_str="", message_faults=[])
+
+    monkeypatch.setattr(aiohttp.ClientSession, "post", mock_post)
+
+    mcode = "x = 1 + 1"
+
+    # Act
+    result = await matlab_proxy_fixture.send_eval_request_to_matlab(mcode)
+
+    # Assert
+    # Verify the eval response is returned as-is
+    expected_response = {"isError": False, "responseStr": "", "messageFaults": []}
+    assert result == expected_response
+
+
+async def test_send_eval_request_to_matlab_with_error(
+    monkeypatch, matlab_proxy_fixture
+):
+    """Test that send_eval_request_to_matlab returns error response correctly."""
+
+    # Arrange
+    async def mock_post(*args, **kwargs):
+        return MockEvalResponse(
+            is_error=True,
+            response_str="Error occurred",
+            message_faults=[{"message": "Syntax error"}],
+        )
+
+    monkeypatch.setattr(aiohttp.ClientSession, "post", mock_post)
+
+    mcode = "invalid_syntax"
+
+    # Act
+    result = await matlab_proxy_fixture.send_eval_request_to_matlab(mcode)
+
+    # Assert
+    # Verify the error response is returned as-is
+    expected_response = {
+        "isError": True,
+        "responseStr": "Error occurred",
+        "messageFaults": [{"message": "Syntax error"}],
+    }
+    assert result == expected_response
+
+
+async def test_send_eval_request_to_matlab_bad_request(
+    monkeypatch, matlab_proxy_fixture
+):
+    """Test that send_eval_request_to_matlab raises exception for bad HTTP request."""
+    # Arrange
+    mock_exception_message = "Mock exception thrown due to bad request status."
+
+    async def mock_post(*args, **kwargs):
+        return MockSimpleBadResponse(mock_exception_message)
+
+    monkeypatch.setattr(aiohttp.ClientSession, "post", mock_post)
+
+    mcode = "x = 1 + 1"
+
+    # Act
+    with pytest.raises(aiohttp.client_exceptions.ClientError) as exceptionInfo:
+        await matlab_proxy_fixture.send_eval_request_to_matlab(mcode)
+
+    # Assert
+    assert mock_exception_message in str(exceptionInfo.value)
+
+
+async def test_send_eval_request_to_matlab_missing_eval_response(
+    monkeypatch, matlab_proxy_fixture
+):
+    """Test that send_eval_request_to_matlab raises MATLABConnectionError for missing EvalResponse."""
+
+    # Arrange
+    async def mock_post(*args, **kwargs):
+        return MockEvalResponseMissingData()
+
+    monkeypatch.setattr(aiohttp.ClientSession, "post", mock_post)
+
+    mcode = "x = 1 + 1"
+    with pytest.raises(MATLABConnectionError):
+        await matlab_proxy_fixture.send_eval_request_to_matlab(mcode)
+
+
+# Testing _read_eval_response_from_file
+async def test_read_eval_response_from_file_success_with_file(matlab_proxy_fixture):
+    """Test _read_eval_response_from_file with successful response and file."""
+    # Arrange
+    # Create a temporary file with test data
+    test_data = [
+        {"type": "stream", "content": {"name": "stdout", "text": "Hello World"}}
+    ]
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
+        json.dump(test_data, f)
+        temp_file_path = f.name
+
+    try:
+        eval_response = {
+            "isError": False,
+            "responseStr": temp_file_path,
+            "messageFaults": [],
+        }
+
+        # Act
+        result = await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+
+        # Assert
+        # Verify the result
+        assert result == test_data
+
+        # Verify the file was deleted
+        assert not os.path.exists(temp_file_path)
+
+    finally:
+        # Clean up in case the test failed
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+
+
+async def test_read_eval_response_from_file_success_without_file(matlab_proxy_fixture):
+    """Test _read_eval_response_from_file with successful response but no file."""
+    # Arrange
+    eval_response = {
+        "isError": False,
+        "responseStr": "",  # Empty file path
+        "messageFaults": [],
+    }
+
+    # Act
+    result = await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+
+    # Assert
+    # Verify empty result returns empty list
+    assert result == []
+
+
+async def test_read_eval_response_from_file_error_with_message_faults(
+    matlab_proxy_fixture,
+):
+    """Test _read_eval_response_from_file with error response containing message faults."""
+    # Arrange
+    eval_response = {
+        "isError": True,
+        "responseStr": "Error occurred",
+        "messageFaults": [{"message": "Syntax error in code"}],
+    }
+
+    # Act
+    with pytest.raises(
+        Exception,
+        match="Failed to execute. Operation may have been interrupted by user.",
+    ):
+        await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+
+
+async def test_read_eval_response_from_file_error_without_message_faults(
+    matlab_proxy_fixture,
+):
+    """Test _read_eval_response_from_file with error response without message faults."""
+
+    eval_response = {
+        "isError": True,
+        "responseStr": "Custom error message",
+        "messageFaults": [],
+    }
+
+    with pytest.raises(Exception, match="Custom error message"):
+        await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+
+
+async def test_read_eval_response_from_file_handles_file_deletion_error(
+    matlab_proxy_fixture, monkeypatch
+):
+    """Test _read_eval_response_from_file handles file deletion errors gracefully."""
+
+    # Create a temporary file with test data
+    test_data = [
+        {"type": "stream", "content": {"name": "stdout", "text": "Hello World"}}
+    ]
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
+        json.dump(test_data, f)
+        temp_file_path = f.name
+
+    # Mock os.remove to raise an exception
+    original_remove = os.remove
+
+    def mock_remove(path):
+        if path == temp_file_path:
+            raise OSError("Permission denied")
+        return original_remove(path)
+
+    monkeypatch.setattr(os, "remove", mock_remove)
+
+    try:
+        eval_response = {
+            "isError": False,
+            "responseStr": temp_file_path,
+            "messageFaults": [],
+        }
+
+        # Should not raise exception even if file deletion fails
+        result = await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+
+        # Verify the result is still correct
+        assert result == test_data
+
+    finally:
+        # Clean up manually since mocked remove failed
+        if os.path.exists(temp_file_path):
+            original_remove(temp_file_path)
+
+
+async def test_read_eval_response_from_file_with_empty_file_content(
+    matlab_proxy_fixture,
+):
+    """Test _read_eval_response_from_file with empty file content."""
+
+    # Create a temporary file with empty content
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
+        f.write("")  # Empty content
+        temp_file_path = f.name
+
+    try:
+        eval_response = {
+            "isError": False,
+            "responseStr": temp_file_path,
+            "messageFaults": [],
+        }
+
+        result = await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+
+        # Verify empty content returns empty list
+        assert result == []
+
+        # Verify the file was deleted
+        assert not os.path.exists(temp_file_path)
+
+    finally:
+        # Clean up in case the test failed
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+
+
+async def test_read_eval_response_from_file_with_whitespace_only_content(
+    matlab_proxy_fixture,
+):
+    """Test _read_eval_response_from_file with whitespace-only file content."""
+
+    # Create a temporary file with whitespace content
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
+        f.write("   \n\t  ")  # Only whitespace
+        temp_file_path = f.name
+
+    try:
+        eval_response = {
+            "isError": False,
+            "responseStr": temp_file_path,
+            "messageFaults": [],
+        }
+
+        result = await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+
+        # Verify whitespace-only content returns empty list
+        assert result == []
+
+        # Verify the file was deleted
+        assert not os.path.exists(temp_file_path)
+
+    finally:
+        # Clean up in case the test failed
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)

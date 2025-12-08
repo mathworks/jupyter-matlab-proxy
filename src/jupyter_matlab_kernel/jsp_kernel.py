@@ -1,4 +1,4 @@
-# Copyright 2024 The MathWorks, Inc.
+# Copyright 2024-2025 The MathWorks, Inc.
 
 """This module contains derived class implementation of MATLABKernel that uses
 Jupyter Server to manage interactions with matlab-proxy & MATLAB.

@@ -1,4 +1,4 @@
-# Copyright 2023-2024 The MathWorks, Inc.
+# Copyright 2023-2025 The MathWorks, Inc.
 # Helper functions to communicate with matlab-proxy and MATLAB
 
 import http
@@ -179,6 +179,13 @@ class MWICommHelper:
         )
 
     async def send_interrupt_request_to_matlab(self):
+        """Send an interrupt request to MATLAB to stop current execution.
+
+        The interrupt request is sent through the control channel using a specific message format.
+
+        Raises:
+            HTTPError: If the interrupt request fails or matlab-proxy communication errors occur
+        """
         self.logger.debug("Sending interrupt request to MATLAB")
         req_body = {
             "messages": {
@@ -201,6 +208,24 @@ class MWICommHelper:
             resp.raise_for_status()
 
     async def _send_feval_request_to_matlab(self, http_client, fname, nargout, *args):
+        """Execute a MATLAB function call (feval) through the matlab-proxy.
+
+        Sends a function evaluation request to MATLAB, handling path setup and synchronous execution.
+
+        Args:
+            http_client (aiohttp.ClientSession): HTTP client for sending the request
+            fname (str): Name of the MATLAB function to call
+            nargout (int): Number of output arguments expected
+            *args: Variable arguments to pass to the MATLAB function
+
+        Returns:
+            list: Results from the MATLAB function execution if successful
+                 Empty list if no outputs or nargout=0
+
+        Raises:
+            MATLABConnectionError: If MATLAB connection is lost or response is invalid
+            Exception: If function execution fails or is interrupted by user
+        """
         self.logger.debug("Sending FEval request to MATLAB")
         # Add the MATLAB code shipped with kernel to the Path
         path = [str(pathlib.Path(__file__).parent / "matlab")]
@@ -264,7 +289,36 @@ class MWICommHelper:
             self.logger.error("Error occurred during communication with matlab-proxy")
             raise resp.raise_for_status()
 
+    async def send_eval_request_to_matlab(self, mcode):
+        """Send an evaluation request to MATLAB using the shell client.
+
+        Args:
+            mcode (str): MATLAB code to be evaluated
+
+        Returns:
+            dict: The evaluation response from MATLAB containing results or error information
+
+        Raises:
+            MATLABConnectionError: If MATLAB connection is not available
+            HTTPError: If there is an error in communication with matlab-proxy
+        """
+        return await self._send_eval_request_to_matlab(self._http_shell_client, mcode)
+
     async def _send_eval_request_to_matlab(self, http_client, mcode):
+        """Internal method to send and process an evaluation request to MATLAB.
+
+        Args:
+            http_client (aiohttp.ClientSession): HTTP client to use for the request
+            mcode (str): MATLAB code to be evaluated
+
+        Returns:
+            dict: The evaluation response containing results or error information
+                 from the MATLAB execution
+
+        Raises:
+            MATLABConnectionError: If MATLAB connection is not available or response is invalid
+            HTTPError: If there is an error in communication with matlab-proxy
+        """
         self.logger.debug("Sending Eval request to MATLAB")
         # Add the MATLAB code shipped with kernel to the Path
         path = str(pathlib.Path(__file__).parent / "matlab")
@@ -286,6 +340,7 @@ class MWICommHelper:
             self.logger.debug(f"Response:\n{response_data}")
             try:
                 eval_response = response_data["messages"]["EvalResponse"][0]
+
             except KeyError:
                 # In certain cases when the HTTPResponse is received, it does not
                 # contain the expected data. In these cases most likely MATLAB has
@@ -296,54 +351,27 @@ class MWICommHelper:
                 )
                 raise MATLABConnectionError()
 
-            # If the eval request succeeded, return the json decoded result.
-            if not eval_response["isError"]:
-                result_filepath = eval_response["responseStr"].strip()
+            return eval_response
 
-                # If the filepath in the response is not empty, read the result from
-                # file and delete the file.
-                if result_filepath != "":
-                    self.logger.debug(f"Found file with results: {result_filepath}")
-                    self.logger.debug("Reading contents of the file")
-                    with open(result_filepath, "r") as f:
-                        result = f.read().strip()
-                    self.logger.debug("Reading completed")
-                    try:
-                        import os
-
-                        self.logger.debug(f"Deleting file: {result_filepath}")
-                        os.remove(result_filepath)
-                    except Exception:
-                        self.logger.error("Deleting file failed")
-                else:
-                    self.logger.debug("No result in EvalResponse")
-                    result = ""
-
-                # If result is empty, populate dummy json
-                if result == "":
-                    result = "[]"
-                return json.loads(result)
-
-            # Handle the error cases
-            if eval_response["messageFaults"]:
-                # This happens when "Interrupt Kernel" is issued from a different
-                # kernel. There may be other cases also.
-                self.logger.error(
-                    f'Error during execution of Eval request in MATLAB:\n{eval_response["messageFaults"][0]["message"]}'
-                )
-                error_message = (
-                    "Failed to execute. Operation may have been interrupted by user."
-                )
-            else:
-                # This happens when "Interrupt Kernel" is issued from the same kernel.
-                # The responseStr contains the error message
-                error_message = eval_response["responseStr"].strip()
-            raise Exception(error_message)
         else:
             self.logger.error("Error during communication with matlab-proxy")
             raise resp.raise_for_status()
 
     async def _send_jupyter_request_to_matlab(self, request_type, inputs, http_client):
+        """Process and send a Jupyter request to MATLAB using either feval or eval execution.
+
+        Args:
+            request_type (str): Type of request (execute, complete, shutdown)
+            inputs (list): List of input arguments for the request
+            http_client (aiohttp.ClientSession): HTTP client to use for the request
+
+        Returns:
+            dict: Response from MATLAB containing results of the request execution
+
+        Raises:
+            MATLABConnectionError: If MATLAB connection is not available
+            Exception: If request execution fails or is interrupted
+        """
         execution_request_type = "feval"
 
         inputs.insert(0, request_type)
@@ -353,10 +381,14 @@ class MWICommHelper:
             f"Using {execution_request_type} request type for communication with EC"
         )
 
+        resp = None
         if execution_request_type == "feval":
             resp = await self._send_feval_request_to_matlab(
                 http_client, "processJupyterKernelRequest", 1, *inputs
             )
+
+        # The 'else' condition is an artifact and is present here incase we ever want to test
+        # eval execution.
         else:
             user_mcode = inputs[2]
             # Construct a string which can be evaluated in MATLAB. For example
@@ -376,6 +408,66 @@ class MWICommHelper:
                 args = args + "," + str(cursor_pos)
 
             eval_mcode = f"processJupyterKernelRequest({args})"
-            resp = await self._send_eval_request_to_matlab(http_client, eval_mcode)
+            eval_response = await self._send_eval_request_to_matlab(
+                http_client, eval_mcode
+            )
+            resp = await self._read_eval_response_from_file(eval_response)
 
         return resp
+
+    async def _read_eval_response_from_file(self, eval_response):
+        """Read and process MATLAB evaluation results from a response file.
+
+        Args:
+            eval_response (dict): Response dictionary from MATLAB eval request containing
+                                file path and error information
+
+        Returns:
+            dict: JSON decoded results from the response file
+
+        Raises:
+            Exception: If evaluation failed or was interrupted by user
+        """
+        # If the eval request succeeded, return the json decoded result.
+        if not eval_response["isError"]:
+            result_filepath = eval_response["responseStr"].strip()
+
+            # If the filepath in the response is not empty, read the result from
+            # file and delete the file.
+            if result_filepath != "":
+                self.logger.debug(f"Found file with results: {result_filepath}")
+                self.logger.debug("Reading contents of the file")
+                with open(result_filepath, "r") as f:
+                    result = f.read().strip()
+                self.logger.debug("Reading completed")
+                try:
+                    import os
+
+                    self.logger.debug(f"Deleting file: {result_filepath}")
+                    os.remove(result_filepath)
+                except Exception:
+                    self.logger.error("Deleting file failed")
+            else:
+                self.logger.debug("No result in EvalResponse")
+                result = ""
+
+            # If result is empty, populate dummy json
+            if result == "":
+                result = "[]"
+            return json.loads(result)
+
+        # Handle the error cases
+        if eval_response["messageFaults"]:
+            # This happens when "Interrupt Kernel" is issued from a different
+            # kernel. There may be other cases also.
+            self.logger.error(
+                f'Error during execution of Eval request in MATLAB:\n{eval_response["messageFaults"][0]["message"]}'
+            )
+            error_message = (
+                "Failed to execute. Operation may have been interrupted by user."
+            )
+        else:
+            # This happens when "Interrupt Kernel" is issued from the same kernel.
+            # The responseStr contains the error message
+            error_message = eval_response["responseStr"].strip()
+        raise Exception(error_message)

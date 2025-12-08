@@ -13,7 +13,6 @@ import sys
 import time
 from logging import Logger
 from pathlib import Path
-from typing import Optional
 
 import aiohttp
 import aiohttp.client_exceptions
@@ -27,6 +26,9 @@ from jupyter_matlab_kernel.magic_execution_engine import (
     get_completion_result_for_magics,
 )
 from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
+
+from jupyter_matlab_kernel.comms import LabExtensionCommunication
+
 
 _MATLAB_STARTUP_TIMEOUT = mwi_settings.get_process_startup_timeout()
 
@@ -140,6 +142,18 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
 
         # Communication helper for interaction with backend MATLAB proxy
         self.mwi_comm_helper = None
+
+        self.labext_comm = LabExtensionCommunication(self)
+
+        # Custom handling of comm messages for jupyterlab extension communication.
+        # https://jupyter-client.readthedocs.io/en/latest/messaging.html#custom-messages
+
+        # Override only comm handlers to keep implementation clean by separating
+        # JupyterLab extension communication logic from core kernel functionality.
+        # Other handlers (interrupt_request, execute_request, etc.) remain in base class.
+        self.shell_handlers["comm_open"] = self.labext_comm.comm_open
+        self.shell_handlers["comm_msg"] = self.labext_comm.comm_msg
+        self.shell_handlers["comm_close"] = self.labext_comm.comm_close
 
     # ipykernel Interface API
     # https://ipython.readthedocs.io/en/stable/development/wrapperkernels.html

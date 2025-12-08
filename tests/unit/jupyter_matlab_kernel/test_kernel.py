@@ -1,4 +1,4 @@
-# Copyright 2023-2024 The MathWorks, Inc.
+# Copyright 2023-2025 The MathWorks, Inc.
 
 # This file contains tests for jupyter_matlab_kernel.kernel
 import mocks.mock_jupyter_server as MockJupyterServer
@@ -6,7 +6,10 @@ import pytest
 from jupyter_server import serverapp
 from mocks.mock_jupyter_server import MockJupyterServerFixture
 
-from jupyter_matlab_kernel.jsp_kernel import MATLABKernelUsingJSP, start_matlab_proxy
+from jupyter_matlab_kernel.jsp_kernel import (
+    MATLABKernelUsingJSP,
+    start_matlab_proxy,
+)
 from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
 
 

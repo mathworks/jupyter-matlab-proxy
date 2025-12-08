@@ -19,7 +19,8 @@ def mpm_kernel_instance(mocker) -> MATLABKernelUsingMPM:
         return_value=uuid.uuid4().hex,
     )
     mocker.patch(
-        "jupyter_matlab_kernel.base_kernel.BaseMATLABKernel.log", new=mock_logger
+        "jupyter_matlab_kernel.base_kernel.BaseMATLABKernel.log",
+        new=mock_logger,
     )
 
     return MATLABKernelUsingMPM()

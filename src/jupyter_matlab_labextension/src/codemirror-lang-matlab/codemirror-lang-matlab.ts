@@ -1,13 +1,21 @@
 // Copyright 2024-2025 The MathWorks, Inc.
 
 import { parser } from '../lezer-matlab/dist/index';
-import { indentNodeProp, LanguageSupport, LRLanguage, TreeIndentContext } from '@codemirror/language';
+import {
+    indentNodeProp,
+    LanguageSupport,
+    LRLanguage,
+    TreeIndentContext
+} from '@codemirror/language';
 import { lineIndent, getDedentPattern } from './indent-matlab';
 
 function determineLineIndent (context: TreeIndentContext) {
-    if (context.pos === 0) { return null; }
+    if (context.pos === 0) {
+        return null;
+    }
     const currentLine = context.lineAt(context.pos);
-    const previousLine = currentLine.text.length === 0
+    const previousLine =
+    currentLine.text.length === 0
         ? context.lineAt(context.pos, -1) // Look to the left of the simulated line break.
         : context.lineAt(context.pos - 1); // Not on a simulated line break, so step back to the previous line.
     if (previousLine === null || currentLine === null) {

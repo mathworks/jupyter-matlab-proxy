@@ -1,4 +1,4 @@
-// Copyright 2023-2024 The MathWorks, Inc.
+// Copyright 2023-2025 The MathWorks, Inc.
 
 // Set up CodeMirror for the MATLAB language.
 
@@ -7,9 +7,7 @@ import {
     JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
-import {
-    IEditorLanguageRegistry
-} from '@jupyterlab/codemirror';
+import { IEditorLanguageRegistry } from '@jupyterlab/codemirror';
 
 /** Register language with CodeMirror */
 export function addMATLABCodeMirror (languageRegistry: IEditorLanguageRegistry) {
@@ -20,7 +18,9 @@ export function addMATLABCodeMirror (languageRegistry: IEditorLanguageRegistry) 
         extensions: ['m', 'mlx'],
         filename: /^[a-zA-Z][a-zA-Z0-9_]*\.m$/,
         async load () {
-            const m = await import('./codemirror-lang-matlab/codemirror-lang-matlab');
+            const m = await import(
+                '../codemirror-lang-matlab/codemirror-lang-matlab'
+            );
             return m.matlab();
         }
     });
@@ -30,10 +30,7 @@ export const matlabCodeMirror6Plugin: JupyterFrontEndPlugin<void> = {
     id: '@mathworks/matlabCodeMirror6Plugin',
     autoStart: true,
     requires: [IEditorLanguageRegistry],
-    activate: (
-        app: JupyterFrontEnd,
-        codeMirror: IEditorLanguageRegistry
-    ) => {
+    activate: (app: JupyterFrontEnd, codeMirror: IEditorLanguageRegistry) => {
         addMATLABCodeMirror(codeMirror);
     }
 };
