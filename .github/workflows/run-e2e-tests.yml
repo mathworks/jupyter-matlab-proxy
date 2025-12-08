@@ -12,17 +12,19 @@ jobs:
       run:
         working-directory: tests/e2e
     env:
-      NODE_VERSION: 18
-      PYTHON_VERSION: 3.10
+      NODE_VERSION: 24
+      PYTHON_VERSION: '3.10'
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node ${{ env.NODE_VERSION }} 
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Set up Python
+      - name: Set up Python ${{ env.PYTHON_VERSION }} 
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}

@@ -1,4 +1,4 @@
-# Copyright 2024 The MathWorks, Inc.
+# Copyright 2024-2025 The MathWorks, Inc.
 name: Upload Python Package for tljh-matlab
 
 on:
@@ -22,7 +22,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
