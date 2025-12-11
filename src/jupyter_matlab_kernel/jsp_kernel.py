@@ -186,19 +186,24 @@ class MATLABKernelUsingJSP(base.BaseMATLABKernel):
 
     async def do_shutdown(self, restart):
         self.log.debug("Received shutdown request from Jupyter")
-        try:
-            await self.mwi_comm_helper.send_shutdown_request_to_matlab()
-            await self.mwi_comm_helper.disconnect()
-        except (
-            MATLABConnectionError,
-            aiohttp.client_exceptions.ClientResponseError,
-        ) as e:
-            self.log.error(
-                f"Exception occurred while sending shutdown request to MATLAB:\n{e}"
-            )
+        if self.is_matlab_assigned:
+            try:
+                await self.mwi_comm_helper.send_shutdown_request_to_matlab()
+                await self.mwi_comm_helper.disconnect()
+            except (
+                MATLABConnectionError,
+                aiohttp.client_exceptions.ClientResponseError,
+            ) as e:
+                self.log.error(
+                    f"Exception occurred while sending shutdown request to MATLAB:\n{e}"
+                )
 
         return super().do_shutdown(restart)
 
     async def perform_startup_checks(self):
         """Overriding base function to provide a different iframe source"""
         await super().perform_startup_checks(self.jupyter_base_url, "matlab")
+
+    async def start_matlab_proxy_and_comm_helper(self):
+        """Default implementation assumes that matlab is assigned"""
+        self.is_matlab_assigned = True

@@ -181,7 +181,7 @@ def magic_executor(magics_for_execution, magic_execution_function):
             for output_from_method in magic_method():
                 if output_from_method:
                     if "type" in output_from_method:
-                        yield output_from_method
+                        yield (output_from_method)
                     else:
                         raise MagicError(
                             f"Invalid result returned by a Magic command. Contact Magic Author to fix. \n Error: {output_from_method}\n Does not contain a key called type."

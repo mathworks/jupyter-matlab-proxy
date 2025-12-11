@@ -1,4 +1,4 @@
-# Copyright 2023-2024 The MathWorks, Inc.
+# Copyright 2023-2025 The MathWorks, Inc.
 # Utility functions for integration testing of jupyter-matlab-proxy
 
 import asyncio
@@ -24,7 +24,7 @@ def perform_basic_checks():
     # Check if MATLAB is in the system path
     assert matlab_path is not None, "MATLAB is not in system path"
 
-    # Check if MATLAB verison is >= R2020b
+    # Check if MATLAB version is >= R2020b
     assert (
         matlab_proxy.settings.get_matlab_version(matlab_path) >= "R2020b"
     ), "MATLAB version should be R2020b or later"
@@ -83,35 +83,33 @@ async def wait_matlab_proxy_ready(matlab_proxy_url):
 
     from jupyter_matlab_kernel.mwi_comm_helpers import MWICommHelper
 
-    is_matlab_licensed = False
-    matlab_status = "down"
     start_time = time.time()
 
     loop = asyncio.get_event_loop()
-    matlab_proxy = MWICommHelper("", matlab_proxy_url, loop, loop, {})
-    await matlab_proxy.connect()
+    comm_helper = MWICommHelper("", matlab_proxy_url, loop, loop, {})
+    await comm_helper.connect()
+    matlab_proxy_status = await comm_helper.fetch_matlab_proxy_status()
 
     # Poll for matlab-proxy to be up
-    while matlab_status in ["down", "starting"] and (
-        time.time() - start_time < MATLAB_STARTUP_TIMEOUT
+    while (
+        matlab_proxy_status
+        and matlab_proxy_status.matlab_status in ["down", "starting"]
+        and (time.time() - start_time < MATLAB_STARTUP_TIMEOUT)
+        and not matlab_proxy_status.matlab_proxy_has_error
     ):
         time.sleep(1)
         try:
-            (
-                is_matlab_licensed,
-                matlab_status,
-                _,
-            ) = await matlab_proxy.fetch_matlab_proxy_status()
+            matlab_proxy_status = await comm_helper.fetch_matlab_proxy_status()
         except Exception:
             # The network connection can be flaky while the
             # matlab-proxy server is booting. There can also be some
             # intermediate connection errors
             pass
-    assert is_matlab_licensed is True, "MATLAB is not licensed"
+    assert matlab_proxy_status.is_matlab_licensed is True, "MATLAB is not licensed"
     assert (
-        matlab_status == "up"
-    ), f"matlab-proxy process did not start successfully\nMATLAB Status is '{matlab_status}'"
-    await matlab_proxy.disconnect()
+        matlab_proxy_status.matlab_status == "up"
+    ), f"matlab-proxy process did not start successfully\nMATLAB Status is '{matlab_proxy_status.matlab_status}'"
+    await comm_helper.disconnect()
 
 
 def get_random_free_port() -> str:
@@ -184,13 +182,14 @@ def license_matlab_proxy(matlab_proxy_url):
                 status_info,
                 "Verify if Licensing is successful. This might fail if incorrect credentials are provided",
             ).to_be_visible(timeout=60000)
-        except:
+        except Exception as e:
             # Grab screenshots
             log_dir = "./"
             file_name = "licensing-screenshot-failed.png"
             file_path = os.path.join(log_dir, file_name)
             os.makedirs(log_dir, exist_ok=True)
             page.screenshot(path=file_path)
+            print("Exception: %s", str(e))
         finally:
             browser.close()
 

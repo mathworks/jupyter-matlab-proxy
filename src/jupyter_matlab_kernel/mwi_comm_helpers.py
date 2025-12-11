@@ -4,6 +4,8 @@
 import http
 import json
 import pathlib
+from dataclasses import dataclass
+from typing import Optional
 
 import aiohttp
 from matlab_proxy.util.mwi.embedded_connector.helpers import (
@@ -25,6 +27,27 @@ def check_licensing_status(data):
     if licensing_status and data["licensing"]["type"] == "mhlm":
         licensing_status = data["licensing"]["entitlementId"] is not None
     return licensing_status
+
+
+@dataclass
+class MATLABStatus:
+    """Represents the status of MATLAB and its licensing information.
+
+    Attributes:
+        is_matlab_licensed (bool): Indicates whether MATLAB is properly licensed.
+        matlab_status (str): Current status of the MATLAB instance.
+        matlab_proxy_has_error (bool): Whether the MATLAB proxy has encountered an error. Defaults to False.
+        licensing_mode (str): The type of licensing being used. Defaults to an empty string.
+        matlab_version (str): Version of the MATLAB instance. Defaults to an empty string.
+        matlab_root_path (str): Root installation path of MATLAB. Defaults to an empty string.
+    """
+
+    is_matlab_licensed: bool
+    matlab_status: str
+    matlab_proxy_has_error: bool = False
+    licensing_mode: str = ""
+    matlab_version: str = ""
+    matlab_root_path: str = ""
 
 
 class MWICommHelper:
@@ -88,35 +111,84 @@ class MWICommHelper:
         if self._http_control_client:
             await self._http_control_client.close()
 
-    async def fetch_matlab_proxy_status(self):
+    async def fetch_matlab_root_path(self) -> Optional[str]:
         """
-        Sends HTTP request to /get_status endpoint of matlab-proxy and returns
-        license and MATLAB status.
+        Fetches the MATLAB root path from the matlab-proxy server.
+
+        Sends an HTTP GET request to the /get_env_config endpoint of matlab-proxy
+        to retrieve the filesystem path to the MATLAB installation.
 
         Returns:
-            Tuple (bool, string):
-                is_matlab_licensed (bool): True if matlab-proxy has license information, else False.
-                matlab_status (string): Status of MATLAB. Values could be "up", "down" and "starting"
-                matlab_proxy_has_error (bool): True if matlab-proxy faced any issues and unable to
-                                               start MATLAB
+            Optional[str]: The filesystem path to the MATLAB installation root directory,
+                            or None if the path could not be retrieved.
+        """
+        self.logger.debug("Fetching MATLAB root path from matlab-proxy")
+        resp = await self._http_shell_client.get(self.url + "/get_env_config")
+        self.logger.debug(
+            f"Received status code for matlab-proxy get-env-config request: {resp.status}"
+        )
+
+        if resp.status == http.HTTPStatus.OK:
+            data = await resp.json()
+            self.logger.debug(f"get-env-config data:\n{data}")
+            matlab_data = data.get("matlab") or {}
+            return matlab_data.get("rootPath", None)
+
+        self.logger.warning(
+            "Error occurred during retrieving environment config for matlab-proxy"
+        )
+        return None
+
+    async def fetch_matlab_proxy_status(self) -> Optional[MATLABStatus]:
+        """
+        Fetches the current status of the MATLAB proxy server.
+
+        Sends an HTTP GET request to the /get_status endpoint of matlab-proxy
+        to retrieve information about MATLAB licensing, runtime status, and any
+        errors that may have occurred.
+
+        Returns:
+            Optional[MATLABStatus]: A MATLABStatus object containing:
+                - is_matlab_licensed (bool): True if MATLAB has valid license
+                  information, False otherwise.
+                - matlab_status (str): Current MATLAB state. Possible values:
+                  "up" (running), "down" (stopped).
+                - matlab_proxy_has_error (bool): True if matlab-proxy encountered
+                  errors preventing MATLAB startup, False otherwise.
+                - licensing_mode (str): The type of licensing being used
+                  (e.g., "mhlm", "nlm", "existing_license").
+                - matlab_version (str): The version string of the MATLAB installation
+                  (e.g., "R2024a").
+
 
         Raises:
-            HTTPError: Occurs when connection to matlab-proxy cannot be established.
+            HTTPError: If the HTTP request fails or matlab-proxy returns a
+                       non-200 status code, indicating connection issues or
+                       server errors.
+
+        Example:
+            >>> status = await comm_helper.fetch_matlab_proxy_status()
+            >>> if status and status.matlab_status == "up":
+            ...     print(f"MATLAB {status.matlab_version} is running")
         """
         self.logger.debug("Fetching matlab-proxy status")
         resp = await self._http_shell_client.get(self.url + "/get_status")
         self.logger.debug(f"Received status code: {resp.status}")
         if resp.status == http.HTTPStatus.OK:
             data = await resp.json()
-            self.logger.debug(f"Response:\n{data}")
-            is_matlab_licensed = check_licensing_status(data)
-
-            matlab_status = data["matlab"]["status"]
-            matlab_proxy_has_error = data["error"] is not None
-            return is_matlab_licensed, matlab_status, matlab_proxy_has_error
+            self.logger.debug(f"matlab-proxy status:\n{data}")
+            matlab_data = data.get("matlab") or {}
+            return MATLABStatus(
+                is_matlab_licensed=check_licensing_status(data),
+                matlab_status=matlab_data.get("status", ""),
+                matlab_proxy_has_error=data.get("error") is not None,
+                licensing_mode=(data.get("licensing") or {}).get("type", ""),
+                matlab_version=matlab_data.get("version", ""),
+            )
         else:
             self.logger.error("Error occurred during communication with matlab-proxy")
             resp.raise_for_status()
+            return None
 
     async def send_execution_request_to_matlab(self, code):
         """
@@ -281,7 +353,7 @@ class MWICommHelper:
                 )
             else:
                 self.logger.error(
-                    f'Error during execution of FEval request in MATLAB:\n{feval_response["messageFaults"][0]["message"]}'
+                    f"Error during execution of FEval request in MATLAB:\n{feval_response['messageFaults'][0]['message']}"
                 )
                 error_message = "Failed to execute. Please try again."
             raise Exception(error_message)

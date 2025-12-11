@@ -1,4 +1,4 @@
-# Copyright 2024 The MathWorks, Inc.
+# Copyright 2024-2025 The MathWorks, Inc.
 
 from jupyter_matlab_kernel import mwi_logger
 
@@ -82,6 +82,11 @@ class MATLABMagic:
                         "type": "modify_kernel",
                         "murl": new_url,
                         "headers": new_headers,
+                    }
+                4. To invoke the callback function:
+                    {
+                        "type": "callback",
+                        "callback_function": callback_function_name,
                     }
             default: Empty dict ({}).
         """

@@ -171,6 +171,8 @@ This opens a Jupyter notebook that supports MATLAB.
 
 - **Licensing:** When you execute MATLAB code in a notebook for the first time, enter your MATLAB license information in the dialog box that appears. For details, see [Licensing](https://github.com/mathworks/matlab-proxy/blob/main/MATLAB-Licensing-Info.md). The MATLAB session can take a few minutes to start.
 
+- **Sharing MATLAB across  notebooks:** By default, multiple notebooks running on a Jupyter server share the underlying MATLAB process, so executing code in one notebook affects the workspace in others. To use a dedicated MATLAB for your kernel instead, use the magic `%%matlab new_session`. For details, see [Magic Commands for MATLAB Kernel](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/magics/README.md). To learn more about the kernel architecture, see [MATLAB Kernel for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/README.md).
+
 - **MATLAB Kernel:** The MATLAB kernel supports tab completion and rich outputs:
   * Inline static plot images
   * LaTeX representation for symbolic expressions
@@ -181,7 +183,7 @@ This opens a Jupyter notebook that supports MATLAB.
 
   For a technical overview of the MATLAB kernel, see [MATLAB Kernel for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/README.md).
 
-- **Multiple notebooks:** Multiple notebooks running on a Jupyter server share the underlying MATLAB process, so executing code in one notebook affects the workspace in others. If you work in several notebooks simultaneously, be aware they share a workspace. For details, see [MATLAB Kernel for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/README.md).
+
 - **Local functions:** With MATLAB R2022b and later, you can define a local function at the end of the cell where you want to call it:
     <p><img width="350" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/local_functions.png"></p>
 

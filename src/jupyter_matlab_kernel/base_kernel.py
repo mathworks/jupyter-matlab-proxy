@@ -25,6 +25,7 @@ from jupyter_matlab_kernel.magic_execution_engine import (
     MagicExecutionEngine,
     get_completion_result_for_magics,
 )
+from jupyter_matlab_kernel.mwi_comm_helpers import MWICommHelper
 from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
 
 from jupyter_matlab_kernel.comms import LabExtensionCommunication
@@ -141,7 +142,22 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
         self.magic_engine = MagicExecutionEngine(self.log)
 
         # Communication helper for interaction with backend MATLAB proxy
-        self.mwi_comm_helper = None
+        self.mwi_comm_helper: Optional[MWICommHelper] = None
+
+        # Used to detect if this Kernel has been assigned a MATLAB-proxy server or not
+        self.is_matlab_assigned = False
+
+        # Flag indicating whether this kernel is using a shared MATLAB instance
+        self.is_shared_matlab: bool = True
+
+        # Keeps track of MATLAB version information for the MATLAB assigned to this Kernel
+        self.matlab_version = None
+
+        # Keeps track of MATLAB root path information for the MATLAB assigned to this Kernel
+        self.matlab_root_path = None
+
+        # Keeps track of the MATLAB licensing mode information for the MATLAB assigned to this Kernel
+        self.licensing_mode = None
 
         self.labext_comm = LabExtensionCommunication(self)
 
@@ -165,8 +181,9 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
         """
         self.log.debug("Received interrupt request from Jupyter")
         try:
-            # Send interrupt request to MATLAB
-            await self.mwi_comm_helper.send_interrupt_request_to_matlab()
+            if self.is_matlab_assigned and self.mwi_comm_helper:
+                # Send interrupt request to MATLAB
+                await self.mwi_comm_helper.send_interrupt_request_to_matlab()
 
             # Set the response to interrupt request.
             content = {"status": "ok"}
@@ -184,29 +201,6 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
 
         self.session.send(stream, "interrupt_reply", content, parent, ident=ident)
 
-    def modify_kernel(self, states_to_modify):
-        """
-        Used to modify MATLAB Kernel state
-        Args:
-            states_to_modify (dict): A key value pair of all the states to be modified.
-
-        """
-        self.log.debug(f"Modifying the kernel with {states_to_modify}")
-        for key, value in states_to_modify.items():
-            if hasattr(self, key):
-                self.log.debug(f"set the value of {key} to {value}")
-                setattr(self, key, value)
-
-    def handle_magic_output(self, output, outputs=None):
-        if output["type"] == "modify_kernel":
-            self.modify_kernel(output)
-        else:
-            self.display_output(output)
-            if outputs is not None and not self.startup_checks_completed:
-                # Outputs are cleared after startup_check.
-                # Storing the magic outputs to display them after startup_check completes.
-                outputs.append(output)
-
     async def do_execute(
         self,
         code,
@@ -222,17 +216,18 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
         https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute
         """
         self.log.debug(f"Received execution request from Jupyter with code:\n{code}")
-        try:
-            accumulated_magic_outputs = []
-            performed_startup_checks = False
 
-            for output in self.magic_engine.process_before_cell_execution(
-                code, self.execution_count
-            ):
-                self.handle_magic_output(output, accumulated_magic_outputs)
+        try:
+            performed_startup_checks = False
+            accumulated_magic_outputs = await self._perform_before_cell_execution(code)
 
             skip_cell_execution = self.magic_engine.skip_cell_execution()
             self.log.debug(f"Skipping cell execution is set to {skip_cell_execution}")
+
+            # Start a shared matlab-proxy (default) if not already started
+            if not self.is_matlab_assigned and not skip_cell_execution:
+                await self.start_matlab_proxy_and_comm_helper()
+                self.is_matlab_assigned = True
 
             # Complete one-time startup checks before sending request to MATLAB.
             # Blocking call, returns after MATLAB is started.
@@ -275,9 +270,8 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
                 )
 
                 # Display all the outputs produced during the execution of code.
-                for idx in range(len(outputs)):
-                    data = outputs[idx]
-                    self.log.debug(f"Displaying output {idx+1}:\n{data}")
+                for idx, data in enumerate(outputs):
+                    self.log.debug(f"Displaying output {idx + 1}:\n{data}")
 
                     # Ignore empty values returned from MATLAB.
                     if not data:
@@ -286,7 +280,7 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
 
             # Execute post execution of MAGICs
             for output in self.magic_engine.process_after_cell_execution():
-                self.handle_magic_output(output)
+                await self._handle_magic_output(output)
 
         except Exception as e:
             self.log.error(
@@ -418,6 +412,119 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
 
     # Helper functions
 
+    def _get_kernel_info(self):
+        return {
+            "is_shared_matlab": self.is_shared_matlab,
+            "matlab_version": self.matlab_version,
+            "matlab_root_path": self.matlab_root_path,
+            "licensing_mode": self.licensing_mode,
+        }
+
+    def _modify_kernel(self, states_to_modify):
+        """
+        Used to modify MATLAB Kernel state
+        Args:
+            states_to_modify (dict): A key value pair of all the states to be modified.
+
+        """
+        self.log.info(f"Modifying the kernel with {states_to_modify}")
+        for key, value in states_to_modify.items():
+            if hasattr(self, key):
+                self.log.debug(f"set the value of {key} to {value}")
+                setattr(self, key, value)
+            else:
+                self.log.warning(f"Attribute with name: {key} not found in kernel")
+
+    async def _handle_magic_output(self, output):
+        """
+        Handle the output from magic commands.
+
+        Args:
+            output (dict): The output from a magic command.
+
+        Returns:
+            dict or None: Returns the output if startup checks are not completed,
+                          otherwise returns None.
+
+        This method processes the output from magic commands. It handles kernel
+        modifications, stores outputs before startup checks are completed, and
+        displays outputs after startup checks are done.
+        """
+        if output["type"] == "modify_kernel":
+            self.log.debug("Handling modify_kernel output")
+            self._modify_kernel(output)
+        elif output["type"] == "callback":
+            self.log.debug("Handling callback output")
+            await self._invoke_callback_function(output.get("callback_function"))
+        else:
+            self.display_output(output)
+
+        if not self.startup_checks_completed:
+            # Outputs are cleared after startup_check.
+            # Storing the magic outputs to display them after startup_check completes.
+            return output
+        return None
+
+    async def _invoke_callback_function(self, callback_fx):
+        """
+        Handles the invocation of callback function supplied by the magic command. Kernel injects
+        itself as a parameter.
+
+        Args:
+        callback_fx: Function to be called. Currently only supports calling async or async generator functions.
+        """
+        if callback_fx:
+            import inspect
+
+            if inspect.isasyncgenfunction(callback_fx):
+                async for result in callback_fx(self):
+                    self.display_output(result)
+            else:
+                result = await callback_fx(self)
+                if result:
+                    self.display_output(result)
+            self.log.debug(f"Callback function {callback_fx} executed successfully")
+        return None
+
+    async def start_matlab_proxy_and_comm_helper(self):
+        """
+        Start MATLAB proxy and communication helper.
+
+        This method is intended to be overridden by subclasses to perform
+        any necessary setup for matlab-proxy startup. The default implementation
+        does nothing.
+
+        Returns:
+            None
+
+        Raises:
+            NotImplementedError: Always raised as this method must be implemented by subclasses.
+        """
+        raise NotImplementedError("Subclasses should implement this method")
+
+    async def _perform_before_cell_execution(self, code) -> list:
+        """
+        Perform actions before cell execution and handle magic outputs.
+
+        This method processes magic commands before cell execution and accumulates
+        their outputs.
+
+        Args:
+            code (str): The code to be executed.
+
+        Returns:
+            list: A list of accumulated magic outputs.
+        """
+        accumulated_magic_outputs = []
+        for magic_output in self.magic_engine.process_before_cell_execution(
+            code, self.execution_count
+        ):
+            output = await self._handle_magic_output(magic_output)
+            if output:
+                accumulated_magic_outputs.append(output)
+
+        return accumulated_magic_outputs
+
     def display_output(self, out):
         """
         Common function to send execution outputs to Jupyter UI.
@@ -472,11 +579,8 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
             self.log.error(f"Found a startup error: {self.startup_error}")
             raise self.startup_error
 
-        (
-            is_matlab_licensed,
-            matlab_status,
-            matlab_proxy_has_error,
-        ) = await self.mwi_comm_helper.fetch_matlab_proxy_status()
+        # Query matlab-proxy for its current status
+        matlab_proxy_status = await self.mwi_comm_helper.fetch_matlab_proxy_status()
 
         # Display iframe containing matlab-proxy to show login window if MATLAB
         # is not licensed using matlab-proxy. The iframe is removed after MATLAB
@@ -486,7 +590,7 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
         # as src for iframe to avoid hardcoding any hostname/domain information. This is done to
         # ensure the kernel works in Jupyter deployments. VS Code however does not work the same way
         # as other browser based Jupyter clients.
-        if not is_matlab_licensed:
+        if not matlab_proxy_status.is_matlab_licensed:
             if not jupyter_base_url:
                 # happens for non-jupyter environments (like VSCode), we expect licensing to
                 # be completed before hand
@@ -519,22 +623,13 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
             )
 
         # Wait until MATLAB is started before sending requests.
-        await self.poll_for_matlab_startup(
-            is_matlab_licensed, matlab_status, matlab_proxy_has_error
-        )
+        await self.poll_for_matlab_startup(matlab_proxy_status)
 
-    async def poll_for_matlab_startup(
-        self, is_matlab_licensed, matlab_status, matlab_proxy_has_error
-    ):
-        """Wait until MATLAB has started or time has run out"
+    async def poll_for_matlab_startup(self, matlab_proxy_status):
+        """Wait until MATLAB has started or time has run out
 
         Args:
-        is_matlab_licensed (bool): A flag indicating whether MATLAB is
-            licensed and eligible to start.
-        matlab_status (str): A string representing the current status
-            of the MATLAB startup process.
-        matlab_proxy_has_error (bool): A flag indicating whether there
-            is an error in the MATLAB proxy process during startup.
+        matlab_proxy_status: The status object from matlab-proxy
 
         Raises:
             MATLABConnectionError: If an error occurs while attempting to
@@ -544,11 +639,12 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
         self.log.debug("Waiting until MATLAB is started")
         timeout = 0
         while (
-            matlab_status != "up"
+            matlab_proxy_status
+            and matlab_proxy_status.matlab_status != "up"
             and timeout != _MATLAB_STARTUP_TIMEOUT
-            and not matlab_proxy_has_error
+            and not matlab_proxy_status.matlab_proxy_has_error
         ):
-            if is_matlab_licensed:
+            if matlab_proxy_status.is_matlab_licensed:
                 if timeout == 0:
                     self.log.debug("Licensing completed. Clearing output area")
                     self.display_output(
@@ -565,11 +661,7 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
                     )
                 timeout += 1
             time.sleep(1)
-            (
-                is_matlab_licensed,
-                matlab_status,
-                matlab_proxy_has_error,
-            ) = await self.mwi_comm_helper.fetch_matlab_proxy_status()
+            matlab_proxy_status = await self.mwi_comm_helper.fetch_matlab_proxy_status()
 
         # If MATLAB is not available after 15 seconds of licensing information
         # being available either through user input or through matlab-proxy cache,
@@ -580,9 +672,14 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
             )
             raise MATLABConnectionError
 
-        if matlab_proxy_has_error:
+        if not matlab_proxy_status or matlab_proxy_status.matlab_proxy_has_error:
             self.log.error("matlab-proxy encountered error.")
             raise MATLABConnectionError
+
+        # Update the kernel state with information from matlab proxy server
+        self.licensing_mode = matlab_proxy_status.licensing_mode
+        self.matlab_version = matlab_proxy_status.matlab_version
+        self.matlab_root_path = await self.mwi_comm_helper.fetch_matlab_root_path()
 
         self.log.debug("MATLAB is running, startup checks completed.")
 

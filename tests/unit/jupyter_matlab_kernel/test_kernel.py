@@ -6,10 +6,8 @@ import pytest
 from jupyter_server import serverapp
 from mocks.mock_jupyter_server import MockJupyterServerFixture
 
-from jupyter_matlab_kernel.jsp_kernel import (
-    MATLABKernelUsingJSP,
-    start_matlab_proxy,
-)
+from jupyter_matlab_kernel.jsp_kernel import start_matlab_proxy
+from jupyter_matlab_kernel.mpm_kernel import MATLABKernelUsingMPM
 from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
 
 
@@ -98,19 +96,24 @@ async def test_matlab_not_licensed_non_jupyter(mocker):
     exception (MATLABConnectionError) is raised when performing startup checks.
     """
     # Mock the kernel's jupyter_base_url attribute to simulate a non-Jupyter environment
-    kernel = mocker.MagicMock(spec=MATLABKernelUsingJSP)
+    kernel = mocker.MagicMock(spec=MATLABKernelUsingMPM)
     kernel.jupyter_base_url = None
     kernel.startup_error = None
+    kernel.matlab_proxy_base_url = "/test"
+
+    matlab_status_mock = mocker.Mock()
+    matlab_status_mock.is_matlab_licensed = False
+    matlab_status_mock.matlab_status = "down"
+    matlab_status_mock.matlab_proxy_has_error = False
+
     kernel.mwi_comm_helper = mocker.Mock()
     kernel.mwi_comm_helper.fetch_matlab_proxy_status = mocker.AsyncMock(
-        return_value=(False, "down", False)
+        return_value=matlab_status_mock
     )
 
     # Mock the perform_startup_checks method to actually call the implementation
-    async def mock_perform_startup_checks(*args, **kwargs):
-        return await MATLABKernelUsingJSP.perform_startup_checks(
-            kernel, *args, **kwargs
-        )
+    async def mock_perform_startup_checks():
+        return await MATLABKernelUsingMPM.perform_startup_checks(kernel)
 
     kernel.perform_startup_checks.side_effect = mock_perform_startup_checks
 

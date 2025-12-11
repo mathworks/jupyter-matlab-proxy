@@ -12,16 +12,23 @@ After installing the MATLAB Integration for Jupyter, your Jupyter environment sh
 
 ## Technical Overview
 
+Start a Jupyter notebook to create a MATLAB kernel. When you run MATLAB code in a notebook for the first time, you see a licensing screen to enter your MATLAB license details. If a MATLAB process is not already running, one would be started automatically.
 
-|<p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/kernel-architecture.png"></p>|
-|--|
-|The diagram above illustrates that multiple Jupyter notebooks communicate with a shared MATLAB process, through the Jupyter notebook server.|
+<p align="center"><img width="600" src="../../img/kernel-architecture-dedicated.png"></p>
 
-Start a Jupyter notebook to create a MATLAB kernel. When you run MATLAB code in a notebook for the first time, you see a licensing screen to enter your MATLAB license details. If a MATLAB process is not already running, Jupyter will start one. 
+### Shared MATLAB Workspace (Default Behavior)
 
-Multiple notebooks share the same MATLAB workspace. MATLAB processes commands from multiple notebooks in on a first-in, first-out basis.
+By default, multiple notebooks share the same MATLAB workspace. MATLAB processes commands from multiple notebooks on a first-in, first-out basis. 
 
-You can use kernel interrupts to stop MATLAB from processing a request. Remember that if cells from multiple notebooks are being run at the same time, the execution request you interrupt may not be from the notebook where you initated the interrupt.
+You can use kernel interrupts to stop MATLAB from processing a request. Remember that if cells from multiple notebooks are being run at the same time, the execution request you interrupt may not be from the notebook where you initiated the interrupt.
+
+### Dedicated MATLAB Workspace (Optional Behavior)
+
+You can now create a dedicated MATLAB session for your notebook by using the magic command `%%matlab new_session` in a cell. This starts a separate MATLAB process exclusively for that notebook, providing an isolated workspace that is not shared with other notebooks. 
+
+This is useful when you need to avoid conflicts with other notebooks or require an independent execution environment.
+
+Once created, all subsequent MATLAB code in that notebook will execute in the dedicated session. Each dedicated session operates independently with its own workspace and execution queue.
 
 
 ## Limitations
@@ -33,6 +40,6 @@ To request an enhancement or technical support, [create a GitHub issue](https://
 
 ----
 
-Copyright 2023-2024 The MathWorks, Inc.
+Copyright 2023-2025 The MathWorks, Inc.
 
 ----

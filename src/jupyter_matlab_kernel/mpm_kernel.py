@@ -18,9 +18,6 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Used to detect if this Kernel has been assigned a MATLAB-proxy server or not
-        self.is_matlab_assigned = False
-
         # Serves as the auth token to secure communication between Jupyter Server and MATLAB proxy manager
         self.mpm_auth_token = None
 
@@ -35,41 +32,9 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
     # ipykernel Interface API
     # https://ipython.readthedocs.io/en/stable/development/wrapperkernels.html
 
-    async def do_execute(
-        self,
-        code,
-        silent,
-        store_history=True,
-        user_expressions=None,
-        allow_stdin=False,
-        *,
-        cell_id=None,
-    ):
-        """
-        Used by ipykernel infrastructure for execution. For more info, look at
-        https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute
-        """
-        self.log.debug(f"Received execution request from Jupyter with code:\n{code}")
-
-        # Starts the matlab proxy process if this kernel hasn't yet been assigned a
-        # matlab proxy and sets the attributes on kernel to talk to the correct backend.
-        if not self.is_matlab_assigned:
-            self.log.debug("Starting matlab-proxy")
-            await self._start_matlab_proxy_and_comm_helper()
-            self.is_matlab_assigned = True
-
-        return await super().do_execute(
-            code=code,
-            silent=silent,
-            store_history=store_history,
-            user_expressions=user_expressions,
-            allow_stdin=allow_stdin,
-            cell_id=cell_id,
-        )
-
     async def do_shutdown(self, restart):
         self.log.debug("Received shutdown request from Jupyter")
-        if self.is_matlab_assigned:
+        if self.is_matlab_assigned and self.mwi_comm_helper:
             try:
                 # Cleans up internal live editor state, client session
                 await self.mwi_comm_helper.send_shutdown_request_to_matlab()
@@ -80,15 +45,20 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
                     f"Exception occurred while sending shutdown request to MATLAB:\n{e}"
                 )
             except Exception as e:
-                self.log.debug("Exception during shutdown", e)
+                self.log.debug("Exception during shutdown: %s", e)
             finally:
-                # Shuts down matlab assigned to this Kernel (based on satisfying certain criteria)
-                await mpm_lib.shutdown(
-                    self.parent_pid, self.kernel_id, self.mpm_auth_token
-                )
-                self.is_matlab_assigned = False
+                await self.cleanup_matlab_proxy()
 
         return super().do_shutdown(restart)
+
+    # Helper functions
+
+    async def cleanup_matlab_proxy(self):
+        # Shuts down matlab-proxy and MATLAB assigned to this Kernel.
+        # matlab-proxy process is cleaned up when this Kernel process is the
+        # only reference to the assigned matlab-proxy instance
+        await mpm_lib.shutdown(self.parent_pid, self.kernel_id, self.mpm_auth_token)
+        self.is_matlab_assigned = False
 
     async def perform_startup_checks(self):
         """Overriding base function to provide a different iframe source"""
@@ -96,9 +66,7 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
             self.jupyter_base_url, f"{self.matlab_proxy_base_url}/"
         )
 
-    # Helper functions
-
-    async def _start_matlab_proxy_and_comm_helper(self) -> None:
+    async def start_matlab_proxy_and_comm_helper(self) -> None:
         """
         Starts the MATLAB proxy using the proxy manager and fetches its status.
         """
@@ -137,7 +105,7 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
             response = await mpm_lib.start_matlab_proxy_for_kernel(
                 caller_id=self.kernel_id,
                 parent_id=self.parent_pid,
-                is_shared_matlab=True,
+                is_shared_matlab=self.is_shared_matlab,
                 base_url_prefix=self.jupyter_base_url,
             )
             err = response.get("errors")

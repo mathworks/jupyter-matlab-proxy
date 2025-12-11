@@ -15,6 +15,8 @@ This table lists the predefined magic commands you can use:
 |---|---|---|---|---|
 |`?` and `help`| Display documentation of given magic command.|Name of magic command.||`%%lsmagic?` or `%%help lsmagic`|
 |`lsmagic`|List predefined magic commands.|||`%%lsmagic`|
+|`matlab new_session`|Starts a new MATLAB dedicated to the kernel instead of being shared across kernels. <br><br> Note: To change from a shared MATLAB to a dedicated MATLAB after you have already run MATLAB code in a notebook, you must first restart the kernel.|||`%%matlab new_session`|
+|`matlab info`|Print a summary of the MATLAB session currently being used for the kernel. The summary includes the MATLAB version, root path, licensing mode, and whether the MATLAB is shared or dedicated to a kernel. |||`%%matlab info`|
 |`time`|Display time taken to execute a cell.|||`%%time`|
 |`file`|Save contents of cell as a file in the notebook folder. You can use this command to define and save new functions. For details, see the section below on how to [Create New Functions Using the %%file Magic Command](#create-new-functions-using-the-the-file-magic-command)|Name of saved file.|The file magic command will save the contents of the cell, but not execute them in MATLAB.|`%%file myfile.m`|
 
@@ -63,6 +65,6 @@ Note: to use your function in MATLAB, remember to add the Jupyter notebook folde
 
 ---
 
-Copyright 2024 The MathWorks, Inc.
+Copyright 2024-2025 The MathWorks, Inc.
 
 ---

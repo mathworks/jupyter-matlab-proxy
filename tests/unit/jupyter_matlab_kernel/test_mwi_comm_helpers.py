@@ -23,7 +23,7 @@ from jupyter_matlab_kernel.mwi_exceptions import MATLABConnectionError
 
 
 @pytest.fixture
-async def matlab_proxy_fixture():
+async def comm_helper_fixture():
     url = "http://localhost"
     headers = {}
     kernel_id = ""
@@ -36,7 +36,7 @@ async def matlab_proxy_fixture():
 
 # Testing fetch_matlab_proxy_status
 async def test_fetch_matlab_proxy_status_unauth_request(
-    monkeypatch, matlab_proxy_fixture
+    monkeypatch, comm_helper_fixture
 ):
     """
     This test checks that fetch_matlab_proxy_status throws an exception
@@ -48,7 +48,7 @@ async def test_fetch_matlab_proxy_status_unauth_request(
 
     monkeypatch.setattr(aiohttp.ClientSession, "get", mock_get)
     with pytest.raises(aiohttp.client_exceptions.ClientError) as exceptionInfo:
-        await matlab_proxy_fixture.fetch_matlab_proxy_status()
+        await comm_helper_fixture.fetch_matlab_proxy_status()
     assert MockUnauthorisedRequestResponse().exception_msg in str(exceptionInfo.value)
 
 
@@ -63,7 +63,7 @@ async def test_fetch_matlab_proxy_status_unauth_request(
     ],
 )
 async def test_fetch_matlab_proxy_status(
-    input_lic_type, expected_license_status, monkeypatch, matlab_proxy_fixture
+    input_lic_type, expected_license_status, monkeypatch, comm_helper_fixture
 ):
     """
     This test checks that fetch_matlab_proxy_status returns the correct
@@ -77,17 +77,35 @@ async def test_fetch_matlab_proxy_status(
 
     monkeypatch.setattr(aiohttp.ClientSession, "get", mock_get)
 
-    (
-        is_matlab_licensed,
-        matlab_status,
-        matlab_proxy_has_error,
-    ) = await matlab_proxy_fixture.fetch_matlab_proxy_status()
-    assert is_matlab_licensed == expected_license_status
-    assert matlab_status == "up"
-    assert matlab_proxy_has_error is False
+    matlab_proxy_status = await comm_helper_fixture.fetch_matlab_proxy_status()
+    assert matlab_proxy_status.is_matlab_licensed == expected_license_status
+    assert matlab_proxy_status.matlab_status == "up"
+    assert matlab_proxy_status.matlab_proxy_has_error is False
 
 
-async def test_interrupt_request_bad_request(monkeypatch, matlab_proxy_fixture):
+async def test_fetch_matlab_root_path(mocker, comm_helper_fixture):
+    """
+    This test checks that fetch_matlab_root_path returns the correct matlab root path.
+    """
+    mock_response = mocker.AsyncMock()
+    mock_response.status = http.HTTPStatus.OK
+    mock_response.json = mocker.AsyncMock(
+        return_value={
+            "matlab": {
+                "rootPath": "test_root_path",
+                "version": "test_version",
+            }
+        },
+    )
+    mocker.patch(
+        "aiohttp.ClientSession.get", new=mocker.AsyncMock(return_value=mock_response)
+    )
+
+    matlab_root_path = await comm_helper_fixture.fetch_matlab_root_path()
+    assert matlab_root_path == "test_root_path"
+
+
+async def test_interrupt_request_bad_request(monkeypatch, comm_helper_fixture):
     """
     This test checks that send_interrupt_request_to_matlab raises
     an exception if the response to the HTTP post is not valid.
@@ -101,12 +119,12 @@ async def test_interrupt_request_bad_request(monkeypatch, matlab_proxy_fixture):
     monkeypatch.setattr(aiohttp.ClientSession, "post", mock_post)
 
     with pytest.raises(aiohttp.client_exceptions.ClientError) as exceptionInfo:
-        await matlab_proxy_fixture.send_interrupt_request_to_matlab()
+        await comm_helper_fixture.send_interrupt_request_to_matlab()
     assert mock_exception_message in str(exceptionInfo.value)
 
 
 # Testing send_execution_request_to_matlab
-async def test_execution_request_bad_request(monkeypatch, matlab_proxy_fixture):
+async def test_execution_request_bad_request(monkeypatch, comm_helper_fixture):
     """
     This test checks that send_execution_request_to_matlab throws an exception
     if the response to the HTTP request is invalid.
@@ -120,12 +138,12 @@ async def test_execution_request_bad_request(monkeypatch, matlab_proxy_fixture):
 
     code = "placeholder for code"
     with pytest.raises(aiohttp.client_exceptions.ClientError) as exceptionInfo:
-        await matlab_proxy_fixture.send_execution_request_to_matlab(code)
+        await comm_helper_fixture.send_execution_request_to_matlab(code)
     assert mock_exception_message in str(exceptionInfo.value)
 
 
 async def test_execution_request_invalid_feval_response(
-    monkeypatch, matlab_proxy_fixture
+    monkeypatch, comm_helper_fixture
 ):
     """
     This test checks that send_execution_request_to_matlab raises an exception
@@ -150,11 +168,11 @@ async def test_execution_request_invalid_feval_response(
 
     code = "placeholder for code"
     with pytest.raises(MATLABConnectionError) as exceptionInfo:
-        await matlab_proxy_fixture.send_execution_request_to_matlab(code)
+        await comm_helper_fixture.send_execution_request_to_matlab(code)
     assert str(exceptionInfo.value) == str(MATLABConnectionError())
 
 
-async def test_execution_interrupt(monkeypatch, matlab_proxy_fixture):
+async def test_execution_interrupt(monkeypatch, comm_helper_fixture):
     """
     This test checks that send_execution_request_to_matlab raises an exception
     if the matlab command appears to have been interupted.
@@ -190,11 +208,11 @@ async def test_execution_interrupt(monkeypatch, matlab_proxy_fixture):
 
     code = "placeholder for code"
     with pytest.raises(Exception) as exceptionInfo:
-        await matlab_proxy_fixture.send_execution_request_to_matlab(code)
+        await comm_helper_fixture.send_execution_request_to_matlab(code)
     assert "Operation may have interrupted by user" in str(exceptionInfo.value)
 
 
-async def test_execution_success(monkeypatch, matlab_proxy_fixture):
+async def test_execution_success(monkeypatch, comm_helper_fixture):
     """
     This test checks that send_execution_request_to_matlab returns the correct information
     from a valid response from MATLAB.
@@ -225,7 +243,7 @@ async def test_execution_success(monkeypatch, matlab_proxy_fixture):
 
     code = "placeholder for code"
     try:
-        outputs = await matlab_proxy_fixture.send_execution_request_to_matlab(code)
+        outputs = await comm_helper_fixture.send_execution_request_to_matlab(code)
     except Exception:
         pytest.fail("Unexpected failured in execution request")
 
@@ -233,7 +251,7 @@ async def test_execution_success(monkeypatch, matlab_proxy_fixture):
 
 
 # Testing send_eval_request_to_matlab
-async def test_send_eval_request_to_matlab_success(monkeypatch, matlab_proxy_fixture):
+async def test_send_eval_request_to_matlab_success(monkeypatch, comm_helper_fixture):
     """Test that send_eval_request_to_matlab returns eval response correctly."""
 
     # Arrange
@@ -245,7 +263,7 @@ async def test_send_eval_request_to_matlab_success(monkeypatch, matlab_proxy_fix
     mcode = "x = 1 + 1"
 
     # Act
-    result = await matlab_proxy_fixture.send_eval_request_to_matlab(mcode)
+    result = await comm_helper_fixture.send_eval_request_to_matlab(mcode)
 
     # Assert
     # Verify the eval response is returned as-is
@@ -253,9 +271,7 @@ async def test_send_eval_request_to_matlab_success(monkeypatch, matlab_proxy_fix
     assert result == expected_response
 
 
-async def test_send_eval_request_to_matlab_with_error(
-    monkeypatch, matlab_proxy_fixture
-):
+async def test_send_eval_request_to_matlab_with_error(monkeypatch, comm_helper_fixture):
     """Test that send_eval_request_to_matlab returns error response correctly."""
 
     # Arrange
@@ -271,7 +287,7 @@ async def test_send_eval_request_to_matlab_with_error(
     mcode = "invalid_syntax"
 
     # Act
-    result = await matlab_proxy_fixture.send_eval_request_to_matlab(mcode)
+    result = await comm_helper_fixture.send_eval_request_to_matlab(mcode)
 
     # Assert
     # Verify the error response is returned as-is
@@ -284,7 +300,7 @@ async def test_send_eval_request_to_matlab_with_error(
 
 
 async def test_send_eval_request_to_matlab_bad_request(
-    monkeypatch, matlab_proxy_fixture
+    monkeypatch, comm_helper_fixture
 ):
     """Test that send_eval_request_to_matlab raises exception for bad HTTP request."""
     # Arrange
@@ -299,14 +315,14 @@ async def test_send_eval_request_to_matlab_bad_request(
 
     # Act
     with pytest.raises(aiohttp.client_exceptions.ClientError) as exceptionInfo:
-        await matlab_proxy_fixture.send_eval_request_to_matlab(mcode)
+        await comm_helper_fixture.send_eval_request_to_matlab(mcode)
 
     # Assert
     assert mock_exception_message in str(exceptionInfo.value)
 
 
 async def test_send_eval_request_to_matlab_missing_eval_response(
-    monkeypatch, matlab_proxy_fixture
+    monkeypatch, comm_helper_fixture
 ):
     """Test that send_eval_request_to_matlab raises MATLABConnectionError for missing EvalResponse."""
 
@@ -318,11 +334,11 @@ async def test_send_eval_request_to_matlab_missing_eval_response(
 
     mcode = "x = 1 + 1"
     with pytest.raises(MATLABConnectionError):
-        await matlab_proxy_fixture.send_eval_request_to_matlab(mcode)
+        await comm_helper_fixture.send_eval_request_to_matlab(mcode)
 
 
 # Testing _read_eval_response_from_file
-async def test_read_eval_response_from_file_success_with_file(matlab_proxy_fixture):
+async def test_read_eval_response_from_file_success_with_file(comm_helper_fixture):
     """Test _read_eval_response_from_file with successful response and file."""
     # Arrange
     # Create a temporary file with test data
@@ -341,7 +357,7 @@ async def test_read_eval_response_from_file_success_with_file(matlab_proxy_fixtu
         }
 
         # Act
-        result = await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+        result = await comm_helper_fixture._read_eval_response_from_file(eval_response)
 
         # Assert
         # Verify the result
@@ -356,7 +372,7 @@ async def test_read_eval_response_from_file_success_with_file(matlab_proxy_fixtu
             os.remove(temp_file_path)
 
 
-async def test_read_eval_response_from_file_success_without_file(matlab_proxy_fixture):
+async def test_read_eval_response_from_file_success_without_file(comm_helper_fixture):
     """Test _read_eval_response_from_file with successful response but no file."""
     # Arrange
     eval_response = {
@@ -366,7 +382,7 @@ async def test_read_eval_response_from_file_success_without_file(matlab_proxy_fi
     }
 
     # Act
-    result = await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+    result = await comm_helper_fixture._read_eval_response_from_file(eval_response)
 
     # Assert
     # Verify empty result returns empty list
@@ -374,7 +390,7 @@ async def test_read_eval_response_from_file_success_without_file(matlab_proxy_fi
 
 
 async def test_read_eval_response_from_file_error_with_message_faults(
-    matlab_proxy_fixture,
+    comm_helper_fixture,
 ):
     """Test _read_eval_response_from_file with error response containing message faults."""
     # Arrange
@@ -389,11 +405,11 @@ async def test_read_eval_response_from_file_error_with_message_faults(
         Exception,
         match="Failed to execute. Operation may have been interrupted by user.",
     ):
-        await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+        await comm_helper_fixture._read_eval_response_from_file(eval_response)
 
 
 async def test_read_eval_response_from_file_error_without_message_faults(
-    matlab_proxy_fixture,
+    comm_helper_fixture,
 ):
     """Test _read_eval_response_from_file with error response without message faults."""
 
@@ -404,11 +420,11 @@ async def test_read_eval_response_from_file_error_without_message_faults(
     }
 
     with pytest.raises(Exception, match="Custom error message"):
-        await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+        await comm_helper_fixture._read_eval_response_from_file(eval_response)
 
 
 async def test_read_eval_response_from_file_handles_file_deletion_error(
-    matlab_proxy_fixture, monkeypatch
+    comm_helper_fixture, monkeypatch
 ):
     """Test _read_eval_response_from_file handles file deletion errors gracefully."""
 
@@ -438,7 +454,7 @@ async def test_read_eval_response_from_file_handles_file_deletion_error(
         }
 
         # Should not raise exception even if file deletion fails
-        result = await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+        result = await comm_helper_fixture._read_eval_response_from_file(eval_response)
 
         # Verify the result is still correct
         assert result == test_data
@@ -450,7 +466,7 @@ async def test_read_eval_response_from_file_handles_file_deletion_error(
 
 
 async def test_read_eval_response_from_file_with_empty_file_content(
-    matlab_proxy_fixture,
+    comm_helper_fixture,
 ):
     """Test _read_eval_response_from_file with empty file content."""
 
@@ -466,7 +482,7 @@ async def test_read_eval_response_from_file_with_empty_file_content(
             "messageFaults": [],
         }
 
-        result = await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+        result = await comm_helper_fixture._read_eval_response_from_file(eval_response)
 
         # Verify empty content returns empty list
         assert result == []
@@ -481,7 +497,7 @@ async def test_read_eval_response_from_file_with_empty_file_content(
 
 
 async def test_read_eval_response_from_file_with_whitespace_only_content(
-    matlab_proxy_fixture,
+    comm_helper_fixture,
 ):
     """Test _read_eval_response_from_file with whitespace-only file content."""
 
@@ -497,7 +513,7 @@ async def test_read_eval_response_from_file_with_whitespace_only_content(
             "messageFaults": [],
         }
 
-        result = await matlab_proxy_fixture._read_eval_response_from_file(eval_response)
+        result = await comm_helper_fixture._read_eval_response_from_file(eval_response)
 
         # Verify whitespace-only content returns empty list
         assert result == []

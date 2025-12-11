@@ -26,7 +26,6 @@ def mpm_kernel_instance(mocker) -> MATLABKernelUsingMPM:
     return MATLABKernelUsingMPM()
 
 
-@pytest.mark.asyncio
 async def test_initialize_matlab_proxy_with_mpm_success(mocker, mpm_kernel_instance):
     mpm_lib_start_matlab_proxy_response = {
         "absolute_url": "dummyURL",
@@ -166,3 +165,27 @@ async def test_do_shutdown_exception(mocker, mpm_kernel_instance):
         mpm_kernel_instance.mpm_auth_token,
     )
     assert not mpm_kernel_instance.is_matlab_assigned
+
+
+async def test_matlab_proxy_assignment_on_executing_matlab_command(
+    mocker, mpm_kernel_instance
+):
+    """
+    Test that MATLAB proxy is assigned when executing a MATLAB command.
+
+    This test verifies that when a regular MATLAB command is executed while MATLAB
+    is not yet assigned, the kernel properly starts the MATLAB proxy and assigns
+    MATLAB to the kernel (is_matlab_assigned=True).
+    """
+    code = "why"
+    mpm_kernel_instance.is_matlab_assigned = False
+    # Patch kernel instance to mock start_matlab_proxy_and_comm_helper method
+    mock_start_matlab_proxy = mocker.patch.object(
+        mpm_kernel_instance,
+        "start_matlab_proxy_and_comm_helper",
+        autospec=True,
+    )
+
+    await mpm_kernel_instance.do_execute(code, silent=True)
+    mock_start_matlab_proxy.assert_called_once()
+    assert mpm_kernel_instance.is_matlab_assigned is True

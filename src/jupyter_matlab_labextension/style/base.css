@@ -1,5 +1,11 @@
+/* # Copyright 2024-2025 The MathWorks, Inc. */
 /*
     See the JupyterLab Developer Guide for useful CSS Patterns:
 
     https://jupyterlab.readthedocs.io/en/stable/developer/css.html
 */
+
+/* Adds spacing between toolbar icon and label */
+.matlab-toolbar-button-spaced .jp-ToolbarButtonComponent-label {
+            margin-left: 4px;
+}
