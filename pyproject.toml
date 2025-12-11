@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "jupyter-matlab-proxy"
-version = "0.17.5"
+version = "0.18.0"
 description = "MATLAB Integration for Jupyter"
 readme = "README.md"
 license = { file = "LICENSE.md" }
@@ -43,7 +43,7 @@ dependencies = [
     "ipykernel>=6.0.3",
     "jupyter-client",
     "jupyter-server-proxy>=4.1.0",
-    "matlab-proxy>=0.26.0",
+    "matlab-proxy>=0.30.0",
     "psutil",
     "requests",
 ]
