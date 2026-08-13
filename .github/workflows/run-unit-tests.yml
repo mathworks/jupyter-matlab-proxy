@@ -1,4 +1,4 @@
-# Copyright 2020-2025 The MathWorks, Inc.
+# Copyright 2020-2026 The MathWorks, Inc.
 
 name: Unit Testing MATLAB Integration for Jupyter
 
@@ -63,13 +63,13 @@ jobs:
   python_unit_tests:
     timeout-minutes: 15
     env:
-      code-cov-py: "3.13"
+      code-cov-py: "3.14"
       code-cov-os: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.10", "3.13"]
+        python-version: ["3.10", "3.14"]
 
     runs-on: ${{ matrix.os }}
     steps:

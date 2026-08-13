@@ -45,7 +45,7 @@ From your Jupyter notebook or JupyterLab, you can also open the MATLAB developme
   - Windows® (supported from [v0.6.0](https://github.com/mathworks/jupyter-matlab-proxy/releases/tag/v0.6.0)).
   - Windows Subsystem for Linux (WSL 2) [Installation Guide](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/install_guides/wsl2/README.md).
 
-* Python versions: 3.10 | 3.11 | 3.12 | 3.13
+* Python versions: 3.10 | 3.11 | 3.12 | 3.13 | 3.14
 
 * MATLAB R2020b or later, installed and on the system PATH.
   ```bash
@@ -234,7 +234,7 @@ This opens an untitled `.m` file where you can write MATLAB code with syntax hig
 
 ----
 
-Copyright 2021-2025 The MathWorks, Inc.
+Copyright 2021-2026 The MathWorks, Inc.
 
 ----
 
