@@ -29,9 +29,7 @@ async def comm_helper_fixture():
     kernel_id = ""
     loop = asyncio.get_event_loop()
     matlab_proxy = MWICommHelper(kernel_id, url, loop, loop, headers)
-    await matlab_proxy.connect()
     yield matlab_proxy
-    await matlab_proxy.disconnect()
 
 
 # Testing fetch_matlab_proxy_status
@@ -81,6 +79,8 @@ async def test_fetch_matlab_proxy_status(
     assert matlab_proxy_status.is_matlab_licensed == expected_license_status
     assert matlab_proxy_status.matlab_status == "up"
     assert matlab_proxy_status.matlab_proxy_has_error is False
+    # Timeout is sourced from matlab-proxy's configured process start timeout.
+    assert matlab_proxy_status.process_start_timeout > 0
 
 
 async def test_fetch_matlab_root_path(mocker, comm_helper_fixture):

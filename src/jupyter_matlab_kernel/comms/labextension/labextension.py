@@ -1,6 +1,9 @@
-# Copyright 2025 The MathWorks, Inc.
+# Copyright 2025-2026 The MathWorks, Inc.
 
 from ipykernel.comm import Comm
+from jupyter_matlab_kernel.comms.labextension.actions.action_factory import (
+    ActionFactory,
+)
 
 
 class LabExtensionCommunication:
@@ -32,11 +35,29 @@ class LabExtensionCommunication:
         # As per jupyter messaging protocol https://jupyter-client.readthedocs.io/en/latest/messaging.html#custom-messages
         # 'content' will be present in msg, 'comm_id' and 'data' will be present in content.
         payload = msg["content"]["data"]
+        comm_id = msg["content"]["comm_id"]
         action_type, action_data = payload["action"], payload["data"]
+
+        comm = self.comms.get(comm_id)
+
+        if comm is None:
+            self.log.error(
+                f"Received comm_msg for unknown comm_id: {comm_id}. Ignoring message."
+            )
+            return
 
         self.log.debug(
             f"Received action_type:{action_type} with data:{action_data} from the lab extension"
         )
+
+        action = ActionFactory.create_action(action_type, self.kernel)
+        self.log.debug(f"Action to execute is {action.__class__.__name__}")
+
+        try:
+            await action.execute(comm, action_data)
+
+        except Exception as err:
+            self.log.error(f"Failed to execute action with exception: {err}")
 
     def comm_close(self, stream, ident, msg):
         """Handler to execute when labextension sends a message with 'comm_close' type."""

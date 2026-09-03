@@ -41,7 +41,7 @@ classifiers = [
 
 dependencies = [
     "aiohttp",
-    "ipykernel>=6.0.3",
+    "ipykernel>=7.3.0",
     "jupyter-client",
     "jupyter-server-proxy>=4.1.0",
     "matlab-proxy>=0.31.0",
@@ -113,6 +113,7 @@ ensured-targets = [
 skip-if-exists = [
     "src/jupyter_matlab_labextension/jupyter_matlab_labextension/labextension/static/style.js",
 ]
+
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 path = "src/jupyter_matlab_labextension"

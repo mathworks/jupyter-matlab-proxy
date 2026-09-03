@@ -4,10 +4,11 @@
 import http
 import json
 import pathlib
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Optional
 
 import aiohttp
+from matlab_proxy import settings as mwi_settings
 from matlab_proxy.util.mwi.embedded_connector.helpers import (
     get_data_to_eval_mcode,
     get_data_to_feval_mcode,
@@ -40,6 +41,8 @@ class MATLABStatus:
         licensing_mode (str): The type of licensing being used. Defaults to an empty string.
         matlab_version (str): Version of the MATLAB instance. Defaults to an empty string.
         matlab_root_path (str): Root installation path of MATLAB. Defaults to an empty string.
+        process_start_timeout (int): Timeout in seconds that matlab-proxy allows for MATLAB
+            to start, as configured by MWI_PROCESS_START_TIMEOUT. Defaults to 600 seconds.
     """
 
     is_matlab_licensed: bool
@@ -48,6 +51,21 @@ class MATLABStatus:
     licensing_mode: str = ""
     matlab_version: str = ""
     matlab_root_path: str = ""
+    process_start_timeout: int = 600
+
+    def snake_to_camel(self, s: str) -> str:
+        parts = s.split("_")
+        return parts[0] + "".join(p.capitalize() for p in parts[1:])
+
+    def to_dict(self, camel_case: bool = False) -> dict:
+        data = asdict(self)
+        if not camel_case:
+            return data
+
+        return {self.snake_to_camel(k): v for k, v in data.items()}
+
+    def to_json(self, camel_case: bool = False, indent: int | None = None) -> str:
+        return json.dumps(self.to_dict(camel_case=camel_case), indent=indent)
 
 
 class MWICommHelper:
@@ -70,46 +88,17 @@ class MWICommHelper:
         self._control_loop = control_loop
         self.headers = headers
         self.logger = logger
-        self._http_shell_client = None
-        self._http_control_client = None
+        self.matlab_start_timeout = mwi_settings.get_process_startup_timeout()
 
-    async def _create_http_session(self, loop):
-        """Helper function to create a aiohttp ClientSession which uses a given asyncio event loop
-
-        Args:
-            loop : asyncio event loop
-
-        Returns:
-            ClientSession : aiohttp ClientSession with disabled timeouts and required headers.
-        """
-        # Disable timeout as the execution of MATLAB code might be longer.
+    def _create_client_session(self):
+        """Create a new client session with standard configuration"""
         timeout = aiohttp.ClientTimeout(total=None)
-
-        # Creation of ClientSession needs to be done in an async function. We cannot
-        # specify base url as it may contain additional path (such as in jupyterhub.com/user/matlab)
-        # which is not supported by ClientSession
         return aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(ssl=False, loop=loop),
+            connector=aiohttp.TCPConnector(ssl=False),
             headers=self.headers,
             trust_env=True,
             timeout=timeout,
         )
-
-    async def connect(self):
-        """Initializes the HTTP clients"""
-        if self._http_shell_client is None:
-            self._http_shell_client = await self._create_http_session(self._shell_loop)
-
-        if self._http_control_client is None:
-            self._http_control_client = await self._create_http_session(
-                self._control_loop
-            )
-
-    async def disconnect(self):
-        if self._http_shell_client:
-            await self._http_shell_client.close()
-        if self._http_control_client:
-            await self._http_control_client.close()
 
     async def fetch_matlab_root_path(self) -> Optional[str]:
         """
@@ -123,21 +112,22 @@ class MWICommHelper:
                             or None if the path could not be retrieved.
         """
         self.logger.debug("Fetching MATLAB root path from matlab-proxy")
-        resp = await self._http_shell_client.get(self.url + "/get_env_config")
-        self.logger.debug(
-            f"Received status code for matlab-proxy get-env-config request: {resp.status}"
-        )
+        async with self._create_client_session() as client:
+            resp = await client.get(self.url + "/get_env_config")
+            self.logger.debug(
+                f"Received status code for matlab-proxy get-env-config request: {resp.status}"
+            )
 
-        if resp.status == http.HTTPStatus.OK:
-            data = await resp.json()
-            self.logger.debug(f"get-env-config data:\n{data}")
-            matlab_data = data.get("matlab") or {}
-            return matlab_data.get("rootPath", None)
+            if resp.status == http.HTTPStatus.OK:
+                data = await resp.json()
+                self.logger.debug(f"get-env-config data:\n{data}")
+                matlab_data = data.get("matlab") or {}
+                return matlab_data.get("rootPath", None)
 
-        self.logger.warning(
-            "Error occurred during retrieving environment config for matlab-proxy"
-        )
-        return None
+            self.logger.warning(
+                "Error occurred during retrieving environment config for matlab-proxy"
+            )
+            return None
 
     async def fetch_matlab_proxy_status(self) -> Optional[MATLABStatus]:
         """
@@ -172,23 +162,27 @@ class MWICommHelper:
             ...     print(f"MATLAB {status.matlab_version} is running")
         """
         self.logger.debug("Fetching matlab-proxy status")
-        resp = await self._http_shell_client.get(self.url + "/get_status")
-        self.logger.debug(f"Received status code: {resp.status}")
-        if resp.status == http.HTTPStatus.OK:
-            data = await resp.json()
-            self.logger.debug(f"matlab-proxy status:\n{data}")
-            matlab_data = data.get("matlab") or {}
-            return MATLABStatus(
-                is_matlab_licensed=check_licensing_status(data),
-                matlab_status=matlab_data.get("status", ""),
-                matlab_proxy_has_error=data.get("error") is not None,
-                licensing_mode=(data.get("licensing") or {}).get("type", ""),
-                matlab_version=matlab_data.get("version", ""),
-            )
-        else:
-            self.logger.error("Error occurred during communication with matlab-proxy")
-            resp.raise_for_status()
-            return None
+        async with self._create_client_session() as client:
+            resp = await client.get(self.url + "/get_status")
+            self.logger.debug(f"Received status code: {resp.status}")
+            if resp.status == http.HTTPStatus.OK:
+                data = await resp.json()
+                self.logger.debug(f"matlab-proxy status:\n{data}")
+                matlab_data = data.get("matlab") or {}
+                return MATLABStatus(
+                    is_matlab_licensed=check_licensing_status(data),
+                    matlab_status=matlab_data.get("status", ""),
+                    matlab_proxy_has_error=data.get("error") is not None,
+                    licensing_mode=(data.get("licensing") or {}).get("type", ""),
+                    matlab_version=matlab_data.get("version", ""),
+                    process_start_timeout=self.matlab_start_timeout,
+                )
+            else:
+                self.logger.error(
+                    "Error occurred during communication with matlab-proxy"
+                )
+                resp.raise_for_status()
+                return None
 
     async def send_execution_request_to_matlab(self, code):
         """
@@ -205,7 +199,7 @@ class MWICommHelper:
         """
         self.logger.debug("Sending execution request to MATLAB")
         outputs = await self._send_jupyter_request_to_matlab(
-            "execute", [code, self.kernel_id], self._http_shell_client
+            "execute", [code, self.kernel_id]
         )
         if not isinstance(outputs, list):
             outputs = [outputs]
@@ -239,7 +233,7 @@ class MWICommHelper:
         """
         self.logger.debug("Sending completion request to MATLAB")
         return await self._send_jupyter_request_to_matlab(
-            "complete", [code, cursor_pos], self._http_shell_client
+            "complete", [code, cursor_pos]
         )
 
     async def send_shutdown_request_to_matlab(self):
@@ -250,9 +244,7 @@ class MWICommHelper:
             HTTPError: Occurs when connection to matlab-proxy cannot be established.
         """
         self.logger.debug("Sending shutdown request to MATLAB")
-        return await self._send_jupyter_request_to_matlab(
-            "shutdown", [self.kernel_id], self._http_control_client
-        )
+        return await self._send_jupyter_request_to_matlab("shutdown", [self.kernel_id])
 
     async def send_interrupt_request_to_matlab(self):
         """Send an interrupt request to MATLAB to stop current execution.
@@ -277,11 +269,14 @@ class MWICommHelper:
         self.logger.debug(f"Request URL: {url}")
         self.logger.debug(f"Request Headers:\n{self.headers}")
         self.logger.debug(f"Request Body:\n{req_body}")
-        resp = await self._http_control_client.post(url, json=req_body)
-        self.logger.debug(f"Received status code: {resp.status}")
-        if resp.status != http.HTTPStatus.OK:
-            self.logger.error("Error occurred during communication with matlab-proxy")
-            resp.raise_for_status()
+        async with self._create_client_session() as client:
+            resp = await client.post(url, json=req_body)
+            self.logger.debug(f"Received status code: {resp.status}")
+            if resp.status != http.HTTPStatus.OK:
+                self.logger.error(
+                    "Error occurred during communication with matlab-proxy"
+                )
+                resp.raise_for_status()
 
     async def convert_mathml_to_latex(self, mathml: str) -> str:
         """Convert MathML to LaTeX using the MATLAB jupyter.convertMathMLToLaTeX function.
@@ -298,16 +293,15 @@ class MWICommHelper:
         """
         self.logger.debug("Sending convertMathMLToLaTeX request to MATLAB")
         return await self._send_jupyter_request_to_matlab(
-            "convertMathMLToLaTeX", [mathml], self._http_shell_client
+            "convertMathMLToLaTeX", [mathml]
         )
 
-    async def _send_feval_request_to_matlab(self, http_client, fname, nargout, *args):
+    async def _send_feval_request_to_matlab(self, fname, nargout, *args):
         """Execute a MATLAB function call (feval) through the matlab-proxy.
 
         Sends a function evaluation request to MATLAB, handling path setup and synchronous execution.
 
         Args:
-            http_client (aiohttp.ClientSession): HTTP client for sending the request
             fname (str): Name of the MATLAB function to call
             nargout (int): Number of output arguments expected
             *args: Variable arguments to pass to the MATLAB function
@@ -339,49 +333,52 @@ class MWICommHelper:
         self.logger.debug(f"Request Headers:\n{self.headers}")
         self.logger.debug(f"Request Body:\n{req_body}")
 
-        resp = await http_client.post(
-            url,
-            json=req_body,
-        )
-        self.logger.debug(f"Received status code: {resp.status}")
-        if resp.status == http.HTTPStatus.OK:
-            response_data = await resp.json()
-            self.logger.debug(f"Response:\n{response_data}")
-            try:
-                feval_response = response_data["messages"]["FEvalResponse"][1]
-            except KeyError:
-                # In certain cases when the HTTPResponse is received, it does not
-                # contain the expected data. In these cases most likely MATLAB has
-                # gone away. Hence we raise the HTTPError to indicate MATLAB is not
-                # available.
-                self.logger.error(
-                    "Response messages doesn't contain FEvalResponse field"
-                )
-                raise MATLABConnectionError()
+        async with self._create_client_session() as client:
+            resp = await client.post(
+                url,
+                json=req_body,
+            )
+            self.logger.debug(f"Received status code: {resp.status}")
+            if resp.status == http.HTTPStatus.OK:
+                response_data = await resp.json()
+                self.logger.debug(f"Response:\n{response_data}")
+                try:
+                    feval_response = response_data["messages"]["FEvalResponse"][1]
+                except KeyError:
+                    # In certain cases when the HTTPResponse is received, it does not
+                    # contain the expected data. In these cases most likely MATLAB has
+                    # gone away. Hence we raise the HTTPError to indicate MATLAB is not
+                    # available.
+                    self.logger.error(
+                        "Response messages doesn't contain FEvalResponse field"
+                    )
+                    raise MATLABConnectionError()
 
-            # If the feval request succeeded and outputs are present, return the result.
-            if not feval_response["isError"]:
-                if nargout != 0 and feval_response["results"]:
-                    return feval_response["results"][0]
+                # If the feval request succeeded and outputs are present, return the result.
+                if not feval_response["isError"]:
+                    if nargout != 0 and feval_response["results"]:
+                        return feval_response["results"][0]
 
-                self.logger.debug("No result present in FEvalResponse")
-                # Return empty list if there are no outputs in the repsonse
-                return []
+                    self.logger.debug("No result present in FEvalResponse")
+                    # Return empty list if there are no outputs in the repsonse
+                    return []
 
-            # Handle error case. This happens when "Interrupt Kernel" is issued.
-            if feval_response["messageFaults"][0]["message"] == "":
-                error_message = (
-                    "Failed to execute. Operation may have interrupted by user."
-                )
+                # Handle error case. This happens when "Interrupt Kernel" is issued.
+                if feval_response["messageFaults"][0]["message"] == "":
+                    error_message = (
+                        "Failed to execute. Operation may have interrupted by user."
+                    )
+                else:
+                    self.logger.error(
+                        f"Error during execution of FEval request in MATLAB:\n{feval_response['messageFaults'][0]['message']}"
+                    )
+                    error_message = "Failed to execute. Please try again."
+                raise Exception(error_message)
             else:
                 self.logger.error(
-                    f"Error during execution of FEval request in MATLAB:\n{feval_response['messageFaults'][0]['message']}"
+                    "Error occurred during communication with matlab-proxy"
                 )
-                error_message = "Failed to execute. Please try again."
-            raise Exception(error_message)
-        else:
-            self.logger.error("Error occurred during communication with matlab-proxy")
-            raise resp.raise_for_status()
+                raise resp.raise_for_status()
 
     async def send_eval_request_to_matlab(self, mcode):
         """Send an evaluation request to MATLAB using the shell client.
@@ -396,9 +393,9 @@ class MWICommHelper:
             MATLABConnectionError: If MATLAB connection is not available
             HTTPError: If there is an error in communication with matlab-proxy
         """
-        return await self._send_eval_request_to_matlab(self._http_shell_client, mcode)
+        return await self._send_eval_request_to_matlab(mcode)
 
-    async def _send_eval_request_to_matlab(self, http_client, mcode):
+    async def _send_eval_request_to_matlab(self, mcode):
         """Internal method to send and process an evaluation request to MATLAB.
 
         Args:
@@ -424,40 +421,40 @@ class MWICommHelper:
         self.logger.debug(f"Request URL: {url}")
         self.logger.debug(f"Request Headers:\n{self.headers}")
         self.logger.debug(f"Request Body:\n{req_body}")
-        resp = await http_client.post(
-            url,
-            json=req_body,
-        )
-        self.logger.debug(f"Received status code: {resp.status}")
-        if resp.status == http.HTTPStatus.OK:
-            response_data = await resp.json()
-            self.logger.debug(f"Response:\n{response_data}")
-            try:
-                eval_response = response_data["messages"]["EvalResponse"][0]
+        async with self._create_client_session() as client:
+            resp = await client.post(
+                url,
+                json=req_body,
+            )
+            self.logger.debug(f"Received status code: {resp.status}")
+            if resp.status == http.HTTPStatus.OK:
+                response_data = await resp.json()
+                self.logger.debug(f"Response:\n{response_data}")
+                try:
+                    eval_response = response_data["messages"]["EvalResponse"][0]
 
-            except KeyError:
-                # In certain cases when the HTTPResponse is received, it does not
-                # contain the expected data. In these cases most likely MATLAB has
-                # gone away. Hence we raise the HTTPError to indicate MATLAB is not
-                # available.
-                self.logger.error(
-                    "Response messages doesn't contain EvalResponse field"
-                )
-                raise MATLABConnectionError()
+                except KeyError:
+                    # In certain cases when the HTTPResponse is received, it does not
+                    # contain the expected data. In these cases most likely MATLAB has
+                    # gone away. Hence we raise the HTTPError to indicate MATLAB is not
+                    # available.
+                    self.logger.error(
+                        "Response messages doesn't contain EvalResponse field"
+                    )
+                    raise MATLABConnectionError()
 
-            return eval_response
+                return eval_response
 
-        else:
-            self.logger.error("Error during communication with matlab-proxy")
-            raise resp.raise_for_status()
+            else:
+                self.logger.error("Error during communication with matlab-proxy")
+                raise resp.raise_for_status()
 
-    async def _send_jupyter_request_to_matlab(self, request_type, inputs, http_client):
+    async def _send_jupyter_request_to_matlab(self, request_type, inputs):
         """Process and send a Jupyter request to MATLAB using either feval or eval execution.
 
         Args:
             request_type (str): Type of request (execute, complete, shutdown)
             inputs (list): List of input arguments for the request
-            http_client (aiohttp.ClientSession): HTTP client to use for the request
 
         Returns:
             dict: Response from MATLAB containing results of the request execution
@@ -478,7 +475,7 @@ class MWICommHelper:
         resp = None
         if execution_request_type == "feval":
             resp = await self._send_feval_request_to_matlab(
-                http_client, "processJupyterKernelRequest", 1, *inputs
+                "processJupyterKernelRequest", 1, *inputs
             )
 
         # The 'else' condition is an artifact and is present here incase we ever want to test
@@ -502,9 +499,7 @@ class MWICommHelper:
                 args = args + "," + str(cursor_pos)
 
             eval_mcode = f"processJupyterKernelRequest({args})"
-            eval_response = await self._send_eval_request_to_matlab(
-                http_client, eval_mcode
-            )
+            eval_response = await self._send_eval_request_to_matlab(eval_mcode)
             resp = await self._read_eval_response_from_file(eval_response)
 
         return resp

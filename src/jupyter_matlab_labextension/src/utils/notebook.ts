@@ -1,4 +1,4 @@
-// Copyright 2025 The MathWorks, Inc.
+// Copyright 2026 The MathWorks, Inc.
 
 import path from 'path';
 import { NotebookPanel } from '@jupyterlab/notebook';
@@ -13,7 +13,7 @@ export class NotebookInfo {
     private _notebookName: string | undefined = undefined;
     private _isMatlabNotebook: boolean = false;
     private _isBusy: boolean = false;
-    private _panel: NotebookPanel | null = null;
+    private _targetURL: string | undefined = undefined;
 
     /*
      * Whether the current notebook’s kernelspec indicates MATLAB.
@@ -22,6 +22,10 @@ export class NotebookInfo {
     */
     isMatlabNotebook (): boolean {
         return this._isMatlabNotebook;
+    }
+
+    getTargetURL (): string | undefined {
+        return this._targetURL;
     }
 
     /*
@@ -43,39 +47,18 @@ export class NotebookInfo {
     */
     getCurrentFilePath (): string | undefined {
         if (this._notebookName) {
-            return path.join(PageConfig.getOption('serverRoot'), this._notebookName);
+            return path.join(this.getCurrentDirectory()!, this._notebookName);
         } else {
             return undefined;
         }
     }
 
-    /*
-     * Waits until the associated kernel reaches the 'idle' status.
-     *
-     * @throws Error if no notebook panel has been set via update().
-     * @returns A promise that resolves when the kernel status becomes 'idle'.
-    */
-    async waitForIdleStatus (): Promise<void> {
-        if (!this._panel) {
-            throw Error('No notebook panel provided');
-        } else {
-            return new Promise((resolve) => {
-                if (this._panel!.sessionContext.session?.kernel?.status === 'idle') {
-                    resolve();
-                } else {
-                    const onStatusChanged = (connection: any, status: string) => {
-                        if (status === 'idle') {
-                            // Disconnect listener from statusChanged signal so that it doesn't get called again.
-                            connection.statusChanged.disconnect(onStatusChanged);
-                            resolve();
-                        }
-                    };
-                    this._panel!.sessionContext.session?.kernel?.statusChanged.connect(
-                        onStatusChanged
-                    );
-                }
-            });
-        }
+    getCurrentDirectory (): string | undefined {
+        return PageConfig.getOption('serverRoot');
+    }
+
+    getCurrentFileName (): string | undefined {
+        return this._notebookName;
     }
 
     /*
@@ -97,27 +80,18 @@ export class NotebookInfo {
             if (!panel.sessionContext.isReady) {
                 await panel.sessionContext.ready;
             }
-            this._panel = panel;
+
+            // Update all properties based on the provided panel
             this._isMatlabNotebook = panel.sessionContext.kernelDisplayName === 'MATLAB Kernel';
             const context = panel.context;
             this._isBusy = panel.sessionContext.session?.kernel?.status === 'busy';
             this._notebookName = context.path;
+            const kernelID = panel.sessionContext.session?.kernel?.id;
+            this._targetURL = PageConfig.getBaseUrl() + 'matlab/' + kernelID + '/';
         } else {
             this._notebookName = undefined;
             this._isMatlabNotebook = false;
             this._isBusy = false;
-            this._panel = null;
-        }
-    }
-
-    /*
-     * Sends an interrupt to the associated kernel, if available.
-     * No-op if there is no tracked panel/session/kernel.
-    */
-    interrupt (): void {
-        if (this._panel) {
-            this._panel.sessionContext.session?.kernel?.interrupt();
-            console.log('Kernel interupted');
         }
     }
 

@@ -1,4 +1,4 @@
-# Copyright 2024-2025 The MathWorks, Inc.
+# Copyright 2024-2026 The MathWorks, Inc.
 
 import uuid
 
@@ -76,7 +76,6 @@ async def test_initialize_mwi_comm_helper(mocker, mpm_kernel_instance):
         "jupyter_matlab_kernel.mpm_kernel.MWICommHelper", autospec=True
     )
     mock_mwi_comm_helper_instance = mock_mwi_comm_helper.return_value
-    mock_mwi_comm_helper_instance.connect = mocker.AsyncMock()
 
     # Test parameters
     murl = "http://proxy-url.com"
@@ -94,7 +93,6 @@ async def test_initialize_mwi_comm_helper(mocker, mpm_kernel_instance):
         headers,
         mpm_kernel_instance.log,
     )
-    mock_mwi_comm_helper_instance.connect.assert_awaited_once()
 
     # Verify that the mwi_comm_helper instance variable is set
     assert mpm_kernel_instance.mwi_comm_helper == mock_mwi_comm_helper_instance
@@ -107,24 +105,26 @@ def test_process_children_return_empty_list(mpm_kernel_instance):
 async def test_do_shutdown_success(mocker, mpm_kernel_instance):
     mpm_kernel_instance.is_matlab_assigned = True
 
-    # Mock the mwi_comm_helper and its methods
-    mpm_kernel_instance.mwi_comm_helper = mocker.Mock()
+    # Mock the current MWICommHelper API, which has no explicit lifecycle methods.
+    mpm_kernel_instance.mwi_comm_helper = mocker.Mock(
+        spec=["send_shutdown_request_to_matlab"]
+    )
     mpm_kernel_instance.mwi_comm_helper.send_shutdown_request_to_matlab = (
         mocker.AsyncMock()
     )
-    mpm_kernel_instance.mwi_comm_helper.disconnect = mocker.AsyncMock()
 
     # Mock the mpm_lib.shutdown function
     mock_shutdown = mocker.patch(
         "matlab_proxy_manager.lib.api.shutdown", return_value=mocker.AsyncMock()
     )
+    mpm_kernel_instance.log.reset_mock()
+
     # Call the method
     restart = False
     await mpm_kernel_instance.do_shutdown(restart)
 
     # Assertions
     mpm_kernel_instance.mwi_comm_helper.send_shutdown_request_to_matlab.assert_awaited_once()
-    mpm_kernel_instance.mwi_comm_helper.disconnect.assert_awaited_once()
     mock_shutdown.assert_awaited_once_with(
         mpm_kernel_instance.parent_pid,
         mpm_kernel_instance.kernel_id,
@@ -133,6 +133,10 @@ async def test_do_shutdown_success(mocker, mpm_kernel_instance):
     assert not mpm_kernel_instance.is_matlab_assigned
     mpm_kernel_instance.log.debug.assert_any_call(
         "Received shutdown request from Jupyter"
+    )
+    assert not any(
+        call.args and call.args[0] == "Exception during shutdown: %s"
+        for call in mpm_kernel_instance.log.debug.call_args_list
     )
 
 
@@ -144,8 +148,6 @@ async def test_do_shutdown_exception(mocker, mpm_kernel_instance):
     mpm_kernel_instance.mwi_comm_helper.send_shutdown_request_to_matlab = (
         mocker.AsyncMock(side_effect=MATLABConnectionError("Test connection error"))
     )
-    mpm_kernel_instance.mwi_comm_helper.disconnect = mocker.AsyncMock()
-
     # Mock the mpm_lib.shutdown function
     mock_shutdown = mocker.patch(
         "matlab_proxy_manager.lib.api.shutdown", return_value=mocker.AsyncMock()
@@ -157,8 +159,6 @@ async def test_do_shutdown_exception(mocker, mpm_kernel_instance):
     # Assertions
     mpm_kernel_instance.mwi_comm_helper.send_shutdown_request_to_matlab.assert_awaited_once()
 
-    # Not awaited since there was an exception right above
-    mpm_kernel_instance.mwi_comm_helper.disconnect.assert_not_awaited()
     mock_shutdown.assert_awaited_once_with(
         mpm_kernel_instance.parent_pid,
         mpm_kernel_instance.kernel_id,

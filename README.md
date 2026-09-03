@@ -71,6 +71,8 @@ From your Jupyter notebook or JupyterLab, you can also open the MATLAB developme
 
 ## Install
 
+Make sure you have the necessary [Requirements](#requirements).
+
 Install this Python package from the Python Package Index (PyPI) or build it from the source.
 
 ### Install from PyPI
@@ -169,7 +171,7 @@ This opens a Jupyter notebook that supports MATLAB.
 
 ### Notes
 
-- **Licensing:** When you execute MATLAB code in a notebook for the first time, enter your MATLAB license information in the dialog box that appears. For details, see [Licensing](https://github.com/mathworks/matlab-proxy/blob/main/MATLAB-Licensing-Info.md). The MATLAB session can take a few minutes to start.
+- **Licensing:** When you run MATLAB code in a notebook for the first time, enter your MATLAB license information in the dialog box that appears. For details, see [Licensing Information (GitHub)](https://github.com/mathworks/matlab-proxy/blob/main/MATLAB-Licensing-Info.md). The MATLAB session can take a few minutes to start.
 
 - **Sharing MATLAB across  notebooks:** By default, multiple notebooks running on a Jupyter server share the underlying MATLAB process, so executing code in one notebook affects the workspace in others. To use a dedicated MATLAB for your kernel instead, use the magic `%%matlab new_session`. For details, see [Magic Commands for MATLAB Kernel](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/magics/README.md). To learn more about the kernel architecture, see [MATLAB Kernel for Jupyter](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_kernel/README.md).
 
@@ -199,19 +201,33 @@ To access more MATLAB features, you can open the MATLAB development environment 
 | :---: | :---: |
 |<img width="200" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/open_matlab_notebook.png"> | <img width="300" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/open_matlab_jupyterlab.png"> |
 
-Notebooks in JupyterLab also have a `Open MATLAB` button on the toolbar:
+Notebooks in JupyterLab also have an `Open MATLAB` drop-down button on the toolbar:
 
-<img width="300" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/open-matlab-button.png">
-
-Clicking `Open MATLAB` opens the MATLAB development environment in a new browser tab.
-
-<p align="center"><img width="600" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/jupyter_matlab_desktop.png"></p>
-
-When you use the package for the first time, enter your MATLAB license information in the dialog box that appears. See [Licensing](https://github.com/mathworks/matlab-proxy/blob/main/MATLAB-Licensing-Info.md) for details.
-
-For technical details about this MATLAB development environment, see [MATLAB in a Browser](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_proxy/README.md).
+<img width="500" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/open-matlab-button.png">
 
 
+
+- Click `Open MATLAB` to open the MATLAB development environment in a new browser tab. For technical details about this MATLAB development environment, see [MATLAB in a Browser](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/src/jupyter_matlab_proxy/README.md).
+
+
+- Click `Open as Live Script in MATLAB` to first convert your Jupyter notebook to a [MATLAB Live Script (MathWorks)](https://www.mathworks.com/help/matlab/matlab_prog/plain-text-file-format-for-live-scripts.html), then open it in MATLAB in your browser. The feature is supported for MATLAB R2025a and later.
+
+  <p><img width="900" src="https://github.com/mathworks/jupyter-matlab-proxy/raw/main/img/ipynb-to-live-script-conversion.gif"></p> 
+
+  The converter does not convert these types of Markdown content:
+
+  | Description | Example | Markdown | Workaround |                                                                                                                                                                                                                                                   
+  | --- | --- | --- | --- |
+  | Block quote | > | `>` | — |                                                                                                                                                                                                                                                                         | Horizontal rule | --- | `---` | — |
+  | Inline HTML tags | <b>bold</b> | `<b>bold</b>` | — |                                                                                                                                                                                                                                              
+  | HTML tables | <table><tr><td>val</td></tr></table> | `<table>...</table>` | Use Markdown pipe tables:<br> `\| col1 \| col2 \|` |
+  | Nested bullets | <ul><li>Nested<ul><li>List</li></ul></li></ul> | `* Nested`<br>&nbsp;&nbsp;&nbsp;&nbsp;`* List` | Use flat bullets:<br>`* Nested`<br>`* List` |           
+  | Inline code | `code` | `` `code` `` | Use block code:<br>` ``` `<br>`code`<br>` ``` ` |
+  | Images | *(rendered image)* | `![Hello](./hello.png)` | — |
+  
+When you run the package for the first time and use either one of these features, enter your MATLAB license information in the dialog box that appears. For details, see [Licensing Information (GitHub)](https://github.com/mathworks/matlab-proxy/blob/main/MATLAB-Licensing-Info.md).
+
+  
 ## Edit MATLAB Files in JupyterLab
 
 You can also edit MATLAB `.m` files in JupyterLab. Click the `MATLAB File` button.
@@ -228,6 +244,7 @@ This opens an untitled `.m` file where you can write MATLAB code with syntax hig
 ## Limitations
 
 * This package has limitations. For example, it does not support certain MATLAB commands. For details, see [Limitations](https://github.com/mathworks/jupyter-matlab-proxy/blob/main/Limitations.md).
+
 
 * To discuss a technical issue or submit an enhancement request, [create a GitHub issue](https://github.com/mathworks/jupyter-matlab-proxy/issues), or send an email to `jupyter-support@mathworks.com`.
 

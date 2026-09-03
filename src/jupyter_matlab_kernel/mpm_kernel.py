@@ -36,9 +36,8 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
         self.log.debug("Received shutdown request from Jupyter")
         if self.is_matlab_assigned and self.mwi_comm_helper:
             try:
-                # Cleans up internal live editor state, client session
+                # Cleans up internal live editor state.
                 await self.mwi_comm_helper.send_shutdown_request_to_matlab()
-                await self.mwi_comm_helper.disconnect()
 
             except (MATLABConnectionError, HTTPError) as e:
                 self.log.error(
@@ -49,7 +48,7 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
             finally:
                 await self.cleanup_matlab_proxy()
 
-        return super().do_shutdown(restart)
+        return await super().do_shutdown(restart)
 
     # Helper functions
 
@@ -143,7 +142,6 @@ class MATLABKernelUsingMPM(base.BaseMATLABKernel):
         self.mwi_comm_helper = MWICommHelper(
             self.kernel_id, murl, shell_loop, control_loop, headers, self.log
         )
-        await self.mwi_comm_helper.connect()
 
     def _process_children(self):
         """Overrides the _process_children in kernelbase class to not return the list of children

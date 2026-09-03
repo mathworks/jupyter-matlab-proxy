@@ -44,7 +44,6 @@ async def wait_matlab_proxy_ready(matlab_proxy_url):
 
     loop = asyncio.get_event_loop()
     comm_helper = MWICommHelper("", matlab_proxy_url, loop, loop, {})
-    await comm_helper.connect()
     matlab_proxy_status = await comm_helper.fetch_matlab_proxy_status()
 
     # Poll for matlab-proxy to be up
@@ -66,7 +65,6 @@ async def wait_matlab_proxy_ready(matlab_proxy_url):
     assert (
         matlab_proxy_status.matlab_status == "up"
     ), f"matlab-proxy process did not start successfully\nMATLAB Status is '{matlab_proxy_status.matlab_status}'"
-    await comm_helper.disconnect()
 
 
 def license_matlab_proxy(matlab_proxy_url):

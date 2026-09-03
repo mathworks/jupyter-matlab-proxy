@@ -379,11 +379,11 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
 
     async def do_is_complete(self, code):
         # TODO: Seems like indentation rules. https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness
-        return super().do_is_complete(code)
+        return await super().do_is_complete(code)
 
     async def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=...):
         # TODO: Implement Shift+Tab functionality. Can be used to provide any contextual information.
-        return super().do_inspect(code, cursor_pos, detail_level, omit_sections)
+        return await super().do_inspect(code, cursor_pos, detail_level, omit_sections)
 
     async def do_history(
         self,
@@ -399,7 +399,7 @@ class BaseMATLABKernel(ipykernel.kernelbase.Kernel):
     ):
         # TODO: Implement accessing history in Notebook. Usually this history is related to the code typed in notebook.
         # However, we may also choose to associate with MATLAB History stored on disk.
-        return super().do_history(
+        return await super().do_history(
             hist_access_type, output, raw, session, start, stop, n, pattern, unique
         )
 

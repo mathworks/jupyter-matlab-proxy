@@ -1,4 +1,4 @@
-# Copyright 2025 The MathWorks, Inc.
+# Copyright 2025-2026 The MathWorks, Inc.
 
 import pytest
 from jupyter_matlab_kernel.comms.labextension import (
@@ -91,9 +91,9 @@ def test_comm_open_creates_comm(
 
 @pytest.mark.asyncio
 async def test_comm_msg_with_valid_comm(
-    labext_comm, mock_stream, mock_ident, mock_comm
+    labext_comm, mock_stream, mock_ident, mock_comm, mocker
 ):
-    """Test that comm_msg processes messages when comm is available."""
+    """Test that comm_msg processes messages and executes action."""
     # Arrange
     comm_id = "test-comm-id"
     labext_comm.comms[comm_id] = mock_comm
@@ -107,13 +107,73 @@ async def test_comm_msg_with_valid_comm(
         }
     }
 
+    mock_action = mocker.MagicMock()
+    mock_action.execute = mocker.AsyncMock()
+    mock_action.__class__.__name__ = "TestAction"
+    mock_create_action = mocker.patch(
+        "jupyter_matlab_kernel.comms.labextension.labextension.ActionFactory.create_action",
+        return_value=mock_action,
+    )
+
     # Act
     await labext_comm.comm_msg(mock_stream, mock_ident, msg)
 
     # Assert
-    labext_comm.log.debug.assert_called_once_with(
-        f"Received action_type:{test_action} with data:{test_data} from the lab extension"
+    mock_create_action.assert_called_once_with(test_action, labext_comm.kernel)
+    mock_action.execute.assert_called_once_with(mock_comm, test_data)
+    assert labext_comm.log.debug.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_comm_msg_ignores_unknown_comm_id(labext_comm, mock_stream, mock_ident):
+    """Test that comm_msg logs an error and returns when comm_id is not found."""
+    # Arrange
+    comm_id = "unknown-comm-id"
+    msg = {
+        "content": {
+            "comm_id": comm_id,
+            "data": {"action": "test-action", "data": {}},
+        }
+    }
+
+    # Act
+    await labext_comm.comm_msg(mock_stream, mock_ident, msg)
+
+    # Assert
+    labext_comm.log.error.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_comm_msg_logs_error_on_action_execute_failure(
+    labext_comm, mock_stream, mock_ident, mock_comm, mocker
+):
+    """Test that comm_msg logs error when action.execute fails."""
+    # Arrange
+    comm_id = "test-comm-id"
+    labext_comm.comms[comm_id] = mock_comm
+
+    msg = {
+        "content": {
+            "comm_id": comm_id,
+            "data": {"action": "test-action", "data": {}},
+        }
+    }
+
+    error_message = "Action execution failed"
+    mock_action = mocker.MagicMock()
+    mock_action.execute = mocker.AsyncMock(side_effect=Exception(error_message))
+    mock_action.__class__.__name__ = "TestAction"
+    mocker.patch(
+        "jupyter_matlab_kernel.comms.labextension.labextension.ActionFactory.create_action",
+        return_value=mock_action,
     )
+
+    # Act
+    await labext_comm.comm_msg(mock_stream, mock_ident, msg)
+
+    # Assert
+    labext_comm.log.error.assert_called_once()
+    assert error_message in str(labext_comm.log.error.call_args)
 
 
 def test_comm_close_with_valid_comm_id(labext_comm, mock_stream, mock_ident, mock_comm):
@@ -186,7 +246,7 @@ def test_comm_close_with_no_comm(labext_comm, mock_stream, mock_ident):
 
 @pytest.mark.asyncio
 async def test_comm_msg_extracts_data_correctly(
-    labext_comm, mock_stream, mock_ident, mock_comm
+    labext_comm, mock_stream, mock_ident, mock_comm, mocker
 ):
     """Test that comm_msg correctly extracts action and data from message."""
     # Arrange
@@ -199,10 +259,19 @@ async def test_comm_msg_extracts_data_correctly(
         "content": {"comm_id": comm_id, "data": {"action": action_type, "data": data}}
     }
 
-    # Call the method
+    mock_action = mocker.MagicMock()
+    mock_action.execute = mocker.AsyncMock()
+    mock_action.__class__.__name__ = "TestAction"
+    mocker.patch(
+        "jupyter_matlab_kernel.comms.labextension.labextension.ActionFactory.create_action",
+        return_value=mock_action,
+    )
+
+    # Act
     await labext_comm.comm_msg(mock_stream, mock_ident, msg)
 
-    # Verify logging with correct extracted data
-    labext_comm.log.debug.assert_called_once_with(
+    # Assert
+    expected_log = (
         f"Received action_type:{action_type} with data:{data} from the lab extension"
     )
+    labext_comm.log.debug.assert_any_call(expected_log)
