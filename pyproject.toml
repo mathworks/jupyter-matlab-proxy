@@ -1,7 +1,10 @@
 # Copyright 2023-2026 The MathWorks, Inc.
 
 [build-system]
-requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0,<5", "hatch-nodejs-version>=0.3.2"]
+# Temporarily pin upper version of hatchling and jupyterlab due to build issues
+# hatchling - https://github.com/pypa/hatch/issues/2437
+# jupyterlab - labextension build system has changed in 4.6 jupyterlab from @jupyterlab/builder to @jupyter/builder
+requires = ["hatchling>=1.5.0,<=1.32.0", "jupyterlab>=4.0.0,<4.6", "hatch-nodejs-version>=0.3.2"]
 build-backend = "hatchling.build"
 
 [project]
