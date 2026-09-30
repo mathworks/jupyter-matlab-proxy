@@ -119,7 +119,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        working-directory: src/jupyter_matlab_labextension/src/lezer-matlab/test/
+        working-directory: src/jupyter_matlab_labextension
     env:
       NODE_VERSION: 24
     steps:
@@ -130,11 +130,14 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install node dependencies and build parser
-        run: npm install
+      - name: Install node dependencies
+        run: npm ci
+
+      - name: Build Lezer parser
+        run: npm run build:lezer
 
       - name: Run Lezer tests
-        run: npm test
+        run: npm run test:lezer
 
   upload_code_coverage:
     timeout-minutes: 15
