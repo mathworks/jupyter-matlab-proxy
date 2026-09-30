@@ -36,8 +36,13 @@ classdef TestExecuteFunction < matlab.unittest.TestCase
             % Test execution of a code that generates a variable output
             code = 'var x';
             kernelId = 'test_kernel_id';
+            if isMATLABReleaseOlderThan("R2024b")
+                expected_output_type = 'variable';
+            else
+                expected_output_type = 'variableString';
+            end
             result = jupyter.execute(code, kernelId);
-            testCase.verifyEqual(result(1).type, 'variableString', 'Expected variableString type');
+            testCase.verifyEqual(result(1).type, expected_output_type, 'Expected variableString type');
             testCase.verifySubstring(result(1).outputData.value, '0');
         end
         
@@ -57,8 +62,13 @@ classdef TestExecuteFunction < matlab.unittest.TestCase
             % Test execution of a code that generates an error
             code = 'error(''Test error'');';
             kernelId = 'test_kernel_id';
+            if isMATLABReleaseOlderThan("R2022b")
+                expected_output_type = 'stderr';
+            else
+                expected_output_type = 'error';
+            end
             result = jupyter.execute(code, kernelId);
-            testCase.verifyEqual(result(1).type, 'error', 'Expected error type');
+            testCase.verifyEqual(result(1).type, expected_output_type, 'Expected error type');
             testCase.verifyTrue(contains(result(1).outputData.text, 'Test error'), 'Expected error message');
         end
 
