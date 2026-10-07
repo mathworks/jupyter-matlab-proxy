@@ -35,9 +35,9 @@ class MATLABKernelTests(jupyter_kernel_test.KernelTests):
     # Clears the cell output area
     code_clear_output = "clc"
 
-    # Increasing the default timeout value for execute_helper function to 60s
+    # Increasing the default timeout value for execute_helper function to 180s
     # mitigate the test timeout in the case of MPM kernel
-    def execute_helper(self, code, timeout=60, **kwargs):
+    def execute_helper(self, code, timeout=180, **kwargs):
         return super().execute_helper(code, timeout=timeout, **kwargs)
 
     def setUp(self):
