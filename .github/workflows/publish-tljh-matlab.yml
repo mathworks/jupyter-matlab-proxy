@@ -1,4 +1,4 @@
-# Copyright 2024-2025 The MathWorks, Inc.
+# Copyright 2024-2026 The MathWorks, Inc.
 name: Upload Python Package for tljh-matlab
 
 on:
@@ -19,10 +19,10 @@ jobs:
         working-directory: ./install_guides/the-littlest-jupyterhub/tljh-matlab
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: '3.x'
 
@@ -36,7 +36,7 @@ jobs:
         python -m build
 
     - name: Upload distributions
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
           name: release-dists
           path: install_guides/the-littlest-jupyterhub/tljh-matlab/dist/
@@ -54,7 +54,7 @@ jobs:
 
     steps:
       - name: Retrieve release distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-dists
           path: install_guides/the-littlest-jupyterhub/tljh-matlab/dist/

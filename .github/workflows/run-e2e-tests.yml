@@ -1,4 +1,4 @@
-# Copyright 2023-2025 The MathWorks, Inc.
+# Copyright 2023-2026 The MathWorks, Inc.
 
 name: End-to-End Tests for MATLAB Integration for Jupyter
 on:
@@ -17,15 +17,15 @@ jobs:
       
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node ${{ env.NODE_VERSION }} 
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Set up Python ${{ env.PYTHON_VERSION }} 
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -42,7 +42,7 @@ jobs:
 
       - name: Set up MATLAB
         # Use MATLAB Actions to get running MATLAB in GitHub Actions
-        uses: matlab-actions/setup-matlab@v2
+        uses: matlab-actions/setup-matlab@v3
         with:
           products: MATLAB Symbolic_Math_Toolbox
 
@@ -100,7 +100,7 @@ jobs:
 
       - name: Preserve test results after the job has finished
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e_test_results
           path: ./tests/e2e/zipped-e2e-test-results.zip
