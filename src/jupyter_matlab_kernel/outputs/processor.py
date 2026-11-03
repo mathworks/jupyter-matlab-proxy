@@ -100,24 +100,41 @@ class OutputProcessor:
         return HtmlResultOutput(html=self._wrap_as_preformatted_html(text), text=text)
 
     async def _handle_symbolic(self, output) -> JupyterOutput:
-        mathml = output.get("value", "")
         name = output.get("name", "")
+        direct_latex = output.get("latex")
 
+        if isinstance(direct_latex, str) and direct_latex:
+            self.log.debug(
+                "Using direct LaTeX from symbolic output received from MATLAB"
+            )
+            return self._create_symbolic_latex_output(name, direct_latex)
+
+        mathml = output.get("value", "")
         if self.mwi_comm_helper:
+            self.log.debug(
+                "Direct LaTeX unavailable; converting symbolic MathML to LaTeX"
+            )
             try:
-                res = await self.mwi_comm_helper.convert_mathml_to_latex(mathml)
-                if res:
-                    if name:
-                        latex = f"{name} =$\\\\\\ \\displaystyle{{}}{res}$"
-                    else:
-                        latex = f"$\\displaystyle{{}}{res}$"
-                    return LatexResultOutput(latex=latex)
-            except Exception as e:
-                self.log.warning(f"Failed to convert MathML to LaTeX: {e}")
+                converted_latex = await self.mwi_comm_helper.convert_mathml_to_latex(
+                    mathml
+                )
+                if converted_latex:
+                    return self._create_symbolic_latex_output(name, converted_latex)
+            except Exception as error:
+                self.log.warning(f"Failed to convert MathML to LaTeX: {error}")
 
         return HtmlResultOutput(
             html=self._wrap_as_preformatted_html(mathml), text=mathml
         )
+
+    def _create_symbolic_latex_output(
+        self, name: str, latex_body: str
+    ) -> LatexResultOutput:
+        if name:
+            latex = f"{name} =$\\\\\\ \\displaystyle{{}}{latex_body}$"
+        else:
+            latex = f"$\\displaystyle{{}}{latex_body}$"
+        return LatexResultOutput(latex=latex)
 
     def _handle_figure(self, output_data) -> JupyterOutput | None:
         if "figurePlaceHolderId" in output_data:

@@ -209,10 +209,131 @@ async def test_output_processor_stream(out_type, expected_class):
 
 
 @pytest.mark.asyncio
-async def test_output_processor_symbolic_named():
+async def test_output_processor_symbolic_direct_latex_named():
+    mock_helper = MagicMock()
+    mock_helper.convert_mathml_to_latex = AsyncMock()
+    mock_logger = MagicMock()
+    processor = OutputProcessor(mwi_comm_helper=mock_helper, logger=mock_logger)
+
+    out = {
+        "type": "symbolic",
+        "outputData": {
+            "name": "f",
+            "value": "<mathml>...</mathml>",
+            "latex": r"\frac{x^2+1}{x+2}",
+        },
+    }
+
+    results = [r async for r in processor.process(_as_async_iter(out))]
+    result = results[0] if results else None
+
+    assert isinstance(result, LatexResultOutput)
+    assert result.msg_type == "execute_result"
+    assert (
+        result.to_content()["data"]["text/latex"]
+        == r"f =$\\\ \displaystyle{}\frac{x^2+1}{x+2}$"
+    )
+    mock_helper.convert_mathml_to_latex.assert_not_awaited()
+    mock_logger.debug.assert_any_call(
+        "Using direct LaTeX from symbolic output received from MATLAB"
+    )
+
+
+@pytest.mark.asyncio
+async def test_output_processor_symbolic_direct_latex_unnamed():
+    mock_helper = MagicMock()
+    mock_helper.convert_mathml_to_latex = AsyncMock()
+    processor = OutputProcessor(mwi_comm_helper=mock_helper)
+
+    out = {
+        "type": "symbolic",
+        "outputData": {
+            "name": "",
+            "value": "<mathml>...</mathml>",
+            "latex": r"\frac{1}{3}",
+        },
+    }
+
+    results = [r async for r in processor.process(_as_async_iter(out))]
+    result = results[0] if results else None
+
+    assert isinstance(result, LatexResultOutput)
+    assert result.to_content()["data"]["text/latex"] == r"$\displaystyle{}\frac{1}{3}$"
+    mock_helper.convert_mathml_to_latex.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_output_processor_symbolic_direct_latex_preserves_multiline_body():
+    mock_helper = MagicMock()
+    mock_helper.convert_mathml_to_latex = AsyncMock(return_value="")
+    processor = OutputProcessor(mwi_comm_helper=mock_helper)
+    latex_body = (
+        "\n  \\begin{array}{l}\n"
+        "x^2+y^2 \\\\\n"
+        "\\text{where} \\quad x>0\n"
+        "\\end{array}  \n"
+    )
+
+    direct_out = {
+        "type": "symbolic",
+        "outputData": {
+            "name": "f",
+            "value": "<mathml>...</mathml>",
+            "latex": latex_body,
+        },
+    }
+
+    results = [r async for r in processor.process(_as_async_iter(direct_out))]
+    result = results[0] if results else None
+
+    assert isinstance(result, LatexResultOutput)
+    assert (
+        result.to_content()["data"]["text/latex"]
+        == f"f =$\\\\\\ \\displaystyle{{}}{latex_body}$"
+    )
+    mock_helper.convert_mathml_to_latex.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_output_processor_symbolic_multiple_direct_outputs():
+    mock_helper = MagicMock()
+    mock_helper.convert_mathml_to_latex = AsyncMock()
+    processor = OutputProcessor(mwi_comm_helper=mock_helper)
+
+    outputs = (
+        {
+            "type": "symbolic",
+            "outputData": {
+                "name": "x",
+                "value": "<mathml>x</mathml>",
+                "latex": "x",
+            },
+        },
+        {
+            "type": "symbolic",
+            "outputData": {
+                "name": "y",
+                "value": "<mathml>y</mathml>",
+                "latex": "y",
+            },
+        },
+    )
+
+    results = [r async for r in processor.process(_as_async_iter(*outputs))]
+
+    assert [result.to_content()["data"]["text/latex"] for result in results] == [
+        "x =$\\\\\\ \\displaystyle{}x$",
+        "y =$\\\\\\ \\displaystyle{}y$",
+    ]
+    mock_helper.convert_mathml_to_latex.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_output_processor_symbolic_converted_latex_named():
     mock_helper = MagicMock()
     mock_helper.convert_mathml_to_latex = AsyncMock(return_value="x^2")
-    processor = OutputProcessor(mwi_comm_helper=mock_helper)
+    mock_logger = MagicMock()
+    processor = OutputProcessor(mwi_comm_helper=mock_helper, logger=mock_logger)
 
     out = {
         "type": "symbolic",
@@ -227,10 +348,13 @@ async def test_output_processor_symbolic_named():
     content = result.to_content()
     assert content["data"]["text/latex"] == "y =$\\\\\\ \\displaystyle{}x^2$"
     mock_helper.convert_mathml_to_latex.assert_awaited_once_with("<mathml>...</mathml>")
+    mock_logger.debug.assert_any_call(
+        "Direct LaTeX unavailable; converting symbolic MathML to LaTeX"
+    )
 
 
 @pytest.mark.asyncio
-async def test_output_processor_symbolic_unnamed():
+async def test_output_processor_symbolic_converted_latex_unnamed():
     mock_helper = MagicMock()
     mock_helper.convert_mathml_to_latex = AsyncMock(return_value="x^2")
     processor = OutputProcessor(mwi_comm_helper=mock_helper)
@@ -246,6 +370,68 @@ async def test_output_processor_symbolic_unnamed():
     assert isinstance(result, LatexResultOutput)
     content = result.to_content()
     assert content["data"]["text/latex"] == "$\\displaystyle{}x^2$"
+    mock_helper.convert_mathml_to_latex.assert_awaited_once_with("<mathml>...</mathml>")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("invalid_latex", ["", None, 42])
+async def test_output_processor_symbolic_invalid_direct_latex_uses_conversion(
+    invalid_latex,
+):
+    mock_helper = MagicMock()
+    mock_helper.convert_mathml_to_latex = AsyncMock(return_value="x^2")
+    processor = OutputProcessor(mwi_comm_helper=mock_helper)
+
+    out = {
+        "type": "symbolic",
+        "outputData": {
+            "name": "y",
+            "value": "<mathml>...</mathml>",
+            "latex": invalid_latex,
+        },
+    }
+
+    results = [r async for r in processor.process(_as_async_iter(out))]
+    result = results[0] if results else None
+
+    assert isinstance(result, LatexResultOutput)
+    assert (
+        result.to_content()["data"]["text/latex"] == "y =$\\\\\\ \\displaystyle{}x^2$"
+    )
+    mock_helper.convert_mathml_to_latex.assert_awaited_once_with("<mathml>...</mathml>")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("name", ["f", ""])
+async def test_output_processor_symbolic_direct_and_converted_format_identically(name):
+    latex_body = "\n  x^2 + y^2  \n"
+    mock_helper = MagicMock()
+    mock_helper.convert_mathml_to_latex = AsyncMock(return_value=latex_body)
+    processor = OutputProcessor(mwi_comm_helper=mock_helper)
+
+    direct_out = {
+        "type": "symbolic",
+        "outputData": {
+            "name": name,
+            "value": "<direct-mathml>",
+            "latex": latex_body,
+        },
+    }
+    converted_out = {
+        "type": "symbolic",
+        "outputData": {"name": name, "value": "<converted-mathml>"},
+    }
+
+    direct_result = [r async for r in processor.process(_as_async_iter(direct_out))][0]
+    converted_result = [
+        r async for r in processor.process(_as_async_iter(converted_out))
+    ][0]
+
+    assert (
+        direct_result.to_content()["data"]["text/latex"]
+        == converted_result.to_content()["data"]["text/latex"]
+    )
+    mock_helper.convert_mathml_to_latex.assert_awaited_once_with("<converted-mathml>")
 
 
 @pytest.mark.asyncio
@@ -338,6 +524,24 @@ async def test_output_processor_symbolic_no_helper():
         == "<html><pre><mathml>content</mathml></pre></html>"
     )
     assert content["data"]["text/plain"] == "<mathml>content</mathml>"
+
+
+@pytest.mark.asyncio
+async def test_output_processor_symbolic_empty_payload():
+    processor = OutputProcessor(mwi_comm_helper=None)
+
+    out = {
+        "type": "symbolic",
+        "outputData": {"name": "", "value": "", "latex": ""},
+    }
+
+    results = [r async for r in processor.process(_as_async_iter(out))]
+    result = results[0] if results else None
+
+    assert isinstance(result, HtmlResultOutput)
+    content = result.to_content()
+    assert content["data"]["text/html"] == "<html><pre></pre></html>"
+    assert content["data"]["text/plain"] == ""
 
 
 # ---- Figure Tests ----
