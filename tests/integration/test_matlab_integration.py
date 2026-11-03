@@ -114,6 +114,39 @@ class MATLABKernelTests(jupyter_kernel_test.KernelTests):
             "No figure was generated in output",
         )
 
+    def test_matlab_kernel_markdown(self):
+        """Validates that R2026b markdowndisp output uses text/markdown."""
+
+        reply, output_msgs = self._run_code(
+            code=(
+                'if isMATLABReleaseOlderThan("R2026b"); '
+                'disp("__MARKDOWN_TEST_UNSUPPORTED__"); '
+                'else; markdowndisp("**bold text**"); end'
+            )
+        )
+        if "__MARKDOWN_TEST_UNSUPPORTED__" in self._get_output_text(output_msgs):
+            self.skipTest("markdowndisp requires MATLAB R2026b or later")
+
+        markdown_msgs = [
+            msg
+            for msg in output_msgs
+            if msg["header"]["msg_type"] == "execute_result"
+            and "text/markdown" in msg["content"].get("data", {})
+        ]
+        self.assertEqual(
+            len(markdown_msgs),
+            1,
+            f"Expected one text/markdown output but got: {output_msgs}",
+        )
+        self.assertEqual(
+            markdown_msgs[0]["content"]["data"]["text/markdown"], "**bold text**"
+        )
+        self.assertEqual(markdown_msgs[0]["content"]["metadata"], {})
+        self.assertEqual(
+            markdown_msgs[0]["content"]["execution_count"],
+            reply["content"]["execution_count"],
+        )
+
     def test_magics(self):
         """Validates if  '%%lsmagic' commands lists the available magics in the cell output"""
         _, output_msgs = self._run_code(code="%%lsmagic")
@@ -148,22 +181,20 @@ class MATLABKernelTests(jupyter_kernel_test.KernelTests):
     def _get_output_text(self, output_msgs):
         """Gets output text of Jupyter notebook cell"""
 
-        if self._get_output_header_msg_type(output_msgs) == "stream":
-            output = [
-                output_msgs[i]["content"]["text"]
-                for i in range(len(output_msgs))
-                if "text" in output_msgs[i]["content"]
-            ]
-            output = "\n".join(output)
-            return output
-        elif self._get_output_header_msg_type(output_msgs) == "execute_result":
-            output = [
-                output_msgs[i]["content"]["data"]["text/html"]
-                for i in range(len(output_msgs))
-                if "data" in output_msgs[i]["content"]
-            ]
-            output = "\n".join(output)
-            return output
+        output = []
+        mime_priority = ("text/html", "text/markdown", "text/latex", "text/plain")
+        for msg in output_msgs:
+            content = msg["content"]
+            if "text" in content:
+                output.append(content["text"])
+                continue
+
+            data = content.get("data", {})
+            for mimetype in mime_priority:
+                if mimetype in data:
+                    output.append(data[mimetype])
+                    break
+        return "\n".join(output)
 
     def _validate_matlab_test(self, test_filepath):
         """

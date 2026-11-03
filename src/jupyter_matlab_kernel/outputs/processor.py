@@ -11,6 +11,7 @@ from jupyter_matlab_kernel.outputs.types import (
     HtmlResultOutput,
     JupyterOutput,
     LatexResultOutput,
+    MarkdownResultOutput,
     StderrOutput,
     StdoutOutput,
 )
@@ -34,6 +35,7 @@ class OutputProcessor:
             "symbolic": self._handle_symbolic,
             "figure": self._handle_figure,
             "text/html": self._handle_html,
+            "markdown": self._handle_markdown,
             "error": self._handle_stderr,
             "warning": self._handle_stderr,
             "stderr": self._handle_stderr,
@@ -184,3 +186,7 @@ class OutputProcessor:
     def _handle_html(self, output_data) -> HtmlResultOutput:
         """Process text/html output data."""
         return HtmlResultOutput(html=str(output_data), text=str(output_data))
+
+    def _handle_markdown(self, output_data) -> MarkdownResultOutput:
+        """Process markdown output data without altering the source text."""
+        return MarkdownResultOutput(markdown=output_data.get("content", ""))

@@ -76,6 +76,23 @@ classdef TestExecuteFunction < matlab.unittest.TestCase
             end
         end
 
+        function testMarkdownOutput(testCase)
+            % Test execution of markdowndisp through the Live Editor API
+            testCase.assumeFalse(isMATLABReleaseOlderThan("R2026b"), ...
+                'markdowndisp requires MATLAB R2026b or later');
+
+            code = 'markdowndisp("# Hello world")';
+            kernelId = 'test_kernel_id';
+            result = jupyter.execute(code, kernelId);
+            markdownIndex = find(strcmp({result.type}, 'markdown'), 1);
+
+            testCase.verifyNotEmpty(markdownIndex, ...
+                'Expected raw markdown output');
+            testCase.verifyEqual( ...
+                result(markdownIndex).outputData.content, ...
+                '# Hello world');
+        end
+
         function testErrorOutput(testCase)
             % Test execution of a code that generates an error
             code = 'error(''Test error'');';

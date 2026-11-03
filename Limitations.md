@@ -34,6 +34,8 @@ This package has some constraints and limitations:
 
 * Outputs from code cells are only displayed after the entire code cell has been run.
 
+* Markdown output from [`markdowndisp`](https://www.mathworks.com/help/matlab/ref/markdowndisp.html) requires MATLAB R2026b or later. Refer to the function documentation for its supported syntax and limitations. MATLAB Integration for Jupyter forwards the Markdown source without modifying it, so rendering is controlled by the Jupyter frontend and may differ from MATLAB.
+
 * MATLAB notebooks and MATLAB files do not autoindent after `case` statements.
 
 * **For MATLAB R2024a and later,** tables are displayed as ASCII instead of HTML if the table meets any of the below conditions. Note that the below list is not exhaustive.
@@ -47,6 +49,6 @@ This package has some constraints and limitations:
 
 ----
 
-Copyright 2023-2024 The MathWorks, Inc.
+Copyright 2023-2026 The MathWorks, Inc.
 
 ----

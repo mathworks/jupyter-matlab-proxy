@@ -23,8 +23,8 @@ function result = processJupyterKernelRequest(request_type, execution_request_ty
 %           - type       - string - output type. Supported values: "matrix",
 %                                   "variable", "variableString", "symbolic",
 %                                   "text", "warning", "error", "stderr",
-%                                   "figure", "text/html"
-%           - outputData - struct - fields vary by type (see OutputProcessor)
+%                                   "figure", "text/html", "markdown"
+%           - outputData - value whose shape varies by type (see OutputProcessor)
 %       - "complete": struct with:
 %           - matches     - cell array - completion match strings
 %           - completions - cell array of structs (text, type, start, end)

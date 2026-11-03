@@ -11,7 +11,8 @@ Hierarchy mirrors the Jupyter messaging protocol:
   └── DataBundleOutput (abstract, data*, metadata*)
       ├── ExecuteResultOutput
       │   ├── HtmlResultOutput
-      │   └── LatexResultOutput
+      │   ├── LatexResultOutput
+      │   └── MarkdownResultOutput
       └── DisplayDataOutput (display_id: str | None)
           ├── FigurePlaceholderOutput
           └── UpdateDisplayDataOutput (display_id required)
@@ -137,6 +138,21 @@ class LatexResultOutput(ExecuteResultOutput):
     @property
     def data(self) -> dict:
         return {"text/latex": self.latex}
+
+    @property
+    def metadata(self) -> dict:
+        return {}
+
+
+@dataclass(frozen=True, slots=True)
+class MarkdownResultOutput(ExecuteResultOutput):
+    """An execute_result containing text/markdown data."""
+
+    markdown: str
+
+    @property
+    def data(self) -> dict:
+        return {"text/markdown": self.markdown}
 
     @property
     def metadata(self) -> dict:

@@ -178,6 +178,7 @@ This opens a Jupyter notebook that supports MATLAB.
 - **MATLAB Kernel:** The MATLAB kernel supports tab completion and rich outputs:
   * Inline static plot images
   * LaTeX representation for symbolic expressions
+  * Markdown content, rendered using the MATLAB [`markdowndisp`](https://www.mathworks.com/help/matlab/ref/markdowndisp.html) function in R2026b and later
   * Tables formatted using HTML instead of ASCII, in MATLAB R2024a and later:
     | Before R2024a | After R2024a |
     |--|--|

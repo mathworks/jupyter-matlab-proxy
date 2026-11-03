@@ -9,6 +9,7 @@ from jupyter_matlab_kernel.outputs.types import (
     FigurePlaceholderOutput,
     HtmlResultOutput,
     LatexResultOutput,
+    MarkdownResultOutput,
     StdoutOutput,
     StderrOutput,
 )
@@ -651,6 +652,79 @@ async def test_output_processor_html():
     content = result.to_content()
     assert content["data"]["text/html"] == "<i>italic</i>"
     assert content["data"]["text/plain"] == "<i>italic</i>"
+
+
+# ---- Markdown Tests ----
+
+
+@pytest.mark.asyncio
+async def test_output_processor_markdown():
+    processor = OutputProcessor()
+
+    out = {
+        "type": "markdown",
+        "outputData": {"content": "**bold text**"},
+    }
+
+    results = [r async for r in processor.process(_as_async_iter(out))]
+
+    assert len(results) == 1
+    result = results[0]
+    assert isinstance(result, MarkdownResultOutput)
+    assert result.msg_type == "execute_result"
+    assert result.to_content() == {
+        "data": {"text/markdown": "**bold text**"},
+        "metadata": {},
+    }
+
+
+@pytest.mark.asyncio
+async def test_output_processor_markdown_preserves_source():
+    processor = OutputProcessor()
+    markdown = (
+        "  # Heading\n\n"
+        "| 언어 | 값 |\n"
+        "| --- | --- |\n"
+        "| MATLAB | $x^2$ |\n\n"
+        "```matlab\n"
+        "x = 1;\n"
+        "```\n"
+    )
+
+    out = {
+        "type": "markdown",
+        "outputData": {"content": markdown},
+    }
+
+    results = [r async for r in processor.process(_as_async_iter(out))]
+
+    assert len(results) == 1
+    result = results[0]
+    assert result.markdown == markdown
+    assert result.to_content()["data"] == {"text/markdown": markdown}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("output_data", "expected"),
+    [
+        ({"content": "   "}, "   "),
+        ({"content": "\n"}, "\n"),
+        ({}, ""),
+    ],
+)
+async def test_output_processor_markdown_edge_cases(output_data, expected):
+    processor = OutputProcessor()
+
+    out = {
+        "type": "markdown",
+        "outputData": output_data,
+    }
+
+    results = [r async for r in processor.process(_as_async_iter(out))]
+
+    assert len(results) == 1
+    assert results[0].to_content()["data"] == {"text/markdown": expected}
 
 
 # ---- Edge Cases ----
